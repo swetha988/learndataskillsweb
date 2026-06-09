@@ -1,0 +1,321 @@
+.mentors-hero {
+  background: linear-gradient(145deg, #0F172A 0%, #1E3A8A 100%);
+  color: white;
+  padding: 80px 0 64px;
+  position: relative;
+  overflow: hidden;
+}
+.mentors-hero::before {
+  content: '';
+  position: absolute;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(6,182,212,0.2) 0%, transparent 65%);
+  top: -100px; right: -100px;
+  pointer-events: none;
+}
+
+.mentors-cta-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 32px;
+  flex-wrap: wrap;
+}
+.mentors-help {
+  font-size: 13px;
+  color: rgba(255,255,255,0.55);
+}
+
+.mentors-hero .btn-primary {
+  background: var(--cyan);
+  color: var(--navy);
+  box-shadow: 0 8px 24px rgba(6, 182, 212, 0.28);
+}
+.mentors-hero .btn-primary:hover {
+  background: #22D3EE;
+  transform: translateY(-1px);
+  color: var(--navy);
+}
+
+.mentor-filters {
+  margin-top: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.search-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: var(--r-md);
+  color: rgba(255,255,255,0.6);
+  backdrop-filter: blur(10px);
+  max-width: 600px;
+}
+.search-input:focus-within {
+  border-color: var(--cyan);
+  background: rgba(255,255,255,0.12);
+}
+.search-input input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: white;
+  font-size: 14px;
+}
+.search-input input::placeholder { color: rgba(255,255,255,0.4); }
+
+.skill-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.skill-tab {
+  padding: 7px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.65);
+  border-radius: var(--r-pill);
+  border: 1px solid rgba(255,255,255,0.1);
+  transition: all var(--t-fast);
+}
+.skill-tab:hover { background: rgba(255,255,255,0.12); color: white; }
+.skill-tab.is-active {
+  background: var(--cyan);
+  color: var(--navy);
+  border-color: var(--cyan);
+}
+
+.mentors-stat-bar {
+  font-size: 13px;
+  color: var(--s5);
+  margin-bottom: 24px;
+}
+.mentors-stat-bar strong {
+  color: var(--navy);
+  font-weight: 700;
+}
+
+.empty-mentors-state {
+  text-align: center;
+  padding: 80px 24px;
+  background: white;
+  border: 1.5px dashed var(--s2);
+  border-radius: var(--r-xl);
+}
+
+.mentors-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.mentor-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 24px;
+  padding: 24px;
+  background: white;
+  border: 1.5px solid var(--s2);
+  border-radius: var(--r-xl);
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--t-base);
+  align-items: center;
+}
+.mentor-row:hover {
+  border-color: var(--blue);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.mr-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), var(--cyan));
+  color: white;
+  font-size: 26px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mr-info { min-width: 0; }
+
+.mr-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.mr-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.mr-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--s5);
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.mr-meta span { display: inline-flex; align-items: center; gap: 4px; }
+.mr-dot { color: var(--s3); }
+
+.mr-bio {
+  font-size: 13.5px;
+  color: var(--s5);
+  line-height: 1.55;
+  margin-bottom: 10px;
+}
+
+.mr-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.mr-action {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+.mr-stats {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  color: var(--s5);
+  font-weight: 500;
+}
+
+.empty-mentors {
+  text-align: center;
+  padding: 64px 0;
+  color: var(--s5);
+}
+
+/* ── Modal ── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(6px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.modal {
+  position: relative;
+  background: white;
+  border-radius: var(--r-xl);
+  width: 100%;
+  max-width: 560px;
+  padding: 32px;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.25);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--s1);
+  color: var(--s5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--t-fast);
+}
+.modal-close:hover { background: var(--s2); color: var(--navy); }
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.skill-picker {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.skill-pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 13px;
+  font-size: 12.5px;
+  font-weight: 600;
+  background: var(--bg);
+  color: var(--s5);
+  border: 1.5px solid var(--s2);
+  border-radius: var(--r-pill);
+  transition: all var(--t-fast);
+  cursor: pointer;
+}
+.skill-pick:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+.skill-pick.is-selected {
+  background: var(--blue);
+  color: white;
+  border-color: var(--blue);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 20px;
+  border-top: 1px solid var(--s1);
+}
+
+.login-error {
+  background: var(--red-bg);
+  border: 1px solid #FCA5A5;
+  color: var(--red);
+  padding: 11px 14px;
+  border-radius: var(--r-md);
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+
+@media (max-width: 760px) {
+  .mentor-row { grid-template-columns: 1fr; gap: 16px; }
+  .mr-action { align-items: stretch; flex-direction: row; justify-content: space-between; }
+  .form-row { grid-template-columns: 1fr; }
+}
