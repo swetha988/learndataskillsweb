@@ -352,3 +352,25 @@
   color: #9A3412;
   font-weight: 700;
 }
+
+/* Live (clickable) module rows */
+.module-row-live {
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.18s;
+  cursor: pointer;
+}
+.module-row-live:hover {
+  border-color: var(--blue);
+  background: var(--blue-light);
+  transform: translateX(2px);
+}
+.module-row-live:hover .mod-info h4 { color: var(--blue); }
+.module-row-live .mod-meta { gap: 4px; }
+
+/* In-production rows */
+.module-row-soon {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.module-row-soon .mod-info p { font-style: italic; }

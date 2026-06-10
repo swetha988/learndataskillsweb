@@ -98,7 +98,10 @@ export default function Footer() {
 
         <div className="footer-bottom">
           <span>© {new Date().getFullYear()} LearnDataSkills.</span>
-          <span>Built with care · Open to all</span>
+          <span style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            Built with care · Open to all
+            <Link to="/admin" style={{ color: 'rgba(255,255,255,.4)', fontSize: 11, textDecoration: 'underline' }}>Creator</Link>
+          </span>
         </div>
       </div>
     </footer>

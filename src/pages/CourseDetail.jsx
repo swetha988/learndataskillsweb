@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft, Clock, BookOpen, CheckCircle2, Lock, Database, Target, AlertCircle, Info } from 'lucide-react'
+import { ArrowLeft, Clock, BookOpen, CheckCircle2, Lock, Database, Target, AlertCircle, Info, ChevronRight } from 'lucide-react'
 import { findCourse } from '../data/courses'
 import { getCourseHonesty } from '../data/courseHonesty'
+import { getModuleList } from '../data/moduleContent'
 import { CourseIcon } from '../components/CourseIcons'
 import ModuleFeedback from '../components/ModuleFeedback'
 import './CourseDetail.css'
@@ -159,18 +160,37 @@ export default function CourseDetail() {
               )}
 
               <div className="modules-list">
-                {Array.from({ length: trackData.modules }).map((_, i) => (
-                  <div key={i} className="module-row">
-                    <div className="mod-num">{String(i + 1).padStart(2, '0')}</div>
-                    <div className="mod-info">
-                      <h4>Module {i + 1}</h4>
-                      <p>Lesson + exercise + quiz</p>
+                {getModuleList(course.slug, activeLevel).map((m, i) => {
+                  const inProd = m.id.startsWith('prod-')
+                  return inProd ? (
+                    <div key={m.id} className="module-row module-row-soon">
+                      <div className="mod-num">{String(i + 1).padStart(2, '0')}</div>
+                      <div className="mod-info">
+                        <h4>{m.title}</h4>
+                        <p>In production — content being written</p>
+                      </div>
+                      <div className="mod-meta">
+                        <Lock size={12} /> Soon
+                      </div>
                     </div>
-                    <div className="mod-meta">
-                      <Clock size={12} /> {honesty?.timeBreakdown?.perModule?.total || `~${Math.ceil((trackData.hours * 60) / trackData.modules)} min`}
-                    </div>
-                  </div>
-                ))}
+                  ) : (
+                    <Link
+                      key={m.id}
+                      to={`/courses/${course.slug}/${activeLevel}/${i + 1}`}
+                      className="module-row module-row-live"
+                    >
+                      <div className="mod-num">{String(i + 1).padStart(2, '0')}</div>
+                      <div className="mod-info">
+                        <h4>{m.title}</h4>
+                        <p>Lesson · interactive examples · check yourself</p>
+                      </div>
+                      <div className="mod-meta">
+                        <Clock size={12} /> {m.duration}
+                        <ChevronRight size={14} style={{ marginLeft: 4, color: 'var(--blue)' }} />
+                      </div>
+                    </Link>
+                  )
+                })}
               </div>
 
               <div className="course-datasets">
