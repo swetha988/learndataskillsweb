@@ -175,9 +175,24 @@
 }
 
 .mp-module-list {
+  padding: 8px 8px 16px;
+}
+
+.mp-sidebar-scroll {
   flex: 1;
   overflow-y: auto;
-  padding: 8px 8px 16px;
+  min-height: 0;
+}
+
+.mp-module-group {
+  margin-bottom: 4px;
+}
+
+.mp-module-row-wrap {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px;
+  align-items: start;
 }
 
 .mp-module-link {
@@ -245,6 +260,70 @@
   color: var(--s4);
   font-family: var(--font-mono);
   white-space: nowrap;
+}
+
+.mp-module-topic-toggle {
+  width: 28px;
+  height: 38px;
+  margin-top: 4px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--s5);
+}
+
+.mp-module-topic-toggle:hover {
+  background: var(--s1);
+  color: var(--blue);
+}
+
+.mp-topic-chevron {
+  flex-shrink: 0;
+  color: var(--s5);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.mp-topic-chevron.is-open {
+  transform: rotate(90deg);
+  color: var(--blue);
+}
+
+.mp-topic-list {
+  margin: 0 0 8px 36px;
+  padding: 6px 0 6px 10px;
+  border-left: 1px solid var(--s2);
+}
+
+.mp-topic-link {
+  display: block;
+  width: 100%;
+  padding: 7px 10px;
+  margin-bottom: 2px;
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-sm);
+  text-align: left;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--s5);
+  cursor: pointer;
+}
+
+.mp-topic-link:hover {
+  background: var(--s1);
+  color: var(--blue-dark);
+}
+
+.mp-topic-empty {
+  margin: 0;
+  padding: 6px 10px 2px;
+  font-size: 12px;
+  color: var(--s4);
+  line-height: 1.5;
 }
 
 .mp-sidebar-foot {
@@ -333,6 +412,7 @@
   color: var(--navy);
   margin: 36px 0 14px;
   line-height: 1.2;
+  scroll-margin-top: 88px;
 }
 .mp-h:first-child { margin-top: 0; }
 
@@ -341,6 +421,7 @@
   font-weight: 700;
   color: var(--navy);
   margin: 28px 0 10px;
+  scroll-margin-top: 88px;
 }
 
 .mp-p {
@@ -515,6 +596,8 @@
   }
   .mp-sidebar.is-open { transform: translateX(0); }
   .mp-sidebar-close { display: inline-flex; }
+  .mp-sidebar-scroll { overflow-y: visible; }
+  .mp-module-row-wrap { grid-template-columns: 1fr auto; }
   .mp-sidebar-backdrop {
     display: block;
     position: fixed;

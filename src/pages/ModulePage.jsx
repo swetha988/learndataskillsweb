@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import React, { useEffect, useMemo, useState } from 'react'
+import { useLocation, useParams, Link, useNavigate } from 'react-router-dom'
 import { ChevronRight, ChevronLeft, BookOpen, Clock, Menu, X, CheckCircle2, Lightbulb, AlertTriangle, ArrowLeft, Home, Layers } from 'lucide-react'
 import { findCourse } from '../data/courses'
-import { getModule, getModuleList } from '../data/moduleContent'
+import { getModuleList } from '../data/moduleContent'
 import { CourseIcon } from '../components/CourseIcons'
 import CodePlayground from '../components/CodePlayground'
 import ModuleFeedback from '../components/ModuleFeedback'
@@ -16,22 +16,42 @@ const LEVELS = [
 
 export default function ModulePage() {
   const { slug, level, moduleIndex } = useParams()
+  const location = useLocation()
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [openTopicModules, setOpenTopicModules] = useState({})
   const [completed, setCompleted] = useState(new Set())
 
   const course = findCourse(slug)
   const idx = parseInt(moduleIndex, 10) - 1
   const modules = getModuleList(slug, level)
   const module = modules[idx] || null
+  const topicLinks = useMemo(() => getTopicLinksFromModule(module), [module])
+  const moduleTopicMap = useMemo(() => {
+    return Object.fromEntries(modules.map((item) => [item.id, getTopicLinksFromModule(item)]))
+  }, [modules])
 
   useEffect(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(`lds_completed_${slug}_${level}`) || '[]')
       setCompleted(new Set(saved))
     } catch {}
+    if (module) {
+      setOpenTopicModules(prev => ({ ...prev, [module.id]: true }))
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' })
-  }, [slug, level, moduleIndex])
+  }, [slug, level, moduleIndex, module])
+
+  useEffect(() => {
+    if (!location.hash) return
+    const anchorId = location.hash.replace('#', '')
+    const target = document.getElementById(anchorId)
+    if (!target) return
+
+    requestAnimationFrame(() => {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
+  }, [location.hash, moduleIndex, slug, level])
 
   const markComplete = () => {
     if (!module) return
@@ -66,6 +86,21 @@ export default function ModulePage() {
   const levelInfo = LEVELS.find(l => l.id === level) || LEVELS[0]
 
   const navTo = (i) => navigate(`/courses/${slug}/${level}/${i + 1}`)
+
+  const scrollToTopic = (anchorId) => {
+    const target = document.getElementById(anchorId)
+    if (!target) return
+
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    setSidebarOpen(false)
+  }
+
+  const toggleModuleTopics = (moduleId) => {
+    setOpenTopicModules(prev => ({
+      ...prev,
+      [moduleId]: !prev[moduleId],
+    }))
+  }
 
   return (
     <div className="module-page">
@@ -138,21 +173,66 @@ export default function ModulePage() {
             ))}
           </div>
 
-          <nav className="mp-module-list">
-            {modules.map((m, i) => (
-              <button
-                key={m.id}
-                className={`mp-module-link ${i === idx ? 'is-current' : ''} ${completed.has(m.id) ? 'is-done' : ''}`}
-                onClick={() => { navTo(i); setSidebarOpen(false) }}
-              >
-                <span className="mp-mod-num">
-                  {completed.has(m.id) ? <CheckCircle2 size={14} /> : String(i + 1).padStart(2, '0')}
-                </span>
-                <span className="mp-mod-title">{m.title}</span>
-                <span className="mp-mod-time">{m.duration}</span>
-              </button>
-            ))}
-          </nav>
+          <div className="mp-sidebar-scroll">
+            <nav className="mp-module-list">
+              {modules.map((m, i) => {
+                const moduleTopics = moduleTopicMap[m.id] || []
+                const isOpen = !!openTopicModules[m.id]
+
+                return (
+                  <div key={m.id} className="mp-module-group">
+                    <div className="mp-module-row-wrap">
+                      <button
+                        className={`mp-module-link ${i === idx ? 'is-current' : ''} ${completed.has(m.id) ? 'is-done' : ''}`}
+                        onClick={() => { navTo(i); setSidebarOpen(false) }}
+                      >
+                        <span className="mp-mod-num">
+                          {completed.has(m.id) ? <CheckCircle2 size={14} /> : String(i + 1).padStart(2, '0')}
+                        </span>
+                        <span className="mp-mod-title">{m.title}</span>
+                        <span className="mp-mod-time">{m.duration}</span>
+                      </button>
+
+                      {moduleTopics.length > 0 && (
+                        <button
+                          type="button"
+                          className="mp-module-topic-toggle"
+                          onClick={() => toggleModuleTopics(m.id)}
+                          aria-expanded={isOpen}
+                          aria-label={`Toggle topics for module ${i + 1}`}
+                        >
+                          <ChevronRight className={`mp-topic-chevron ${isOpen ? 'is-open' : ''}`} size={15} />
+                        </button>
+                      )}
+                    </div>
+
+                    {isOpen && moduleTopics.length > 0 && (
+                      <div className="mp-topic-list">
+                        {moduleTopics.map((topic) => (
+                          <button
+                            key={topic.anchorId}
+                            type="button"
+                            className="mp-topic-link"
+                            onClick={() => {
+                              if (m.id === module.id) {
+                                scrollToTopic(topic.anchorId)
+                                return
+                              }
+
+                              navigate(`/courses/${slug}/${level}/${i + 1}#${topic.anchorId}`)
+                              setSidebarOpen(false)
+                            }}
+                          >
+                            {topic.title}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </nav>
+          </div>
 
           <div className="mp-sidebar-foot">
             <Link to={`/courses/${slug}`} className="mp-back-link">
@@ -179,7 +259,18 @@ export default function ModulePage() {
             </div>
 
             <div className="mp-body">
-              {module.sections.map((section, i) => <Section key={i} section={section} />)}
+              {module.sections.map((section, i) => {
+                const isTopic = section.type === 'heading' || section.type === 'subheading'
+                const anchorId = isTopic
+                  ? `topic-${module.id}-${i}-${section.content
+                    .toLowerCase()
+                    .trim()
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/^-+|-+$/g, '') || 'section'}`
+                  : null
+
+                return <Section key={i} section={section} anchorId={anchorId} />
+              })}
             </div>
 
             <div className="mp-complete">
@@ -233,12 +324,12 @@ export default function ModulePage() {
 }
 
 /* ─── Section renderer ─── */
-function Section({ section }) {
+function Section({ section, anchorId }) {
   switch (section.type) {
     case 'heading':
-      return <h2 className="mp-h">{section.content}</h2>
+      return <h2 className="mp-h" id={anchorId} tabIndex={-1}>{section.content}</h2>
     case 'subheading':
-      return <h3 className="mp-h3">{section.content}</h3>
+      return <h3 className="mp-h3" id={anchorId} tabIndex={-1}>{section.content}</h3>
     case 'paragraph':
       return <p className="mp-p">{section.content}</p>
     case 'list':
@@ -270,4 +361,23 @@ function Section({ section }) {
     default:
       return null
   }
+}
+
+function getTopicLinksFromModule(module) {
+  if (!module) return []
+
+  return module.sections.flatMap((section, sectionIndex) => {
+    if (section.type !== 'heading' && section.type !== 'subheading') return []
+
+    const sluggedTitle = section.content
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+
+    return [{
+      anchorId: `topic-${module.id}-${sectionIndex}-${sluggedTitle || 'section'}`,
+      title: section.content,
+    }]
+  })
 }
