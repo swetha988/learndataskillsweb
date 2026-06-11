@@ -1,4 +1,5 @@
 import React from 'react'
+import { useEffect } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
@@ -18,6 +19,14 @@ export default function App() {
   const location = useLocation()
   const hideChrome = ['/login'].includes(location.pathname)
   const isModule = /^\/courses\/[^/]+\/(beginner|intermediate|advanced)\/\d+/.test(location.pathname)
+
+  useEffect(() => {
+    if (typeof window.gtag === 'function') {
+      window.gtag('config', 'G-9S7QPKP9QJ', {
+        page_path: location.pathname + location.search,
+      })
+    }
+  }, [location.pathname, location.search])
 
   return (
     <>
