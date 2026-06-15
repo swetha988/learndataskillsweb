@@ -6,6 +6,8 @@ import { getModuleList } from '../data/moduleContent'
 import { CourseIcon } from '../components/CourseIcons'
 import CodePlayground from '../components/CodePlayground'
 import ModuleFeedback from '../components/ModuleFeedback'
+import ModuleQuiz from '../components/ModuleQuiz'
+import { trackEvent } from '../utils/analytics'
 import './ModulePage.css'
 
 const LEVELS = [
@@ -38,9 +40,23 @@ export default function ModulePage() {
     } catch {}
     if (module) {
       setOpenTopicModules(prev => ({ ...prev, [module.id]: true }))
+      trackEvent('module_opened', {
+        course_slug: slug,
+        level,
+        module_id: module.id,
+        module_title: module.title,
+        module_index: idx + 1,
+      })
+      if (idx === 0) {
+        trackEvent('course_started', {
+          course_slug: slug,
+          level,
+          first_module_id: module.id,
+        })
+      }
     }
     window.scrollTo({ top: 0, behavior: 'smooth' })
-  }, [slug, level, moduleIndex, module])
+  }, [slug, level, moduleIndex, module, idx])
 
   useEffect(() => {
     if (!location.hash) return
@@ -58,6 +74,13 @@ export default function ModulePage() {
     const next = new Set(completed)
     next.add(module.id)
     setCompleted(next)
+    trackEvent('module_completed', {
+      course_slug: slug,
+      level,
+      module_id: module.id,
+      module_title: module.title,
+      module_index: idx + 1,
+    })
     try {
       localStorage.setItem(`lds_completed_${slug}_${level}`, JSON.stringify([...next]))
     } catch {}
@@ -284,6 +307,8 @@ export default function ModulePage() {
                 </button>
               )}
             </div>
+
+            <ModuleQuiz courseSlug={slug} module={module} />
 
             <ModuleFeedback courseSlug={slug} moduleId={module.id} />
 

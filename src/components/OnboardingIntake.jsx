@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, ArrowRight, Sparkles } from 'lucide-react'
+import { trackEvent } from '../utils/analytics'
 import './OnboardingIntake.css'
 
 const KEY = 'lds_onboarding_v1'
@@ -59,6 +60,11 @@ export default function OnboardingIntake() {
   const handleSelect = (questionId, optionId) => {
     const newAnswers = { ...answers, [questionId]: optionId }
     setAnswers(newAnswers)
+    trackEvent('onboarding_answered', {
+      question_id: questionId,
+      answer_id: optionId,
+      step: step + 1,
+    })
     if (step < QUESTIONS.length - 1) {
       setStep(step + 1)
     } else {
@@ -68,11 +74,15 @@ export default function OnboardingIntake() {
 
   const finish = (final) => {
     localStorage.setItem(KEY, JSON.stringify({ ...final, completedAt: new Date().toISOString() }))
+    trackEvent('onboarding_completed', {
+      answers: final,
+    })
     setShow(false)
   }
 
   const skip = () => {
     localStorage.setItem(KEY, JSON.stringify({ skipped: true, at: new Date().toISOString() }))
+    trackEvent('onboarding_skipped', {})
     setShow(false)
   }
 

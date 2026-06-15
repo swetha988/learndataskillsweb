@@ -2,6 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowRight, Sparkles, Play, CheckCircle2, TrendingUp, BookOpen, Award } from 'lucide-react'
+import { trackEvent } from '../utils/analytics'
 import './Hero.css'
 
 export default function Hero() {
@@ -36,7 +37,15 @@ export default function Hero() {
           </p>
 
           <div className="hero-ctas">
-            <Link to="/courses" className="btn btn-primary btn-lg">
+            <Link
+              to="/courses"
+              className="btn btn-primary btn-lg"
+              onClick={() => trackEvent('browse_courses_clicked', {
+                course_slug: 'all-courses',
+                course_title: 'Browse courses',
+                source: 'hero_cta',
+              })}
+            >
               Browse courses
               <ArrowRight size={18} />
             </Link>

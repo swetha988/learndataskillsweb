@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Clock, BookOpen, CheckCircle2, Lock, Database, Target, AlertCircle, Info, ChevronRight } from 'lucide-react'
 import { findCourse } from '../data/courses'
 import { getCourseHonesty } from '../data/courseHonesty'
 import { getModuleList } from '../data/moduleContent'
 import { CourseIcon } from '../components/CourseIcons'
 import ModuleFeedback from '../components/ModuleFeedback'
+import { trackEvent } from '../utils/analytics'
 import './CourseDetail.css'
 
 const LEVELS = [
@@ -16,6 +17,7 @@ const LEVELS = [
 
 export default function CourseDetail() {
   const { slug } = useParams()
+  const navigate = useNavigate()
   const [activeLevel, setActiveLevel] = useState('beginner')
   const course = findCourse(slug)
 
@@ -33,6 +35,19 @@ export default function CourseDetail() {
   const isComingSoon = course.status === 'coming-soon'
   const trackData = course.tracks[activeLevel]
   const honesty = getCourseHonesty(course.slug)
+  const startCourse = () => {
+    const modules = getModuleList(course.slug, activeLevel)
+    if (!modules.length) return
+
+    trackEvent('start_course', {
+      course_slug: course.slug,
+      course_title: course.title,
+      level: activeLevel,
+      first_module_id: modules[0].id,
+    })
+
+    navigate(`/courses/${course.slug}/${activeLevel}/1`)
+  }
 
   return (
     <div className="course-detail">
@@ -113,7 +128,13 @@ export default function CourseDetail() {
                   <button
                     key={l.id}
                     className={`level-tab ${activeLevel === l.id ? 'is-active' : ''}`}
-                    onClick={() => setActiveLevel(l.id)}
+                    onClick={() => {
+                      setActiveLevel(l.id)
+                      trackEvent('course_level_selected', {
+                        course_slug: course.slug,
+                        level: l.id,
+                      })
+                    }}
                     style={activeLevel === l.id ? { borderColor: l.color, color: l.color } : {}}
                   >
                     <div className="lt-head">
@@ -135,7 +156,7 @@ export default function CourseDetail() {
                   <h2 className="h2">{LEVELS.find(l => l.id === activeLevel).label} track</h2>
                   <p className="body-md" style={{ marginTop: 8 }}>{trackData.label}</p>
                 </div>
-                <button className="btn btn-primary btn-lg">
+                <button className="btn btn-primary btn-lg" onClick={startCourse}>
                   Start this track →
                 </button>
               </div>

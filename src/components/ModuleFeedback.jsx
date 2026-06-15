@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { ThumbsUp, ThumbsDown, Check } from 'lucide-react'
+import { trackEvent } from '../utils/analytics'
 import './ModuleFeedback.css'
 
 const KEY = 'lds_module_feedback_v1'
@@ -19,10 +20,21 @@ export default function ModuleFeedback({ courseSlug, moduleId }) {
 
   const handleRate = (val) => {
     setRating(val)
+    trackEvent('module_feedback_rated', {
+      course_slug: courseSlug,
+      module_id: moduleId,
+      rating: val,
+    })
   }
 
   const handleSubmit = () => {
     saveFeedback({ courseSlug, moduleId, rating, comment: comment.trim() })
+    trackEvent('module_feedback_submitted', {
+      course_slug: courseSlug,
+      module_id: moduleId,
+      rating,
+      has_comment: comment.trim().length > 0,
+    })
     setSubmitted(true)
   }
 

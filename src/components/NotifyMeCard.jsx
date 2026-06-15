@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { BookOpen, Lock, Bell, Check } from 'lucide-react'
 import { CourseIcon } from './CourseIcons'
 import { addNotifyMe } from '../data/notifyMe'
+import { trackEvent } from '../utils/analytics'
 
 export default function NotifyMeCard({ course }) {
   const [email, setEmail] = useState('')
@@ -16,6 +17,10 @@ export default function NotifyMeCard({ course }) {
       return
     }
     addNotifyMe(course.slug, email)
+    trackEvent('notify_me_submitted', {
+      course_slug: course.slug,
+      course_title: course.title,
+    })
     setSubmitted(true)
   }
 

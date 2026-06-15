@@ -1,5 +1,4 @@
-import React from 'react'
-import { useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
@@ -14,6 +13,10 @@ import MentorProfile from './pages/MentorProfile'
 import About from './pages/About'
 import Dashboard from './pages/Dashboard'
 import Admin from './pages/Admin'
+import QuizzesDashboard from './pages/QuizzesDashboard'
+import CourseQuizPage from './pages/CourseQuizPage'
+import Chatbot from './components/Chatbot'
+import { trackPageView } from './utils/analytics'
 
 export default function App() {
   const location = useLocation()
@@ -21,11 +24,7 @@ export default function App() {
   const isModule = /^\/courses\/[^/]+\/(beginner|intermediate|advanced)\/\d+/.test(location.pathname)
 
   useEffect(() => {
-    if (typeof window.gtag === 'function') {
-      window.gtag('config', 'G-9S7QPKP9QJ', {
-        page_path: location.pathname + location.search,
-      })
-    }
+    trackPageView(location.pathname + location.search)
   }, [location.pathname, location.search])
 
   return (
@@ -44,10 +43,13 @@ export default function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/about" element={<About />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/quizzes" element={<QuizzesDashboard />} />
+          <Route path="/quizzes/:courseSlug/:track" element={<CourseQuizPage />} />
           <Route path="*" element={<Home />} />
         </Routes>
       </main>
       {!hideChrome && !isModule && <Footer />}
+      <Chatbot />
     </>
   )
 }

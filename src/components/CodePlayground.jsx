@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Play, RotateCcw, CheckCircle2, AlertCircle, Loader2, Code2 } from 'lucide-react'
 import { getDataset } from '../data/datasets'
+import { trackEvent } from '../utils/analytics'
 import './CodePlayground.css'
 
 /* ──────────────────────────────────────────────────────────────
@@ -68,6 +69,11 @@ export default function CodePlayground({ language = 'sql', starter = '', dataset
   const handleRun = () => {
     setError('')
     setResults(null)
+    trackEvent('quiz_attempted', {
+      exercise_type: 'code_playground',
+      language,
+      dataset: dataset || null,
+    })
     if (language !== 'sql') {
       setError(`Live execution for ${language} is coming in Phase 2. For now, copy the code into a local ${language} environment.`)
       return
@@ -81,9 +87,22 @@ export default function CodePlayground({ language = 'sql', starter = '', dataset
       const rows = dbRef.current.exec(code)
       if (!rows || rows.length === 0) {
         setResults({ columns: [], values: [], message: 'Query ran successfully. No rows returned.' })
+        trackEvent('quiz_completed', {
+          exercise_type: 'code_playground',
+          language,
+          dataset: dataset || null,
+          result: 'no_rows_returned',
+        })
       } else {
         const first = rows[0]
         setResults({ columns: first.columns, values: first.values, message: `${first.values.length} row${first.values.length === 1 ? '' : 's'} returned.` })
+        trackEvent('quiz_completed', {
+          exercise_type: 'code_playground',
+          language,
+          dataset: dataset || null,
+          result: 'success',
+          rows_returned: first.values.length,
+        })
       }
     } catch (e) {
       setError(e.message || 'Query failed.')

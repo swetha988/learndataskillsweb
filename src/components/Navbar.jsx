@@ -104,6 +104,7 @@ export default function Navbar() {
           <nav className={`nav-links ${open ? 'is-open' : ''}`}>
             <NavLink to="/" end onClick={() => setOpen(false)}>Home</NavLink>
             <NavLink to="/courses" onClick={() => setOpen(false)}>Courses</NavLink>
+            <NavLink to="/quizzes" onClick={() => setOpen(false)}>Exercises</NavLink>
             <NavLink to="/mentors" onClick={() => setOpen(false)}>Mentors</NavLink>
             <NavLink to="/about" onClick={() => setOpen(false)}>About</NavLink>
           </nav>

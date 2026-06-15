@@ -4,6 +4,7 @@ import { Clock, BookOpen, ArrowUpRight, Lock, Layers } from 'lucide-react'
 import { LIVE_COURSES, UPCOMING_COURSES } from '../data/courses'
 import { CourseIcon } from './CourseIcons'
 import NotifyMeCard from './NotifyMeCard'
+import { trackEvent } from '../utils/analytics'
 import './CoursesGrid.css'
 
 export default function CoursesGrid() {
@@ -24,7 +25,16 @@ export default function CoursesGrid() {
 
         <div className="courses-grid">
           {LIVE_COURSES.map(c => (
-            <Link key={c.id} to={`/courses/${c.slug}`} className="course-card">
+            <Link
+              key={c.id}
+              to={`/courses/${c.slug}`}
+              className="course-card"
+              onClick={() => trackEvent('course_card_clicked', {
+                course_slug: c.slug,
+                course_title: c.title,
+                source: 'courses_grid',
+              })}
+            >
               <div className="course-top" style={{ background: c.bgColor }}>
                 <div className="course-icon-wrap">
                   <CourseIcon slug={c.slug} size={44} />
