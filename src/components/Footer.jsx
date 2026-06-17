@@ -42,7 +42,7 @@ export default function Footer() {
               World-class data education, made open. Every course, every track, every project — built for learners around the world.
             </p>
             <p className="footer-founders">
-              Built by <strong>Sravan</strong> &amp; <strong>Swetha</strong> in Hyderabad. Real humans — talk to us.
+              Real humans — talk to us.
             </p>
             <div className="footer-meta">
               <a href="mailto:support@ahoosocial.com" className="footer-meta-row">
@@ -97,7 +97,7 @@ export default function Footer() {
         </div>
 
         <div className="footer-bottom">
-          <span>© {new Date().getFullYear()} LearnDataSkills.</span>
+          <span>© {new Date().getFullYear()} LearnDataSkill.</span>
           <span style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
             Built with care · Open to all
             <Link to="/admin" style={{ color: 'rgba(255,255,255,.4)', fontSize: 11, textDecoration: 'underline' }}>Creator</Link>

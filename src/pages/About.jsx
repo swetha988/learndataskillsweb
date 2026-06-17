@@ -14,7 +14,7 @@ const FOUNDERS = [
     name: 'Sravan',
     role: 'Co-Founder',
     initial: 'S',
-    bio: '10+ years in corporate tech. Saw too many talented people priced out of good data education. Started LearnDataSkills to fix that.'
+    bio: '10+ years in corporate tech. Saw too many talented people priced out of good data education. Started LearnDataSkill to fix that.'
   },
   {
     name: 'Swetha',
@@ -51,7 +51,7 @@ export default function About() {
               Bootcamps cost ₹1.5 lakh. University degrees cost more. YouTube tutorials are scattered, outdated, and rarely structured. The people who need data skills most — career switchers, students from tier-2 cities, working professionals without budgets — get the worst deal.
             </p>
             <p>
-              We made LearnDataSkills to flip that. Six full courses, three levels each, hands-on projects with global datasets, and 1:1 mentor sessions — all free, all open. The mentors are alumni who learned here and now help the next learner.
+              We made LearnDataSkill to flip that. Six full courses, three levels each, hands-on projects with global datasets, and 1:1 mentor sessions — all free, all open. The mentors are alumni who learned here and now help the next learner.
             </p>
             <p>
               It's a small thing. But it scales.

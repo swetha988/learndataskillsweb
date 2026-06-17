@@ -68,7 +68,7 @@ export function Wordmark({ size = 18, variant = 'light' }) {
     }}>
       <span style={{ color: c.l }}>Learn</span>
       <span style={{ color: c.d }}>Data</span>
-      <span style={{ color: c.s }}>Skills</span>
+      <span style={{ color: c.s }}>Skill</span>
     </span>
   )
 }

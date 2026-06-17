@@ -2,7 +2,7 @@ import { ChatGroq } from "@langchain/groq";
 import { HumanMessage, AIMessage, SystemMessage } from "@langchain/core/messages";
 
 const systemPrompt = new SystemMessage(
-  "You are an expert Data Skills Mentor for Learndataskillsweb. " +
+  "You are an expert Data Skills Mentor for Learndataskillweb. " +
   "You help users learn SQL, Python, Excel, Power BI, Tableau, and Statistics. " +
   "Be concise, encouraging, and provide clear code examples when asked."
 );

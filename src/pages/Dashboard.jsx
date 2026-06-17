@@ -165,7 +165,7 @@ export default function Dashboard() {
                 <MessageCircle size={20} color="white" />
               </div>
               <strong>Talk to other learners</strong>
-              <span>Join the LearnDataSkills community on Discord. Ask questions, share progress, find study partners.</span>
+              <span>Join the LearnDataSkill community on Discord. Ask questions, share progress, find study partners.</span>
               <a
                 href="https://discord.gg/learndataskills"
                 target="_blank"
