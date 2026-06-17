@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Play, RotateCcw, CheckCircle2, AlertCircle, Loader2, Code2 } from 'lucide-react'
+import { Play, RotateCcw, CheckCircle2, AlertCircle, Loader2, Code2, Sparkles } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
 import { getDataset } from '../data/datasets'
 import { trackEvent } from '../utils/analytics'
+import { analyzeCodeExecution } from '../services/aiService'
 import './CodePlayground.css'
 
 /* ──────────────────────────────────────────────────────────────
@@ -38,6 +40,8 @@ export default function CodePlayground({ language = 'sql', starter = '', dataset
   const [error, setError] = useState('')
   const [running, setRunning] = useState(false)
   const [dbReady, setDbReady] = useState(false)
+  const [aiFeedback, setAiFeedback] = useState('')
+  const [aiLoading, setAiLoading] = useState(false)
   const dbRef = useRef(null)
   const textareaRef = useRef(null)
 
@@ -69,6 +73,8 @@ export default function CodePlayground({ language = 'sql', starter = '', dataset
   const handleRun = () => {
     setError('')
     setResults(null)
+    setAiFeedback('')
+    
     trackEvent('quiz_attempted', {
       exercise_type: 'code_playground',
       language,
@@ -83,10 +89,15 @@ export default function CodePlayground({ language = 'sql', starter = '', dataset
       return
     }
     setRunning(true)
+    
+    let executionResultStr = ''
+    let isError = false
+    
     try {
       const rows = dbRef.current.exec(code)
       if (!rows || rows.length === 0) {
         setResults({ columns: [], values: [], message: 'Query ran successfully. No rows returned.' })
+        executionResultStr = 'Query ran successfully. No rows returned.'
         trackEvent('quiz_completed', {
           exercise_type: 'code_playground',
           language,
@@ -96,6 +107,7 @@ export default function CodePlayground({ language = 'sql', starter = '', dataset
       } else {
         const first = rows[0]
         setResults({ columns: first.columns, values: first.values, message: `${first.values.length} row${first.values.length === 1 ? '' : 's'} returned.` })
+        executionResultStr = `${first.values.length} row(s) returned. Columns: ${first.columns.join(', ')}. First row: ${JSON.stringify(first.values[0])}`
         trackEvent('quiz_completed', {
           exercise_type: 'code_playground',
           language,
@@ -105,16 +117,27 @@ export default function CodePlayground({ language = 'sql', starter = '', dataset
         })
       }
     } catch (e) {
-      setError(e.message || 'Query failed.')
+      isError = true
+      executionResultStr = e.message || 'Query failed.'
+      setError(executionResultStr)
     } finally {
       setRunning(false)
     }
+    
+    // Trigger AI analysis asynchronously
+    setAiLoading(true)
+    const schema = ds ? ds.schema : ''
+    analyzeCodeExecution(language, code, schema, executionResultStr, isError)
+      .then(feedback => setAiFeedback(feedback))
+      .catch(e => setAiFeedback("Failed to generate AI feedback."))
+      .finally(() => setAiLoading(false))
   }
 
   const handleReset = () => {
     setCode(starter)
     setResults(null)
     setError('')
+    setAiFeedback('')
   }
 
   // Tab key inserts spaces instead of jumping focus
@@ -213,6 +236,26 @@ export default function CodePlayground({ language = 'sql', starter = '', dataset
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {(aiLoading || aiFeedback) && (
+        <div className="pg-ai-panel">
+          <div className="pg-ai-head">
+            <Sparkles size={16} className="pg-ai-icon" />
+            <span>AI Mentor Feedback</span>
+          </div>
+          <div className="pg-ai-body">
+            {aiLoading ? (
+              <div className="pg-ai-loading">
+                <Loader2 size={16} className="spin" /> Analyzing your code...
+              </div>
+            ) : (
+              <div className="pg-ai-content chatbot-message-bubble">
+                <ReactMarkdown>{aiFeedback}</ReactMarkdown>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

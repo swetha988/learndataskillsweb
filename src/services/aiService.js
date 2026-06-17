@@ -55,3 +55,43 @@ export const sendMessageToAI = async (chatHistory, newMessage) => {
     throw new Error(`Failed to get response from AI Mentor. Detail: ${error.message || error}`);
   }
 };
+
+// Analyzes code execution results and provides feedback
+export const analyzeCodeExecution = async (language, code, datasetSchema, executionResult, isError) => {
+  if (!llm) {
+    const initialized = initializeAI();
+    if (!initialized) {
+      throw new Error("API Key missing. Please set VITE_GROQ_API_KEY in your .env.local file.");
+    }
+  }
+
+  const promptText = `
+You are an expert ${language.toUpperCase()} programming mentor.
+The user just ran the following ${language.toUpperCase()} code in a playground:
+\`\`\`${language}
+${code}
+\`\`\`
+
+${datasetSchema ? `Here is the database schema they are querying against:
+\`\`\`sql
+${datasetSchema}
+\`\`\`
+` : ''}
+
+Here is the result of their execution:
+${isError ? 'ERROR ENCOUNTERED:' : 'SUCCESSFUL EXECUTION:'}
+${executionResult}
+
+Your goal:
+If there was an error, explain what the error means in simple terms and provide a clear, actionable hint to fix it. Do NOT just give them the exact correct code immediately; guide them to it. Keep your explanation concise but informative (2-3 sentences).
+If the execution was successful, briefly explain *why* it worked and commend them. Keep it concise (2-3 sentences). Use markdown for formatting.
+  `.trim();
+
+  try {
+    const response = await llm.invoke([new HumanMessage(promptText)]);
+    return response.content;
+  } catch (error) {
+    console.error("Error communicating with Groq API:", error);
+    throw new Error(`Failed to analyze code. Detail: ${error.message || error}`);
+  }
+};
