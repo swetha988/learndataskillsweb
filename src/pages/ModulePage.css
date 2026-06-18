@@ -251,6 +251,13 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.mp-lab-icon {
+  flex-shrink: 0;
+  color: var(--orange, #EA580C);
 }
 .mp-module-link.is-current .mp-mod-title {
   font-weight: 600;
@@ -382,6 +389,13 @@
   letter-spacing: -1.2px;
   color: var(--navy);
   margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mp-lab-icon-title {
+  flex-shrink: 0;
+  color: var(--orange, #EA580C);
 }
 
 .mp-meta {

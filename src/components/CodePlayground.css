@@ -158,6 +158,18 @@
   border-bottom: 1px solid #BBF7D0;
 }
 
+.pg-text-output {
+  margin: 0;
+  padding: 14px 18px;
+  background: #0a0f1e;
+  color: #E2E8F0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .pg-table-wrap {
   overflow-x: auto;
   background: white;

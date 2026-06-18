@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useLocation, useParams, Link, useNavigate } from 'react-router-dom'
-import { ChevronRight, ChevronLeft, BookOpen, Clock, Menu, X, CheckCircle2, Lightbulb, AlertTriangle, ArrowLeft, Home, Layers } from 'lucide-react'
+import { ChevronRight, ChevronLeft, BookOpen, Clock, Menu, X, CheckCircle2, Lightbulb, AlertTriangle, ArrowLeft, Home, Layers, FlaskConical } from 'lucide-react'
 import { findCourse } from '../data/courses'
 import { getModuleList } from '../data/moduleContent'
 import { CourseIcon } from '../components/CourseIcons'
@@ -210,7 +210,11 @@ export default function ModulePage() {
                         onClick={() => { navTo(i); setSidebarOpen(false) }}
                       >
                         <span className="mp-mod-num">
-                          {completed.has(m.id) ? <CheckCircle2 size={14} /> : String(i + 1).padStart(2, '0')}
+                          {completed.has(m.id)
+                            ? <CheckCircle2 size={14} />
+                            : m.isProject
+                              ? <FlaskConical size={14} title="Hands-on project" />
+                              : String(i + 1).padStart(2, '0')}
                         </span>
                         <span className="mp-mod-title">{m.title}</span>
                         <span className="mp-mod-time">{m.duration}</span>
@@ -274,7 +278,10 @@ export default function ModulePage() {
                 <BookOpen size={12} />
                 Module {idx + 1} of {modules.length}
               </span>
-              <h1 className="mp-title">{module.title}</h1>
+              <h1 className="mp-title">
+                {module.isProject && <FlaskConical size={22} className="mp-lab-icon-title" title="Hands-on project" />}
+                {module.title}
+              </h1>
               <div className="mp-meta">
                 <span><Clock size={12} /> {module.duration}</span>
                 <span style={{ color: levelInfo.color }}>● {levelInfo.label} track</span>

@@ -290,6 +290,295 @@ const QUIZ_BANK = {
     ]
   },
 
+  'py-b-2': {
+    title: 'Check your understanding: Numbers, strings, and operations',
+    intro: 'Test your knowledge of Python arithmetic, strings, and type conversion.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What does 7 // 2 return in Python?',
+        options: ['3.5', '3', '1', 'An error'],
+        answerIndex: 1,
+        explanation: 'The double slash (//) is floor division — it divides and throws away the decimal part, leaving just the whole number 3.'
+      },
+      {
+        id: 'q2',
+        prompt: 'Why does "Age: " + age raise a TypeError if age is the number 28?',
+        options: ['Python requires you to convert the number to text first using str() or an f-string', 'Because age is too large a number', 'Because the string has a space in it', 'Because + cannot be used twice in one line'],
+        answerIndex: 0,
+        explanation: 'Python will not silently combine text and numbers with +. You need str(age) or an f-string to join them safely.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What does "  Priya  ".strip() return?',
+        options: ['"  Priya  "', '"Priya"', '"PRIYA"', '"priya"'],
+        answerIndex: 1,
+        explanation: '.strip() removes leading and trailing whitespace only, leaving "Priya" with no surrounding spaces.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What is the % (modulo) operator typically used for?',
+        options: ['Rounding a number', 'Finding the remainder after division — for example, checking if a number is even or odd', 'Converting a string to an integer', 'Finding a square root'],
+        answerIndex: 1,
+        explanation: 'x % 2 gives 0 for even numbers and 1 for odd numbers, since it returns whatever is left over after dividing by 2.'
+      },
+      {
+        id: 'q5',
+        prompt: 'If user_input = "25" (a string), what do you need before you can compute user_input + 5?',
+        options: ['Nothing, it works as written', 'Convert user_input to an integer first using int()', 'Convert 5 to a string first', 'This is impossible in Python'],
+        answerIndex: 1,
+        explanation: 'Text read from user input, files, or forms is always a string. int(user_input) converts it to a number you can do maths with.'
+      }
+    ]
+  },
+  'py-b-3': {
+    title: 'Check your understanding: if, elif, else',
+    intro: 'Test your knowledge of conditions and decision-making in Python.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'Which symbol checks if two values are equal (rather than assigning a value)?',
+        options: ['=', '==', '===', '~='],
+        answerIndex: 1,
+        explanation: 'A single = assigns a value to a variable. A double == compares two values and returns True or False.'
+      },
+      {
+        id: 'q2',
+        prompt: 'In an if/elif/else chain, what happens once Python finds the first condition that is True?',
+        options: ['It keeps checking all the remaining elif conditions too', 'It runs that block only, and skips every remaining elif/else below it', 'It throws an error', 'It runs the else block afterwards as well'],
+        answerIndex: 1,
+        explanation: 'Python stops at the first True condition, runs its block, and skips the rest of the chain entirely.'
+      },
+      {
+        id: 'q3',
+        prompt: 'Why must the code inside an if block be indented?',
+        options: ['Indentation is just a style preference and has no effect', 'Indentation is how Python knows which lines belong inside the if block', 'Indentation makes the code run faster', 'Indentation is only required inside loops, not if statements'],
+        answerIndex: 1,
+        explanation: 'Unlike many languages that use curly braces, Python uses indentation itself to define which lines are part of a block.'
+      },
+      {
+        id: 'q4',
+        prompt: 'Which of the following values is "falsy" in Python (acts like False in an if statement)?',
+        options: ['"hello"', '1', '[] (an empty list)', '42'],
+        answerIndex: 2,
+        explanation: 'Empty collections like [], "", and the number 0 are all falsy. Non-empty values like "hello", 1, and 42 are truthy.'
+      },
+      {
+        id: 'q5',
+        prompt: 'A rule says "free delivery if Prime member OR order over 500." If is_prime_member is False and order_total is 300, what happens?',
+        options: ['Free delivery, since OR is lenient', 'No free delivery, because neither condition is True', 'An error, because OR needs both to be true', 'Free delivery, but only if AND is used instead'],
+        answerIndex: 1,
+        explanation: 'OR requires at least one condition to be True. Here, is_prime_member is False and order_total (300) is not over 500, so both fail and the OR is False.'
+      }
+    ]
+  },
+  'py-b-4': {
+    title: 'Check your understanding: Loops',
+    intro: 'Test your knowledge of for loops, while loops, and break/continue.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What sequence of numbers does range(1, 5) produce?',
+        options: ['[1, 2, 3, 4, 5]', '[1, 2, 3, 4]', '[0, 1, 2, 3, 4]', '[1, 5]'],
+        answerIndex: 1,
+        explanation: 'range(1, 5) starts at 1 and stops before 5, producing 1, 2, 3, 4.'
+      },
+      {
+        id: 'q2',
+        prompt: 'When should you typically use a for loop instead of a while loop?',
+        options: ['When you are looping over a known sequence, like every item in a list', 'They are completely interchangeable in every situation', 'While loops cannot use break, so for loops are always safer', 'For loops only work with numbers, never with lists'],
+        answerIndex: 0,
+        explanation: 'for loops shine when you know what you are iterating over (a list, a range). while loops shine when you are repeating "until a condition changes," with an unknown number of repetitions.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What typically causes an "infinite loop" in a while statement?',
+        options: ['Using break inside the loop', "The loop's condition never becomes False because nothing inside the loop updates the variable being checked", 'Printing too many things inside the loop', 'Using range() instead of a list'],
+        answerIndex: 1,
+        explanation: 'If the variable controlling the while condition is never updated inside the loop, the condition stays True forever and the program never moves on.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What does continue do inside a loop?',
+        options: ['Stops the loop completely', 'Skips the rest of the current iteration and moves on to the next item', 'Pauses the loop for one second', 'Restarts the loop from the very beginning'],
+        answerIndex: 1,
+        explanation: 'continue jumps straight to the next item in the loop, skipping any remaining code for the current one. break, by contrast, exits the loop entirely.'
+      },
+      {
+        id: 'q5',
+        prompt: 'What is the value of total after this code runs?\ntotal = 0\nfor x in [10, 20, 30]:\n    total = total + x',
+        options: ['10', '30', '60', '90'],
+        answerIndex: 2,
+        explanation: 'total starts at 0, then becomes 10, then 30, then 60 — adding each list item in turn.'
+      }
+    ]
+  },
+  'py-b-5': {
+    title: 'Check your understanding: Lists and dictionaries',
+    intro: 'Test your knowledge of Python\'s core data structures.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'In Python, what is the index of the first item in a list?',
+        options: ['1', '0', '-1', 'It depends on the list'],
+        answerIndex: 1,
+        explanation: 'Python lists (and strings) are zero-indexed — the first item is always at position 0.'
+      },
+      {
+        id: 'q2',
+        prompt: 'Which best describes a Python dictionary?',
+        options: ['An ordered collection accessed only by position, like a list', 'A collection of key-value pairs, accessed by their key name rather than position', 'A special kind of loop', 'A function that converts strings to numbers'],
+        answerIndex: 1,
+        explanation: 'Dictionaries store data as key-value pairs — you look up a value using its key (like "name"), not its position.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What does a list of dictionaries like [{"name": "Aditi", "city": "Mumbai"}, {"name": "Rohan", "city": "Delhi"}] conceptually represent?',
+        options: ['A single row of data', 'A table of rows, where each dictionary is one row and each key is a column — similar to a SQL table', 'A SQL query written in Python', 'A syntax error'],
+        answerIndex: 1,
+        explanation: 'This is exactly the structure pandas DataFrames are built from: each dictionary is a row, each shared key is a column.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What does the .append() method do to a list?',
+        options: ['Removes the last item', 'Sorts the list', 'Adds a new item to the end of the list', 'Converts the list into a dictionary'],
+        answerIndex: 2,
+        explanation: '.append() adds one new item to the end of an existing list, growing it by one element.'
+      },
+      {
+        id: 'q5',
+        prompt: 'Why are Python lists described as "mutable"?',
+        options: ['They cannot be changed after creation', 'Their contents can be changed — items added, removed, or reordered — after the list is created', 'They can only ever hold numbers', 'They automatically sort themselves whenever you read them'],
+        answerIndex: 1,
+        explanation: 'Mutable means changeable. Unlike strings, you can modify a list in place using methods like .append(), .remove(), and .sort().'
+      }
+    ]
+  },
+  'py-b-6': {
+    title: 'Check your understanding: Functions',
+    intro: 'Test your knowledge of defining and using Python functions.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'Which keyword starts a function definition in Python?',
+        options: ['function', 'def', 'func', 'define'],
+        answerIndex: 1,
+        explanation: 'Python function definitions always start with the def keyword, followed by the function name and parentheses.'
+      },
+      {
+        id: 'q2',
+        prompt: 'What is the key difference between print() and return inside a function?',
+        options: ['There is no real difference between them', 'print() displays a value on screen; return hands the value back so it can be stored or reused elsewhere in your code', 'return is only used for loops', 'print() can only be used outside of functions'],
+        answerIndex: 1,
+        explanation: 'print() is just for display. return is what lets a function\'s result actually be captured in a variable and used in further calculations.'
+      },
+      {
+        id: 'q3',
+        prompt: 'In def convert_to_inr(amount, exchange_rate=83):, what is exchange_rate=83?',
+        options: ['A syntax error', 'A default argument, used automatically if the caller does not supply their own value', 'A global variable shared by all functions', 'A required argument that must always be passed explicitly'],
+        answerIndex: 1,
+        explanation: 'Default arguments let a parameter fall back to a sensible value automatically, while still letting the caller override it if needed.'
+      },
+      {
+        id: 'q4',
+        prompt: 'Why are functions especially valuable in data cleaning tasks?',
+        options: ['They automatically connect Python to the internet', 'They let you write a cleanup rule once and apply it consistently to every row, instead of repeating the same logic over and over', 'They make code run on a different computer', 'They prevent every possible error from occurring'],
+        answerIndex: 1,
+        explanation: 'Wrapping a cleanup step (like clean_name) in a function means you write the logic once and reuse it reliably across an entire dataset.'
+      },
+      {
+        id: 'q5',
+        prompt: 'What is a sign that a function might be poorly designed?',
+        options: ['It has a clear, descriptive name', 'It does one specific thing', "It's hard to summarize in a few words because it's doing several unrelated things at once", 'It includes a return statement'],
+        answerIndex: 2,
+        explanation: 'Good functions do one job well. If you cannot describe what a function does in a short phrase, it is usually doing too much and should be split up.'
+      }
+    ]
+  },
+  'py-b-7': {
+    title: 'Check your understanding: Files',
+    intro: 'Test your knowledge of reading and writing files in Python.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What does the "with open(...) as file:" pattern guarantee?',
+        options: ['The file will always be deleted afterward', 'The file will be automatically closed once the block finishes, even if an error occurs partway through', 'The file becomes permanently read-only', 'The file is automatically uploaded to the cloud'],
+        answerIndex: 1,
+        explanation: 'The with statement handles closing the file for you, even if something goes wrong inside the block — you never have to remember to close it manually.'
+      },
+      {
+        id: 'q2',
+        prompt: 'What happens if you open an existing file in "w" (write) mode?',
+        options: ['New content is appended to the end of the existing content', 'Python throws an error because the file already exists', 'The existing content is erased before any new content is written', 'It asks for confirmation before doing anything'],
+        answerIndex: 2,
+        explanation: '"w" mode always starts from a blank file, erasing whatever was there before. Use "a" (append mode) if you want to keep the existing content.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What is a CSV file, and why is it so commonly used for data?',
+        options: ['A video file format', 'Comma-Separated Values — a plain text format where commas separate columns, supported by virtually every spreadsheet and database tool', 'A format that only Python can read', 'A compressed, unreadable binary format'],
+        answerIndex: 1,
+        explanation: 'CSV is just plain text with commas marking column boundaries, which is exactly why it travels so easily between Excel, databases, and Python.'
+      },
+      {
+        id: 'q4',
+        prompt: 'When reading a CSV file with csv.DictReader, how is each row represented?',
+        options: ['As a single long string', 'As a list of numbers', 'As a dictionary, using the column headers from the first row as keys', 'As a separate file for every row'],
+        answerIndex: 2,
+        explanation: 'DictReader uses the header row to build a dictionary for each row, so you can access values by column name, like row["total"].'
+      },
+      {
+        id: 'q5',
+        prompt: 'Why might you need float(row["total"]) when working with data read from a CSV file?',
+        options: ['Because CSV files corrupt all numeric data', 'Because every value read from a CSV file arrives as text (a string), even if it looks like a number', 'Because float() deletes the decimal point', 'Because CSV files cannot store numbers at all'],
+        answerIndex: 1,
+        explanation: 'Just like with user input, every value coming out of a CSV reader is a string by default. You must convert it with int() or float() before doing maths on it.'
+      }
+    ]
+  },
+
+  'py-b-8': {
+    title: 'Check your understanding: Errors and extra data types',
+    intro: 'Test your knowledge of try/except, input(), tuples, sets, None, and unpacking.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What type of value does input() always return, even if the user types a number?',
+        options: ['An integer', 'A float', 'A string (text)', 'A boolean'],
+        answerIndex: 2,
+        explanation: 'Just like reading from a file, input() always hands back text. You need int() or float() before you can do maths with it.'
+      },
+      {
+        id: 'q2',
+        prompt: 'What is the main benefit of wrapping risky code in a try/except block?',
+        options: ['It makes the code run faster', 'It prevents the program from crashing when an expected kind of error occurs, letting you handle it gracefully instead', 'It automatically fixes any bugs in your code', 'It is required before you can use any function in Python'],
+        answerIndex: 1,
+        explanation: 'try/except lets your program catch a specific problem (like bad input) and respond sensibly, rather than crashing and stopping everything that follows.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What is the key difference between a list and a tuple?',
+        options: ['Tuples can only store numbers', 'A tuple, once created, cannot be changed (immutable); a list can be modified after creation', 'Lists use round brackets, tuples use square brackets', 'There is no real difference between them'],
+        answerIndex: 1,
+        explanation: 'Tuples are immutable — once you create one, you cannot add, remove, or change its items. Lists remain fully editable after creation.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What does set(["Mumbai", "Delhi", "Mumbai", "Pune"]) return?',
+        options: ['["Mumbai", "Delhi", "Mumbai", "Pune"] unchanged', 'A set containing only the unique values: Mumbai, Delhi, and Pune', 'An error, because sets cannot hold text', 'A single combined string'],
+        answerIndex: 1,
+        explanation: 'Converting a list to a set automatically removes duplicate values, leaving only the distinct items — exactly what you want when counting unique entries.'
+      },
+      {
+        id: 'q5',
+        prompt: 'In x, y = (10, 20), what is happening?',
+        options: ['This causes a syntax error', 'Unpacking — the tuple (10, 20) is split so that x becomes 10 and y becomes 20 in one line', 'x and y both become the tuple (10, 20)', 'Only x receives a value; y stays empty'],
+        answerIndex: 1,
+        explanation: 'Unpacking lets you assign each item of a tuple (or list) to its own variable in a single line, instead of accessing items one by one with indexing.'
+      }
+    ]
+  },
+
   // Excel
   'ex-b-1': {
     title: 'Check your understanding: Excel Basics',
@@ -329,6 +618,254 @@ const QUIZ_BANK = {
         options: ['Ctrl + Arrow keys', 'Shift + Tab', 'Alt + Enter', 'Ctrl + E'],
         answerIndex: 0,
         explanation: 'Holding Ctrl (or Cmd) and pressing an arrow key skips empty cells and jumps straight to the end of a contiguous row or column of data.'
+      }
+    ]
+  },
+
+  'ex-b-2': {
+    title: 'Check your understanding: References and functions',
+    intro: 'Test your knowledge of relative vs absolute references and everyday Excel functions.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'You write =A2*0.18 in cell B2, then copy it down to B3. What does B3 now contain?',
+        options: ['=A2*0.18, exactly the same as B2', '=A3*0.18, because the reference shifted down with the formula', 'An error, because you cannot copy formulas', '=B2*0.18'],
+        answerIndex: 1,
+        explanation: 'By default, Excel uses relative references — when you copy a formula to a new row, it shifts the cell references to match, so A2 becomes A3.'
+      },
+      {
+        id: 'q2',
+        prompt: 'What does the dollar sign in $B$1 do inside a formula?',
+        options: ['It formats the cell as currency', 'It locks both the column and row, so the reference does not shift when copied elsewhere', 'It deletes the value in B1', 'It tells Excel to round the number'],
+        answerIndex: 1,
+        explanation: 'A dollar sign before the column letter and row number creates an absolute reference, freezing that exact cell so copies of the formula keep pointing to it.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What keyboard shortcut quickly toggles a cell reference between relative and absolute while editing a formula?',
+        options: ['Ctrl+Z', 'F2', 'F4', 'Ctrl+D'],
+        answerIndex: 2,
+        explanation: 'Pressing F4 while your cursor is on a cell reference cycles through A1, $A$1, A$1, and $A1, saving you from typing dollar signs manually.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What does the #REF! error usually mean?',
+        options: ['You divided a number by zero', 'Your formula refers to a cell that no longer exists, often because a row or column was deleted', 'You misspelled a function name', 'The column is too narrow to display the result'],
+        answerIndex: 1,
+        explanation: '#REF! appears when a formula\'s reference becomes invalid, most commonly after deleting a row, column, or cell that the formula depended on.'
+      },
+      {
+        id: 'q5',
+        prompt: 'A column has 40 rows but only 35 contain a number (5 are blank). What does =COUNT(A1:A40) return?',
+        options: ['40', '35', '5', 'An error'],
+        answerIndex: 1,
+        explanation: 'COUNT() only counts cells containing numbers, ignoring blank cells — so it returns 35, not the total row count.'
+      }
+    ]
+  },
+  'ex-b-3': {
+    title: 'Check your understanding: Formatting numbers, dates, and cells',
+    intro: 'Test your knowledge of formatting, dates, and conditional formatting.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'When you format a cell as currency, what actually changes about the value stored in it?',
+        options: ['The underlying number changes to match the new display', 'Nothing — only how the value is displayed changes, the stored number stays the same', 'The cell becomes locked and cannot be edited', 'The value is converted to text'],
+        answerIndex: 1,
+        explanation: 'Formatting only changes how a value is displayed (₹75,000.00 instead of 75000) — the actual number stored in the cell never changes.'
+      },
+      {
+        id: 'q2',
+        prompt: 'Why can you do maths like =A1+30 on a date in cell A1?',
+        options: ['Excel secretly converts the date to text first', 'Excel stores every date internally as a number (days since 1 January 1900), so adding 30 just adds 30 days', 'This only works if A1 contains a number, not a real date', 'It does not actually work in Excel'],
+        answerIndex: 1,
+        explanation: 'Dates are stored as serial numbers behind the scenes, which is exactly why date arithmetic like adding days or subtracting two dates works correctly.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What is the purpose of Conditional Formatting?',
+        options: ['It automatically corrects typos in your data', 'It automatically applies formatting (like a colour) to cells that match a rule you set, such as "greater than 50000"', 'It deletes cells that fail a condition', 'It sorts your data automatically'],
+        answerIndex: 1,
+        explanation: 'Conditional Formatting watches your data and automatically highlights cells matching a rule, so patterns are visible at a glance without manual scanning.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What does Freeze Panes do?',
+        options: ['It prevents anyone from editing the spreadsheet', 'It keeps a chosen row or column (like your header row) visible on screen while you scroll through the rest of the data', 'It saves the file automatically every few minutes', 'It converts formulas into fixed values'],
+        answerIndex: 1,
+        explanation: 'Freeze Panes locks specific rows or columns in place so you do not lose track of your headers while scrolling through a large table.'
+      },
+      {
+        id: 'q5',
+        prompt: 'A cell shows ##### instead of a number. What does this mean?',
+        options: ['The formula has an error', 'The column is too narrow to display the number — widening it will fix the display', 'The value is negative', 'The cell is protected from editing'],
+        answerIndex: 1,
+        explanation: '##### is not an error — it simply means the column is not wide enough to show the full number. Widening the column resolves it instantly.'
+      }
+    ]
+  },
+  'ex-b-4': {
+    title: 'Check your understanding: IF and basic logic',
+    intro: 'Test your knowledge of IF, nested IF, AND/OR, and COUNTIF/SUMIF.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What does =IF(B2>=40, "Pass", "Fail") return if B2 contains 35?',
+        options: ['"Pass"', '"Fail"', 'An error', 'Blank'],
+        answerIndex: 1,
+        explanation: '35 is not greater than or equal to 40, so the condition is False, and IF returns the "value_if_false" argument, which is "Fail".'
+      },
+      {
+        id: 'q2',
+        prompt: 'In a nested IF formula like =IF(B2>=90,"A",IF(B2>=75,"B","C")), what happens if B2 is 95?',
+        options: ['It returns "C", because Excel always checks the last condition first', 'It returns "A", because 95 satisfies the very first condition and Excel stops checking further', 'It returns both "A" and "B"', 'It throws an error'],
+        answerIndex: 1,
+        explanation: 'Excel evaluates conditions left to right and stops at the first one that is True. Since 95 >= 90 is True, it immediately returns "A".'
+      },
+      {
+        id: 'q3',
+        prompt: 'What is the difference between AND() and OR() inside an IF formula?',
+        options: ['There is no difference, they are interchangeable', 'AND() requires every condition to be true; OR() only requires at least one condition to be true', 'OR() is stricter than AND()', 'AND() is only used for text, OR() only for numbers'],
+        answerIndex: 1,
+        explanation: 'AND() returns True only if all conditions are true. OR() returns True if even one of the conditions is true, making it more lenient.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What does =SUMIF(D2:D50, "Mumbai", B2:B50) calculate?',
+        options: ['The total count of cells that contain "Mumbai"', 'The sum of every value in B2:B50, regardless of city', 'The sum of values in B2:B50, but only for the rows where D2:D50 equals "Mumbai"', 'The average sales for Mumbai'],
+        answerIndex: 2,
+        explanation: 'SUMIF adds values from one range (B2:B50) only for the rows where a matching condition is met in another range (D2:D50 equals "Mumbai").'
+      },
+      {
+        id: 'q5',
+        prompt: 'What does =COUNTIF(D2:D50, "Mumbai") return?',
+        options: ['The total sales for Mumbai', 'The number of rows in D2:D50 where the value equals "Mumbai"', 'The average of D2:D50', 'An error, because COUNTIF cannot be used with text'],
+        answerIndex: 1,
+        explanation: 'COUNTIF counts how many cells in a range meet a given condition — here, how many cells in D2:D50 say "Mumbai".'
+      }
+    ]
+  },
+  'ex-b-5': {
+    title: 'Check your understanding: Sorting, filtering, and charts',
+    intro: 'Test your knowledge of sorting, filtering, and choosing the right chart.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'Why should you select (or let Excel auto-detect) the entire table before sorting, rather than sorting just one column?',
+        options: ['Sorting only one column is actually faster and safer', 'Sorting a single column in isolation scrambles the data, because rows no longer stay matched together (a name could end up next to the wrong sales figure)', 'Excel does not allow sorting a single column at all', 'It has no effect either way'],
+        answerIndex: 1,
+        explanation: 'If you sort only one column, its values get rearranged independently of the rest of the table, breaking the connection between a row\'s name, city, and sales figure.'
+      },
+      {
+        id: 'q2',
+        prompt: 'What is the key difference between sorting and filtering?',
+        options: ['They are the same thing with different names', 'Sorting permanently rearranges rows; filtering temporarily hides rows that do not match a condition, without deleting or reordering anything', 'Filtering deletes data permanently; sorting does not', 'Sorting only works on numbers, filtering only works on text'],
+        answerIndex: 1,
+        explanation: 'Sorting changes the order of all rows. Filtering just hides rows that do not match your criteria — the hidden data is still there, and unhiding the filter shows it again.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What keyboard shortcut turns on AutoFilter for a table?',
+        options: ['Ctrl+Shift+L', 'Ctrl+F', 'Ctrl+Shift+F', 'Alt+A'],
+        answerIndex: 0,
+        explanation: 'Ctrl+Shift+L toggles AutoFilter on or off, adding dropdown arrows to your column headers for quick filtering.'
+      },
+      {
+        id: 'q4',
+        prompt: 'Which chart type is generally best for comparing a value across several categories, like sales by city?',
+        options: ['Pie chart', 'Bar/Column chart', 'Line chart', 'None of these work for comparisons'],
+        answerIndex: 1,
+        explanation: 'Bar and column charts are the easiest chart type for accurately comparing values across distinct categories, which is why they are the most commonly used chart in business.'
+      },
+      {
+        id: 'q5',
+        prompt: 'Why are pie charts recommended only for a small number of categories (around 5-6 or fewer)?',
+        options: ['Excel technically cannot draw more than 6 slices', 'Beyond a handful of slices, the differences between slice sizes become hard to distinguish visually, making the chart confusing rather than clarifying', 'Pie charts only work with whole numbers', 'Pie charts cannot include percentages'],
+        answerIndex: 1,
+        explanation: 'Once a pie chart has many thin slices, it becomes very difficult for the eye to compare their relative sizes accurately — a bar chart usually communicates the same data more clearly.'
+      }
+    ]
+  },
+
+  'ex-b-6': {
+    title: 'Check your understanding: Workbooks and worksheets',
+    intro: 'Test your knowledge of worksheets, file formats, AutoFill, and Paste Special.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What is the difference between a workbook and a worksheet?',
+        options: ['They are exactly the same thing', 'A workbook is the entire file; a worksheet is one tab inside that file. A workbook can contain many worksheets', 'A worksheet is the entire file; a workbook is one tab inside it', 'A workbook only contains formulas, a worksheet only contains text'],
+        answerIndex: 1,
+        explanation: 'Think of the workbook as a binder and each worksheet as a page inside it — one file, multiple tabs.'
+      },
+      {
+        id: 'q2',
+        prompt: 'What does the formula =Sales!B10 do?',
+        options: ['It causes an error because formulas cannot reference other sheets', 'It pulls the value from cell B10 on a worksheet named "Sales"', 'It sells the contents of cell B10', 'It renames the current sheet to "Sales"'],
+        answerIndex: 1,
+        explanation: 'SheetName!CellReference lets a formula on one worksheet pull a value from a specific cell on a different worksheet in the same workbook.'
+      },
+      {
+        id: 'q3',
+        prompt: 'Why might a .csv file lose your colours, formulas, and multiple sheets when you open it again?',
+        options: ['CSV is a corrupted file format', '.csv only stores plain data — it has no concept of formulas, formatting, or multiple sheets, by design', 'This only happens on Mac computers', 'It does not actually lose anything'],
+        answerIndex: 1,
+        explanation: 'CSV (Comma-Separated Values) is intentionally just plain text with commas — that simplicity is exactly why it works across so many different tools, but it cannot carry Excel-specific features.'
+      },
+      {
+        id: 'q4',
+        prompt: 'If you type "Monday" in a cell and drag the fill handle across 4 more cells, what happens?',
+        options: ['It just repeats "Monday" five times', 'AutoFill recognises the weekday pattern and continues with Tuesday, Wednesday, Thursday, Friday', 'It causes an error', 'It deletes the word "Monday"'],
+        answerIndex: 1,
+        explanation: 'AutoFill recognises common patterns like weekdays, months, and number sequences, and continues them automatically when you drag the fill handle.'
+      },
+      {
+        id: 'q5',
+        prompt: 'What does Paste Special → Values do, that a normal paste does not?',
+        options: ['It pastes the formula along with its formatting', 'It pastes only the calculated result of a formula, not the formula itself, "freezing" the number in place', 'It deletes the original cell after copying', 'It is identical to a normal Ctrl+V paste'],
+        answerIndex: 1,
+        explanation: 'Paste Special → Values strips away the underlying formula and leaves just the final number, so the value will not change even if the original source cells are edited later.'
+      }
+    ]
+  },
+  'ex-b-7': {
+    title: 'Check your understanding: Cleaning text and validation',
+    intro: 'Test your knowledge of text functions and Data Validation.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What does =A2&" "&B2 do if A2 is "Aditi" and B2 is "Rao"?',
+        options: ['"AditiRao" with no space', '"Aditi Rao" with a space in between', 'An error, because & cannot join text', '"A2 B2"'],
+        answerIndex: 1,
+        explanation: 'The & symbol joins text together. The " " in the middle explicitly adds a space between the two joined values.'
+      },
+      {
+        id: 'q2',
+        prompt: 'Given a phone number "9876543210" in cell A1, what does =RIGHT(A1, 4) return?',
+        options: ['"9876"', '"3210"', '"9876543210"', 'An error'],
+        answerIndex: 1,
+        explanation: 'RIGHT(text, n) grabs the last n characters from the right-hand side of the text — here, the last 4 digits.'
+      },
+      {
+        id: 'q3',
+        prompt: 'Why would you use the TRIM function on a column of city names?',
+        options: ['To convert the names to uppercase', 'To remove extra leading, trailing, or repeated spaces that can make two cells look different even when they should match', 'To sort the column alphabetically', 'To translate the names into another language'],
+        answerIndex: 1,
+        explanation: 'Invisible extra spaces (often from pasted data) can make "Mumbai" and " Mumbai " behave as two different values in formulas like COUNTIF — TRIM removes that mismatch.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What does =PROPER("priya sharma") return?',
+        options: ['"PRIYA SHARMA"', '"priya sharma" unchanged', '"Priya Sharma" — the first letter of each word capitalised', '"Priya sharma"'],
+        answerIndex: 2,
+        explanation: 'PROPER capitalises the first letter of every word, which is useful for cleaning up inconsistently-cased name or text columns.'
+      },
+      {
+        id: 'q5',
+        prompt: 'What is the main benefit of adding a Data Validation dropdown list to a column like "Status"?',
+        options: ['It makes the spreadsheet load faster', 'It restricts what can be typed into that cell, preventing typos like "actve" instead of "Active" before they ever happen', 'It automatically sorts the column', 'It hides the column from other users'],
+        answerIndex: 1,
+        explanation: 'Data Validation prevents bad data at the source by only allowing pre-approved values, which is more reliable than cleaning up typos after the fact.'
       }
     ]
   },

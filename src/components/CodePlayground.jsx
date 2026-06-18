@@ -8,9 +8,10 @@ import './CodePlayground.css'
 
 /* ──────────────────────────────────────────────────────────────
    CODE PLAYGROUND
-   In-browser SQL execution via sql.js (WebAssembly).
-   For Python and other languages, falls back to a "code preview"
-   mode — full execution support comes in Phase 2.
+   In-browser SQL execution via sql.js (WebAssembly) and in-browser
+   Python execution via Pyodide (WebAssembly CPython). Both engines
+   load lazily from a CDN, only when a playground of that language
+   actually mounts, and are cached for the rest of the session.
    ────────────────────────────────────────────────────────────── */
 
 let sqlPromise = null
@@ -34,6 +35,49 @@ const loadSqlJs = () => {
   return sqlPromise
 }
 
+const PYODIDE_VERSION = '0.26.4'
+let pyodidePromise = null
+const loadPyodideEngine = () => {
+  if (pyodidePromise) return pyodidePromise
+  pyodidePromise = new Promise((resolve, reject) => {
+    if (window.loadPyodide) {
+      window.loadPyodide({ indexURL: `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/` })
+        .then(resolve).catch(reject)
+      return
+    }
+    const s = document.createElement('script')
+    s.src = `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/pyodide.js`
+    s.onload = () => {
+      window.loadPyodide({ indexURL: `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/` })
+        .then(resolve).catch(reject)
+    }
+    s.onerror = reject
+    document.head.appendChild(s)
+  })
+  return pyodidePromise
+}
+
+/* Runs user code with stdout captured, so print() output shows up
+   in the results panel instead of disappearing into the console. */
+const runPythonCaptured = (pyodide, code) => {
+  pyodide.globals.set('_user_code', code)
+  pyodide.runPython(`
+import sys, io
+_stdout = sys.stdout
+sys.stdout = io.StringIO()
+_error = None
+try:
+    exec(_user_code, {})
+except Exception as e:
+    _error = f"{type(e).__name__}: {e}"
+_output = sys.stdout.getvalue()
+sys.stdout = _stdout
+`)
+  const output = pyodide.globals.get('_output')
+  const error = pyodide.globals.get('_error')
+  return { output, error }
+}
+
 export default function CodePlayground({ language = 'sql', starter = '', dataset = null }) {
   const [code, setCode] = useState(starter)
   const [results, setResults] = useState(null)
@@ -43,31 +87,47 @@ export default function CodePlayground({ language = 'sql', starter = '', dataset
   const [aiFeedback, setAiFeedback] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
   const dbRef = useRef(null)
+  const pyodideRef = useRef(null)
   const textareaRef = useRef(null)
 
   // Bootstrap the in-memory SQLite DB
   useEffect(() => {
-    if (language !== 'sql' || !dataset) {
-      setDbReady(true)
-      return
+    if (language === 'sql' && dataset) {
+      let cancelled = false
+      loadSqlJs()
+        .then(SQL => {
+          if (cancelled) return
+          const db = new SQL.Database()
+          const ds = getDataset(dataset)
+          if (ds) {
+            try { db.exec(ds.schema) } catch (e) { console.error('Schema error', e) }
+          }
+          dbRef.current = db
+          setDbReady(true)
+        })
+        .catch(e => {
+          console.error(e)
+          setError('Failed to load the SQL engine. Check your internet connection.')
+        })
+      return () => { cancelled = true }
     }
-    let cancelled = false
-    loadSqlJs()
-      .then(SQL => {
-        if (cancelled) return
-        const db = new SQL.Database()
-        const ds = getDataset(dataset)
-        if (ds) {
-          try { db.exec(ds.schema) } catch (e) { console.error('Schema error', e) }
-        }
-        dbRef.current = db
-        setDbReady(true)
-      })
-      .catch(e => {
-        console.error(e)
-        setError('Failed to load the SQL engine. Check your internet connection.')
-      })
-    return () => { cancelled = true }
+
+    if (language === 'python') {
+      let cancelled = false
+      loadPyodideEngine()
+        .then(pyodide => {
+          if (cancelled) return
+          pyodideRef.current = pyodide
+          setDbReady(true)
+        })
+        .catch(e => {
+          console.error(e)
+          setError('Failed to load the Python engine. Check your internet connection.')
+        })
+      return () => { cancelled = true }
+    }
+
+    setDbReady(true)
   }, [language, dataset])
 
   const handleRun = () => {
@@ -80,50 +140,80 @@ export default function CodePlayground({ language = 'sql', starter = '', dataset
       language,
       dataset: dataset || null,
     })
-    if (language !== 'sql') {
-      setError(`Live execution for ${language} is coming in Phase 2. For now, copy the code into a local ${language} environment.`)
+    if (language !== 'sql' && language !== 'python') {
+      setError(`Live execution for ${language} is coming soon. For now, copy the code into a local ${language} environment.`)
       return
     }
-    if (!dbRef.current) {
+    if (language === 'sql' && !dbRef.current) {
       setError('Database not ready yet — wait a moment and try again.')
       return
     }
+    if (language === 'python' && !pyodideRef.current) {
+      setError('Python engine not ready yet — wait a moment and try again.')
+      return
+    }
     setRunning(true)
-    
+
     let executionResultStr = ''
     let isError = false
-    
-    try {
-      const rows = dbRef.current.exec(code)
-      if (!rows || rows.length === 0) {
-        setResults({ columns: [], values: [], message: 'Query ran successfully. No rows returned.' })
-        executionResultStr = 'Query ran successfully. No rows returned.'
-        trackEvent('quiz_completed', {
-          exercise_type: 'code_playground',
-          language,
-          dataset: dataset || null,
-          result: 'no_rows_returned',
-        })
-      } else {
-        const first = rows[0]
-        setResults({ columns: first.columns, values: first.values, message: `${first.values.length} row${first.values.length === 1 ? '' : 's'} returned.` })
-        executionResultStr = `${first.values.length} row(s) returned. Columns: ${first.columns.join(', ')}. First row: ${JSON.stringify(first.values[0])}`
-        trackEvent('quiz_completed', {
-          exercise_type: 'code_playground',
-          language,
-          dataset: dataset || null,
-          result: 'success',
-          rows_returned: first.values.length,
-        })
+
+    if (language === 'sql') {
+      try {
+        const rows = dbRef.current.exec(code)
+        if (!rows || rows.length === 0) {
+          setResults({ columns: [], values: [], message: 'Query ran successfully. No rows returned.' })
+          executionResultStr = 'Query ran successfully. No rows returned.'
+          trackEvent('quiz_completed', {
+            exercise_type: 'code_playground',
+            language,
+            dataset: dataset || null,
+            result: 'no_rows_returned',
+          })
+        } else {
+          const first = rows[0]
+          setResults({ columns: first.columns, values: first.values, message: `${first.values.length} row${first.values.length === 1 ? '' : 's'} returned.` })
+          executionResultStr = `${first.values.length} row(s) returned. Columns: ${first.columns.join(', ')}. First row: ${JSON.stringify(first.values[0])}`
+          trackEvent('quiz_completed', {
+            exercise_type: 'code_playground',
+            language,
+            dataset: dataset || null,
+            result: 'success',
+            rows_returned: first.values.length,
+          })
+        }
+      } catch (e) {
+        isError = true
+        executionResultStr = e.message || 'Query failed.'
+        setError(executionResultStr)
+      } finally {
+        setRunning(false)
       }
-    } catch (e) {
-      isError = true
-      executionResultStr = e.message || 'Query failed.'
-      setError(executionResultStr)
-    } finally {
-      setRunning(false)
+    } else if (language === 'python') {
+      try {
+        const { output, error: pyError } = runPythonCaptured(pyodideRef.current, code)
+        if (pyError) {
+          isError = true
+          executionResultStr = pyError
+          setError(pyError)
+        } else {
+          setResults({ text: output, columns: [], values: [], message: output ? 'Ran successfully.' : 'Ran successfully. No output printed.' })
+          executionResultStr = output ? `Output:\n${output}` : 'Ran successfully. No output printed (did you forget a print() statement?).'
+          trackEvent('quiz_completed', {
+            exercise_type: 'code_playground',
+            language,
+            dataset: dataset || null,
+            result: 'success',
+          })
+        }
+      } catch (e) {
+        isError = true
+        executionResultStr = e.message || 'Code failed to run.'
+        setError(executionResultStr)
+      } finally {
+        setRunning(false)
+      }
     }
-    
+
     // Trigger AI analysis asynchronously
     setAiLoading(true)
     const schema = ds ? ds.schema : ''
@@ -199,6 +289,13 @@ export default function CodePlayground({ language = 'sql', starter = '', dataset
         </div>
       )}
 
+      {!dbReady && language === 'python' && (
+        <div className="pg-output pg-output-loading">
+          <Loader2 size={14} className="spin" />
+          <span>Loading Python engine… (first run can take a few seconds, then it's instant)</span>
+        </div>
+      )}
+
       {error && (
         <div className="pg-output pg-output-error">
           <AlertCircle size={14} />
@@ -215,6 +312,9 @@ export default function CodePlayground({ language = 'sql', starter = '', dataset
             <CheckCircle2 size={14} />
             <span>{results.message}</span>
           </div>
+          {results.text !== undefined && (
+            <pre className="pg-text-output">{results.text || '(no output — try adding a print() statement)'}</pre>
+          )}
           {results.columns.length > 0 && (
             <div className="pg-table-wrap">
               <table className="pg-table">

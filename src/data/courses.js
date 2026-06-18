@@ -24,11 +24,11 @@ export const COURSE_CATALOG = [
     careerPaths: ['Data Analyst', 'BI Developer', 'Junior Data Engineer'],
     datasets: ['NYC Taxi (US)', 'UK Retail (Europe)', 'Zomato Orders (India)', 'Spotify Streams (Global)'],
     tracks: {
-      beginner: { modules: 6, hours: 4, label: 'Get to your first query in under an hour' },
+      beginner: { modules: 10, hours: 6, label: 'Your first query, 3 mini projects, 2 capstones' },
       intermediate: { modules: 6, hours: 5, label: 'JOINs, aggregations, real reporting' },
       advanced: { modules: 6, hours: 6, label: 'Window functions, CTEs, optimisation' }
     },
-    totalModules: 18,
+    totalModules: 22,
   },
   {
     id: 'python',
@@ -49,11 +49,11 @@ export const COURSE_CATALOG = [
     careerPaths: ['Data Scientist', 'ML Engineer', 'Data Analyst'],
     datasets: ['Titanic (Global)', 'IPL Matches (India)', 'World Bank Indicators', 'Kaggle Housing'],
     tracks: {
-      beginner: { modules: 7, hours: 5, label: 'From print() to your first script' },
+      beginner: { modules: 14, hours: 8, label: 'From print() to 5 mini projects + 2 capstones' },
       intermediate: { modules: 7, hours: 6, label: 'pandas, NumPy, matplotlib' },
       advanced: { modules: 7, hours: 8, label: 'APIs, web scraping, automation' }
     },
-    totalModules: 21,
+    totalModules: 28,
   },
   {
     id: 'excel',
@@ -74,11 +74,11 @@ export const COURSE_CATALOG = [
     careerPaths: ['Business Analyst', 'Financial Analyst', 'Operations Analyst'],
     datasets: ['Superstore Sales (US)', 'AdventureWorks', 'European Retailers'],
     tracks: {
-      beginner: { modules: 5, hours: 3, label: 'Formulas, references, basic charts' },
+      beginner: { modules: 12, hours: 6, label: 'Formulas, 4 mini projects, 2 capstone workbooks' },
       intermediate: { modules: 5, hours: 4, label: 'Pivot Tables, VLOOKUP, conditional formatting' },
       advanced: { modules: 5, hours: 5, label: 'Power Query, Power Pivot, DAX in Excel' }
     },
-    totalModules: 15,
+    totalModules: 22,
   },
   {
     id: 'powerbi',
