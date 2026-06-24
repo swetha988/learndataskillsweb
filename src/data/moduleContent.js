@@ -531,6 +531,1774 @@ ORDER BY month;` },
 ]
 
 /* ════════════════════════════════════════════════════════════════
+   SQL — INTERMEDIATE TRACK (12 modules + 3 mini projects + capstone)
+   Dataset: QuickBite, a food delivery platform (7 related tables)
+   ════════════════════════════════════════════════════════════════ */
+const SQL_INTERMEDIATE = [
+  {
+    id: 'sql-i-1',
+    title: 'Handling missing data: NULLs, COALESCE, and NULLIF',
+    duration: '30 min',
+    sections: [
+      { type: 'heading', content: 'A new dataset: QuickBite' },
+      { type: 'paragraph', content: 'Everything in this track uses one dataset: QuickBite, a fictional food delivery platform. It has 7 connected tables instead of 2 — customers, restaurants, menu_items, riders, orders, order_items, and reviews. It is intentionally messier and more realistic than the beginner course\'s Shopverse dataset: orders go through a real lifecycle (placed, then delivered or cancelled), riders are not always assigned yet, and not every order gets a review. That messiness is exactly what makes it the right dataset for this track.' },
+
+      { type: 'heading', content: 'When a value simply isn\'t there' },
+      { type: 'paragraph', content: 'In the orders table, rider_id is empty until a rider actually accepts the delivery. delivered_at is empty if the order was cancelled or is still on its way. In restaurants, rating is empty for any restaurant that has not received a single review yet. SQL represents all of these as NULL — a special marker meaning "we genuinely do not have this information," not zero, not an empty string, not "unknown but probably small."' },
+
+      { type: 'heading', content: 'Why NULL is not the same as zero or an empty string' },
+      { type: 'paragraph', content: 'A restaurant with a rating of 0 would mean "customers rated this terrible." A restaurant with a rating of NULL means "no one has rated this at all yet." Those are completely different real-world situations, and treating them as the same number would quietly produce wrong reports — a brand-new restaurant would look like the worst-rated one, when really it just has not been reviewed yet.' },
+
+      { type: 'heading', content: 'Finding NULLs with IS NULL and IS NOT NULL' },
+      { type: 'paragraph', content: 'You cannot use = to check for NULL (more on exactly why in a moment). Instead, SQL gives you two dedicated keywords.' },
+      { type: 'code', language: 'sql', content: `-- Orders that have not been assigned a rider yet
+SELECT * FROM orders WHERE rider_id IS NULL;
+
+-- Restaurants that have at least one rating on record
+SELECT * FROM restaurants WHERE rating IS NOT NULL;` },
+
+      { type: 'heading', content: 'A common mistake: why = NULL never works' },
+      { type: 'paragraph', content: 'NULL means "unknown," and SQL takes that seriously: asking "is this unknown value equal to NULL?" is itself an unknown question, so SQL never answers yes — even when the value actually is NULL. WHERE rider_id = NULL silently returns zero rows, every time, with no error to warn you.' },
+      { type: 'code', language: 'sql', content: `-- This returns NOTHING, even though plenty of orders have no rider yet
+SELECT * FROM orders WHERE rider_id = NULL;
+
+-- This is the correct way to ask the same question
+SELECT * FROM orders WHERE rider_id IS NULL;` },
+      { type: 'callout', kind: 'warning', content: 'This single mistake — writing = NULL instead of IS NULL — is one of the most common silent bugs in real SQL code, because it does not throw an error. It just quietly returns the wrong (often empty) result, and you may not notice unless you already expected some rows back.' },
+
+      { type: 'heading', content: 'Filling in gaps with COALESCE' },
+      { type: 'paragraph', content: 'COALESCE takes a list of values and returns the first one that is not NULL. It is the standard way to give a NULL a friendlier fallback value for reporting.' },
+      { type: 'code', language: 'sql', content: `-- Show 0 instead of a blank rating for restaurants with no reviews yet
+SELECT name, COALESCE(rating, 0) AS rating_or_zero
+FROM restaurants;
+
+-- Show a friendly message instead of a blank comment for unreviewed orders
+SELECT o.order_id, COALESCE(r.comment, 'No comment left') AS comment
+FROM orders AS o
+LEFT JOIN reviews AS r ON o.order_id = r.order_id;` },
+      { type: 'paragraph', content: 'Notice the second example uses a LEFT JOIN from your beginner course — orders with no matching review row get NULL for r.comment, and COALESCE turns that NULL into a readable message instead of a blank.' },
+
+      { type: 'heading', content: 'Turning a value into NULL on purpose with NULLIF' },
+      { type: 'paragraph', content: 'Sometimes the problem runs the other way: a placeholder number like 0 is actually hiding a missing value, and you want SQL to treat it as NULL so it does not quietly distort a calculation like AVG.' },
+      { type: 'code', language: 'sql', content: `-- If a total_amount was accidentally recorded as 0, treat it as missing
+-- instead of letting it drag down the average order value
+SELECT AVG(NULLIF(total_amount, 0)) AS avg_order_value
+FROM orders;` },
+      { type: 'paragraph', content: 'NULLIF(total_amount, 0) compares the two values: if they match, it returns NULL; otherwise it returns the original value unchanged. AVG() then ignores NULLs automatically, so the fake zero never gets counted.' },
+
+      { type: 'heading', content: 'Real-life feel: a delivery that hasn\'t happened yet' },
+      { type: 'paragraph', content: 'Think about an order the moment it is placed: there is no rider yet, no delivery time yet, and no review yet — three NULLs, all completely normal, all describing the same real, in-progress order. A good analyst does not see NULL as broken data; they read it as "this part of the story has not happened yet."' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Explore the new dataset. Find every order that is still missing a rider, then try rewriting the COALESCE example above using your own fallback text.' },
+      { type: 'playground', language: 'sql', starter: '-- Orders with no rider assigned yet\nSELECT order_id, customer_id, status FROM orders WHERE rider_id IS NULL;', dataset: 'quickbite' },
+    ],
+  },
+
+  {
+    id: 'sql-i-2',
+    title: 'Sorting values into categories with CASE WHEN',
+    duration: '25 min',
+    sections: [
+      { type: 'heading', content: 'Why some questions need more than a single column' },
+      { type: 'paragraph', content: 'The status column in orders stores raw values like "delivered", "cancelled", and "placed". A customer-facing report should not show raw database values — it should show readable labels, and sometimes group several raw values into one category. CASE WHEN is how you build that kind of logic directly inside a query.' },
+
+      { type: 'heading', content: 'The basic shape of CASE WHEN' },
+      { type: 'code', language: 'sql', content: `SELECT order_id, status,
+  CASE
+    WHEN status = 'delivered' THEN 'Completed'
+    WHEN status = 'cancelled' THEN 'Cancelled'
+    ELSE 'In Progress'
+  END AS friendly_status
+FROM orders;` },
+      { type: 'paragraph', content: 'Read it like an if/elif/else chain: SQL checks each WHEN top to bottom, and uses the first one that matches. ELSE catches everything else — here, "placed" and "preparing" both fall into "In Progress".' },
+
+      { type: 'heading', content: 'Real-life example: turning order status into a customer-friendly label' },
+      { type: 'paragraph', content: 'This is exactly the kind of transformation that happens before data ever reaches a dashboard or an app screen — raw operational statuses on the backend, clean labels for whoever is reading the report.' },
+
+      { type: 'heading', content: 'CASE WHEN inside other functions, like SUM and COUNT' },
+      { type: 'paragraph', content: 'CASE WHEN is not limited to SELECT — you can nest it inside an aggregate function to count or sum only the rows that match a condition, all in one pass over the table.' },
+      { type: 'code', language: 'sql', content: `-- Count delivered vs cancelled orders, side by side, in one row
+SELECT
+  SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END) AS delivered_count,
+  SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled_count
+FROM orders;` },
+      { type: 'paragraph', content: 'For every row, the CASE WHEN evaluates to 1 or 0, and SUM adds those up — effectively a conditional COUNT. This pattern (sometimes nicknamed a "pivot") is one of the most-used CASE WHEN tricks in real reporting.' },
+
+      { type: 'heading', content: 'Multiple conditions in one CASE' },
+      { type: 'code', language: 'sql', content: `-- Bucket orders into price ranges
+SELECT order_id, total_amount,
+  CASE
+    WHEN total_amount < 300 THEN 'Small order'
+    WHEN total_amount < 600 THEN 'Medium order'
+    ELSE 'Large order'
+  END AS order_size
+FROM orders;` },
+
+      { type: 'heading', content: 'A shortcut: CASE without a column to compare' },
+      { type: 'paragraph', content: 'There is a second form of CASE, sometimes called "searched CASE," where every WHEN is its own full condition rather than a comparison against one column. You have actually been using this form already — both examples above are searched CASE. The simpler form (rarely needed) compares one column against a list of exact values:' },
+      { type: 'code', language: 'sql', content: `-- Simple form: comparing one column against exact values
+SELECT name, vehicle_type,
+  CASE vehicle_type
+    WHEN 'Bike' THEN 'Motorised'
+    WHEN 'Scooter' THEN 'Motorised'
+    WHEN 'Bicycle' THEN 'Non-motorised'
+  END AS vehicle_class
+FROM riders;` },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Build a query that labels every restaurant as "Highly rated" (4.5+), "Good" (3.5 to 4.49), "Needs improvement" (below 3.5), or "Not yet rated" — remember NULL ratings need their own WHEN, since comparisons against NULL never come back true.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your CASE WHEN query here\nSELECT name, rating FROM restaurants;', dataset: 'quickbite' },
+    ],
+  },
+
+  {
+    id: 'sql-i-3',
+    title: 'Asking a question inside a question: Subqueries',
+    duration: '35 min',
+    sections: [
+      { type: 'heading', content: 'What a subquery actually is' },
+      { type: 'paragraph', content: 'A subquery is just a SELECT statement written inside another SELECT statement, used to answer a smaller question first so the outer query can use that answer. Think of it the way you would answer "who spent more than average?" out loud: first you would work out what the average is, then compare everyone against it. A subquery is SQL doing exactly that, in one statement.' },
+
+      { type: 'heading', content: 'The simplest kind: a subquery that returns one number' },
+      { type: 'paragraph', content: 'This is called a scalar subquery — it returns exactly one value, which you can then use anywhere a single number would normally go.' },
+      { type: 'code', language: 'sql', content: `SELECT (SELECT AVG(total_amount) FROM orders) AS average_order_value;` },
+
+      { type: 'heading', content: 'Using a subquery inside WHERE' },
+      { type: 'code', language: 'sql', content: `-- Customers whose individual order was above the platform-wide average
+SELECT * FROM orders
+WHERE total_amount > (SELECT AVG(total_amount) FROM orders);` },
+      { type: 'paragraph', content: 'SQL runs the inner query first (calculating the average), then runs the outer query using that number — exactly like solving the smaller problem before the bigger one.' },
+
+      { type: 'heading', content: 'Using a subquery inside FROM, like a temporary table' },
+      { type: 'paragraph', content: 'A subquery can also stand in for an entire table. This is useful when you need to first calculate something per group, then filter or sort based on that calculation.' },
+      { type: 'code', language: 'sql', content: `-- First calculate each customer's total spend, then find who spent over 1000
+SELECT * FROM (
+  SELECT customer_id, SUM(total_amount) AS total_spent
+  FROM orders
+  GROUP BY customer_id
+) AS customer_totals
+WHERE total_spent > 1000;` },
+      { type: 'paragraph', content: 'Notice the inner query needs its own alias (AS customer_totals) — SQL requires every subquery used as a table to have a name, even if you never refer to that name again.' },
+
+      { type: 'heading', content: 'Correlated subqueries: when the inner query needs the outer query' },
+      { type: 'paragraph', content: 'Every subquery so far has been independent — it could run perfectly well on its own, with no knowledge of the outer query. A correlated subquery is different: it reaches outward and uses a value from the current outer row, which means it runs once per outer row instead of just once overall.' },
+      { type: 'code', language: 'sql', content: `-- For each restaurant, check if it has at least one order above 500
+SELECT name FROM restaurants AS r
+WHERE EXISTS (
+  SELECT 1 FROM orders AS o
+  WHERE o.restaurant_id = r.restaurant_id
+  AND o.total_amount > 500
+);` },
+      { type: 'paragraph', content: 'The inner query references r.restaurant_id — a column from the outer restaurants row. SQL effectively loops: for every restaurant, it asks "does at least one matching order over 500 exist?" That dependency on the outer row is what makes this correlated, and it is exactly how EXISTS is almost always used.' },
+
+      { type: 'heading', content: 'IN, NOT IN, and EXISTS with subqueries' },
+      { type: 'paragraph', content: 'IN checks if a value appears anywhere in a list produced by a subquery. EXISTS checks if a correlated subquery returns any row at all, without caring what the row actually contains — which usually makes EXISTS faster on large tables, since SQL can stop as soon as it finds one match.' },
+      { type: 'code', language: 'sql', content: `-- Customers who have placed at least one order (using IN)
+SELECT * FROM customers
+WHERE customer_id IN (SELECT customer_id FROM orders);
+
+-- Customers who have never placed an order (using NOT IN)
+SELECT * FROM customers
+WHERE customer_id NOT IN (SELECT customer_id FROM orders);` },
+
+      { type: 'heading', content: 'A common trap: when a subquery returns more than one row' },
+      { type: 'paragraph', content: 'A scalar subquery (used with =, >, <, etc.) must return exactly one row and one column. If it accidentally returns multiple rows, SQL throws an error rather than guessing which one you meant.' },
+      { type: 'callout', kind: 'warning', content: "If you see an error like 'subquery returned more than one row,' you almost always meant to use IN (for a list of values) or add an aggregate function like MAX()/AVG() to collapse the subquery down to a single number, instead of using a plain = comparison." },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Find every restaurant that has never received a single order. (Hint: this is the NOT IN pattern, just pointed at restaurant_id instead of customer_id.)' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+    ],
+  },
+
+  {
+    id: 'sql-i-4',
+    title: 'Naming your steps with CTEs',
+    duration: '30 min',
+    sections: [
+      { type: 'heading', content: 'The problem with deeply nested subqueries' },
+      { type: 'paragraph', content: 'Subqueries inside subqueries inside subqueries get hard to read fast — by the third level of nesting, you are scrolling back and forth just to figure out which closing parenthesis belongs to which SELECT. A CTE (Common Table Expression) solves this by letting you name each step and write them one after another, top to bottom, like a recipe.' },
+
+      { type: 'heading', content: 'What a CTE actually is: a subquery with a name' },
+      { type: 'paragraph', content: 'A CTE is not a new concept — it is the exact same idea as the FROM-subquery from the last module, just written in a cleaner place, before the main query, with a proper name attached using WITH.' },
+
+      { type: 'heading', content: 'Writing your first WITH statement' },
+      { type: 'code', language: 'sql', content: `WITH customer_totals AS (
+  SELECT customer_id, SUM(total_amount) AS total_spent
+  FROM orders
+  GROUP BY customer_id
+)
+SELECT * FROM customer_totals
+WHERE total_spent > 1000;` },
+      { type: 'paragraph', content: 'Compare this to the FROM-subquery version from the previous module — same logic, same result, but now customer_totals reads like a real table name instead of an anonymous block of parentheses.' },
+
+      { type: 'heading', content: 'Chaining multiple CTEs together' },
+      { type: 'paragraph', content: 'You can define several CTEs in a row, separated by commas, where each one can even build on the one before it. This is where CTEs really start to shine over subqueries — nested subqueries get harder to read with every layer, but chained CTEs stay just as readable at 2 steps as they do at 5.' },
+      { type: 'code', language: 'sql', content: `WITH customer_totals AS (
+  SELECT customer_id, SUM(total_amount) AS total_spent
+  FROM orders
+  GROUP BY customer_id
+),
+high_spenders AS (
+  SELECT * FROM customer_totals WHERE total_spent > 1000
+)
+SELECT c.name, h.total_spent
+FROM high_spenders AS h
+INNER JOIN customers AS c ON h.customer_id = c.customer_id
+ORDER BY h.total_spent DESC;` },
+      { type: 'paragraph', content: 'Notice how this reads almost like a paragraph: first calculate totals, then filter to high spenders, then join in their names. Each step has a name, and you can trace the logic without holding several levels of nested parentheses in your head at once.' },
+
+      { type: 'heading', content: 'CTEs vs subqueries: when to use which' },
+      { type: 'paragraph', content: 'They are usually interchangeable — the database engine itself does not treat them very differently. The real difference is for humans: reach for a CTE whenever a subquery is being reused, would need nesting more than one level deep, or whenever giving a step a clear name would make the query easier to read six months from now (including by you).' },
+
+      { type: 'heading', content: 'Real-life feel: breaking a big report into readable steps' },
+      { type: 'paragraph', content: 'Imagine explaining a sales report to a manager out loud: "First, I calculated each customer\'s total spend. Then I filtered down to the big spenders. Then I matched those back to their names." CTEs let your SQL read in that same step-by-step order, instead of being written inside-out the way nested subqueries force you to.' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Rewrite this using a CTE: find every restaurant\'s average order value, then keep only the restaurants whose average is above 400.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your CTE here\n', dataset: 'quickbite' },
+    ],
+  },
+
+  {
+    id: 'sql-mp-i-1',
+    title: 'Mini Project: Customer Activity Report',
+    duration: '25 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'Quick practice before moving on' },
+      { type: 'paragraph', content: "You've just learned four of the most important tools for asking layered, realistic business questions: handling missing data, labelling values with CASE WHEN, asking a question inside a question with subqueries, and naming your steps with CTEs. This project puts all four to work on one connected report." },
+      { type: 'list', items: [
+        'Concepts used: IS NULL, COALESCE, CASE WHEN, subqueries, CTEs',
+      ]},
+
+      { type: 'heading', content: 'Task 1: Customers who have never ordered' },
+      { type: 'paragraph', content: 'The marketing team wants to send a "we miss you, here is 20% off" email — but only to customers who have never placed a single order, since they need a different message than lapsed customers.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+SELECT * FROM customers
+WHERE customer_id NOT IN (SELECT customer_id FROM orders);` },
+
+      { type: 'heading', content: 'Task 2: A friendlier ratings display' },
+      { type: 'paragraph', content: 'Show every restaurant\'s name and rating, but replace any NULL rating with the text "Not yet rated" so the app does not show a blank space.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+SELECT name, COALESCE(rating, 'Not yet rated') AS rating_display
+FROM restaurants;` },
+      { type: 'callout', kind: 'tip', content: "This works in SQLite (the engine behind this playground) because it has flexible typing — a single column can return a number for one row and text for another without complaint. Stricter databases like PostgreSQL, MySQL, and SQL Server are not so forgiving: they require COALESCE's arguments to share a type, and would reject this exact query unless you wrote COALESCE(CAST(rating AS TEXT), 'Not yet rated') instead. You will meet CAST properly in Module 11 — worth remembering this moment when you do, since it is exactly the kind of cross-database difference that catches people off guard in a real job." },
+
+      { type: 'heading', content: 'Task 3: Labelling every order' },
+      { type: 'paragraph', content: 'Show every order\'s id and a friendly label: "Completed" for delivered, "Cancelled" for cancelled, and "In Progress" for anything else.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+SELECT order_id,
+  CASE
+    WHEN status = 'delivered' THEN 'Completed'
+    WHEN status = 'cancelled' THEN 'Cancelled'
+    ELSE 'In Progress'
+  END AS friendly_status
+FROM orders;` },
+
+      { type: 'heading', content: 'Task 4: Customers who spent more than average' },
+      { type: 'paragraph', content: 'Find every customer whose total spend (across all their orders) is above the average total spend per customer.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+WITH customer_totals AS (
+  SELECT customer_id, SUM(total_amount) AS total_spent
+  FROM orders
+  GROUP BY customer_id
+)
+SELECT * FROM customer_totals
+WHERE total_spent > (SELECT AVG(total_spent) FROM customer_totals);` },
+
+      { type: 'heading', content: 'Task 5: The top 5 spenders, by name' },
+      { type: 'paragraph', content: 'Build a CTE that calculates each customer\'s total spend, then use it to find the top 5 spenders, showing their actual names rather than just their customer_id.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+WITH customer_totals AS (
+  SELECT customer_id, SUM(total_amount) AS total_spent
+  FROM orders
+  GROUP BY customer_id
+)
+SELECT c.name, ct.total_spent
+FROM customer_totals AS ct
+INNER JOIN customers AS c ON ct.customer_id = c.customer_id
+ORDER BY ct.total_spent DESC
+LIMIT 5;` },
+      { type: 'callout', kind: 'tip', content: 'Notice Task 5 reuses the exact same CTE from Task 4. This is the real argument for CTEs over subqueries: once you have named a step, you can build several different final queries on top of it without retyping the logic each time.' },
+    ],
+  },
+
+  {
+    id: 'sql-i-5',
+    title: 'Combining results from two queries: UNION and UNION ALL',
+    duration: '20 min',
+    sections: [
+      { type: 'heading', content: 'When one query isn\'t enough' },
+      { type: 'paragraph', content: 'Sometimes the rows you need do not live in one table — or even one query against one table. UNION stacks the results of two separate SELECT statements into a single result set, one on top of the other.' },
+
+      { type: 'heading', content: 'Stacking results with UNION' },
+      { type: 'code', language: 'sql', content: `-- One combined contact list: customer names and rider names, together
+SELECT name, city FROM customers
+UNION
+SELECT name, city FROM riders;` },
+      { type: 'paragraph', content: 'Both SELECTs return the same two columns (name, city), just from different tables — UNION simply glues the two result sets into one.' },
+
+      { type: 'heading', content: 'UNION vs UNION ALL: the difference that actually matters' },
+      { type: 'paragraph', content: 'UNION automatically removes duplicate rows from the combined result — which means it has to do extra work checking every row against every other row. UNION ALL keeps every row, duplicates included, and is correspondingly faster. If you know your two queries cannot produce overlapping rows (like customers and riders, which are entirely different people), UNION ALL is the better default.' },
+      { type: 'code', language: 'sql', content: `-- Faster, and just as correct here, since a person cannot be both
+-- a customer and a rider in this dataset
+SELECT name, city FROM customers
+UNION ALL
+SELECT name, city FROM riders;` },
+
+      { type: 'heading', content: 'The rule: matching columns, matching order' },
+      { type: 'paragraph', content: 'Every SELECT inside a UNION must return the same number of columns, in a compatible type, in the same order. The column names in the final result come from the very first SELECT — so it is good practice to alias columns clearly in that first query.' },
+      { type: 'callout', kind: 'warning', content: 'If your two SELECTs return a different number of columns, SQL will throw an error immediately. If they return the same number of columns but in a different logical order (say, city before name in one and name before city in the other), SQL will not catch that — it will happily combine them in the wrong order, producing nonsense results with no warning at all.' },
+
+      { type: 'heading', content: 'Real-life example: combining two contact lists into one' },
+      { type: 'paragraph', content: 'A platform-wide announcement (a new safety policy, say) needs to reach both customers and riders. Rather than running two separate exports and merging them by hand, a single UNION ALL query produces the complete mailing list in one step.' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Build one combined list of every city that appears across customers, restaurants, and riders — using UNION (not UNION ALL) so each city only shows up once, no matter how many tables it appears in.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+    ],
+  },
+
+  {
+    id: 'sql-i-6',
+    title: 'The rest of the JOIN family: RIGHT, FULL OUTER, SELF',
+    duration: '35 min',
+    sections: [
+      { type: 'heading', content: 'A quick recap: INNER and LEFT JOIN' },
+      { type: 'paragraph', content: 'INNER JOIN keeps only rows that match in both tables. LEFT JOIN keeps every row from the first (left) table, filling in NULLs where there is no match on the right. Three more JOIN types round out the rest of what you will actually encounter in real SQL work.' },
+
+      { type: 'heading', content: 'RIGHT JOIN: flipping which side you keep everything from' },
+      { type: 'paragraph', content: 'RIGHT JOIN is LEFT JOIN\'s mirror image: it keeps every row from the second (right) table, filling in NULLs where there is no match on the left.' },
+      { type: 'code', language: 'sql', content: `-- Every rider, even ones with zero deliveries (they show up with NULL order details)
+SELECT r.name, o.order_id
+FROM orders AS o
+RIGHT JOIN riders AS r ON o.rider_id = r.rider_id;` },
+      { type: 'callout', kind: 'tip', content: 'In practice, almost nobody writes RIGHT JOIN — they just swap the table order and write LEFT JOIN instead, since it reads more naturally left-to-right. SELECT r.name, o.order_id FROM riders AS r LEFT JOIN orders AS o ON o.rider_id = r.rider_id produces the identical result. It is still worth recognising RIGHT JOIN, since you will see it in other people\'s code.' },
+
+      { type: 'heading', content: 'FULL OUTER JOIN: keep everyone, from both sides' },
+      { type: 'paragraph', content: 'FULL OUTER JOIN keeps every row from both tables — matched rows show data from both sides, and unmatched rows from either side show NULLs for whichever side they are missing from.' },
+      { type: 'code', language: 'sql', content: `-- Every restaurant AND every order, matched where possible,
+-- including restaurants with no orders and (in theory) orders with no restaurant
+SELECT res.name, o.order_id
+FROM restaurants AS res
+FULL OUTER JOIN orders AS o ON res.restaurant_id = o.restaurant_id;` },
+      { type: 'callout', kind: 'warning', content: 'Not every database supports FULL OUTER JOIN directly. Modern SQLite (the engine powering this playground) and PostgreSQL/SQL Server support it natively — but MySQL still does not, and older versions of SQLite did not either. Where it is unsupported, people simulate it by combining a LEFT JOIN and a RIGHT JOIN with UNION. Knowing that workaround matters, because you will eventually hit a database where the native keyword simply is not available.' },
+
+      { type: 'heading', content: 'SELF JOIN: joining a table to itself' },
+      { type: 'paragraph', content: 'A SELF JOIN is not a new keyword — it is the ordinary JOIN syntax, just pointed at the same table twice, using two different aliases to tell the two "copies" apart. It is how you handle a table that refers back to itself, like a customer who was referred by another customer.' },
+      { type: 'code', language: 'sql', content: `-- Show each referred customer next to the name of who referred them
+SELECT c1.name AS customer_name, c2.name AS referred_by_name
+FROM customers AS c1
+INNER JOIN customers AS c2 ON c1.referred_by = c2.customer_id;` },
+      { type: 'paragraph', content: 'c1 and c2 are both the customers table — but to SQL, aliasing the same table twice makes them behave like two separate tables for the purposes of this one query. c1.referred_by stores another customer\'s id, and c2 is used purely to look up that id\'s name.' },
+
+      { type: 'heading', content: 'Real-life example: who referred who' },
+      { type: 'paragraph', content: 'Referral programs are the textbook real-world use of SELF JOIN — anywhere one row in a table needs to point back at another row in the exact same table (an employee\'s manager, a comment\'s parent comment, a customer\'s referrer), you will reach for this pattern.' },
+
+      { type: 'heading', content: 'Choosing the right JOIN for the question being asked' },
+      { type: 'list', items: [
+        'INNER JOIN — "only show me matches in both tables"',
+        'LEFT JOIN — "show me everything from my main table, matched where possible"',
+        'RIGHT JOIN — the same idea as LEFT JOIN, just with the tables in the other order',
+        'FULL OUTER JOIN — "show me everything from both tables, matched where possible"',
+        'SELF JOIN — "this table refers back to itself, and I need to resolve that reference"',
+      ]},
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Find every rider who has never been assigned a single delivery. (Hint: a LEFT JOIN from riders to orders, then a WHERE checking for a NULL on the orders side, will get you there just as well as a RIGHT JOIN would.)' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+    ],
+  },
+
+  {
+    id: 'sql-i-7',
+    title: 'Ranking rows with ROW_NUMBER, RANK, and DENSE_RANK',
+    duration: '35 min',
+    sections: [
+      { type: 'heading', content: 'Why GROUP BY isn\'t always enough' },
+      { type: 'paragraph', content: 'GROUP BY can tell you each restaurant\'s total revenue. But it cannot answer "what is each restaurant\'s rank, compared to others in the same city?" — because GROUP BY collapses rows together, and ranking needs to compare rows to each other while still keeping every row visible. This is exactly the gap window functions fill.' },
+
+      { type: 'heading', content: 'Introducing window functions: a new kind of calculation' },
+      { type: 'paragraph', content: 'A window function looks at a "window" of related rows (similar to GROUP BY) but does not collapse them into one row per group — every original row stays in the output, with an extra calculated column added alongside it.' },
+
+      { type: 'heading', content: 'The OVER() and PARTITION BY pieces' },
+      { type: 'paragraph', content: 'Every window function ends with OVER(...), which defines the window. PARTITION BY inside it works like GROUP BY, but without merging rows — it just tells the function "restart your calculation for each new group."' },
+
+      { type: 'heading', content: 'ROW_NUMBER: a unique position for every row' },
+      { type: 'code', language: 'sql', content: `-- Number every restaurant 1, 2, 3... ordered by revenue (no ties possible)
+SELECT name, rating,
+  ROW_NUMBER() OVER (ORDER BY rating DESC) AS row_num
+FROM restaurants
+WHERE rating IS NOT NULL;` },
+      { type: 'paragraph', content: 'ROW_NUMBER() always gives a unique, ever-increasing number — even if two restaurants have the exact same rating, one of them arbitrarily gets the lower number.' },
+
+      { type: 'heading', content: 'RANK: ties share a position, but leave a gap' },
+      { type: 'code', language: 'sql', content: `SELECT name, rating,
+  RANK() OVER (ORDER BY rating DESC) AS rank
+FROM restaurants
+WHERE rating IS NOT NULL;` },
+      { type: 'paragraph', content: 'If two restaurants are tied for 2nd place, they both get rank 2 — and the next restaurant after them jumps straight to rank 4, skipping 3 entirely. This matches how rankings work in real life: a tied silver medal still means there is no bronze.' },
+
+      { type: 'heading', content: 'DENSE_RANK: ties share a position, no gaps' },
+      { type: 'code', language: 'sql', content: `SELECT name, rating,
+  DENSE_RANK() OVER (ORDER BY rating DESC) AS dense_rank
+FROM restaurants
+WHERE rating IS NOT NULL;` },
+      { type: 'paragraph', content: 'Same tie at 2nd place — but this time the next restaurant gets rank 3, not 4. DENSE_RANK never skips a number, which is usually what you want when showing "top tiers" rather than literal competition standings.' },
+
+      { type: 'heading', content: 'Real-life example: top 3 restaurants per city' },
+      { type: 'paragraph', content: 'This is where PARTITION BY earns its keep — ranking restaurants per city, instead of across the whole platform, so a strong city does not crowd out every restaurant from a smaller one.' },
+      { type: 'code', language: 'sql', content: `SELECT name, city, rating,
+  DENSE_RANK() OVER (PARTITION BY city ORDER BY rating DESC) AS city_rank
+FROM restaurants
+WHERE rating IS NOT NULL;` },
+      { type: 'paragraph', content: 'PARTITION BY city resets the ranking back to 1 every time the city changes — so every city gets its own independent top 1, top 2, top 3, calculated in the same single query.' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Rank every customer by total spend, using a CTE (from Module 4) to calculate the totals first, then RANK() in the outer query.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+    ],
+  },
+
+  {
+    id: 'sql-mp-i-2',
+    title: 'Mini Project: Restaurant Leaderboard',
+    duration: '25 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'Quick practice before moving on' },
+      { type: 'paragraph', content: 'Three modules, three genuinely different skills: combining result sets with UNION, the rest of the JOIN family, and your first window functions. This project is the kind of leaderboard a restaurant-partnerships team would actually pull together for a quarterly review.' },
+      { type: 'list', items: [
+        'Concepts used: UNION, RIGHT/SELF JOIN, RANK, DENSE_RANK, PARTITION BY',
+      ]},
+
+      { type: 'heading', content: 'Task 1: One combined contact list' },
+      { type: 'paragraph', content: 'Combine the names and cities of every customer and every rider into a single list, using UNION.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+SELECT name, city FROM customers
+UNION
+SELECT name, city FROM riders;` },
+
+      { type: 'heading', content: 'Task 2: Riders with zero deliveries' },
+      { type: 'paragraph', content: 'Find every rider who has never been assigned a single order.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+SELECT r.name
+FROM riders AS r
+LEFT JOIN orders AS o ON r.rider_id = o.rider_id
+WHERE o.order_id IS NULL;` },
+
+      { type: 'heading', content: 'Task 3: Who referred who' },
+      { type: 'paragraph', content: 'Show every customer who was referred by another customer, alongside the referrer\'s name, using a SELF JOIN.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+SELECT c1.name AS customer_name, c2.name AS referred_by_name
+FROM customers AS c1
+INNER JOIN customers AS c2 ON c1.referred_by = c2.customer_id;` },
+
+      { type: 'heading', content: 'Task 4: Restaurants ranked by revenue' },
+      { type: 'paragraph', content: 'Rank every restaurant by its total revenue from delivered orders, highest first, using RANK.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+WITH restaurant_revenue AS (
+  SELECT restaurant_id, SUM(total_amount) AS revenue
+  FROM orders
+  WHERE status = 'delivered'
+  GROUP BY restaurant_id
+)
+SELECT res.name, rr.revenue,
+  RANK() OVER (ORDER BY rr.revenue DESC) AS revenue_rank
+FROM restaurant_revenue AS rr
+INNER JOIN restaurants AS res ON rr.restaurant_id = res.restaurant_id;` },
+
+      { type: 'heading', content: 'Task 5: Top-rated restaurant per city' },
+      { type: 'paragraph', content: 'Find the top 3 highest-rated restaurants in each city, using DENSE_RANK and PARTITION BY.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+WITH ranked AS (
+  SELECT name, city, rating,
+    DENSE_RANK() OVER (PARTITION BY city ORDER BY rating DESC) AS city_rank
+  FROM restaurants
+  WHERE rating IS NOT NULL
+)
+SELECT * FROM ranked WHERE city_rank <= 3;` },
+    ],
+  },
+
+  {
+    id: 'sql-i-8',
+    title: 'Looking forward and back: LEAD, LAG, and running totals',
+    duration: '35 min',
+    sections: [
+      { type: 'heading', content: 'Comparing a row to the row before or after it' },
+      { type: 'paragraph', content: 'RANK and ROW_NUMBER (from the last module) describe a row\'s position. LAG and LEAD do something different: they let one row reach over and grab a value from a neighbouring row — the one right before it, or right after it, within the same ordered window. This is exactly how you calculate things like "how much did this order grow compared to the customer\'s last one?"' },
+
+      { type: 'heading', content: 'LAG: looking at the previous row' },
+      { type: 'code', language: 'sql', content: `SELECT customer_id, order_date, total_amount,
+  LAG(total_amount) OVER (PARTITION BY customer_id ORDER BY order_date) AS previous_order_amount
+FROM orders
+WHERE status = 'delivered';` },
+      { type: 'paragraph', content: 'For each customer (PARTITION BY customer_id), ordered by date, LAG grabs the total_amount from the row immediately before the current one. The very first order for each customer has nothing before it, so LAG returns NULL there — which is correct, not a bug.' },
+
+      { type: 'heading', content: 'LEAD: looking at the next row' },
+      { type: 'code', language: 'sql', content: `SELECT customer_id, order_date,
+  LEAD(order_date) OVER (PARTITION BY customer_id ORDER BY order_date) AS next_order_date
+FROM orders
+WHERE status = 'delivered';` },
+      { type: 'paragraph', content: 'LEAD is the mirror image of LAG — it looks one row ahead instead of one row behind. The last order for each customer has nothing after it, so LEAD returns NULL there.' },
+
+      { type: 'heading', content: 'Real-life example: a customer\'s previous order, side by side' },
+      { type: 'paragraph', content: 'A genuinely useful retention question — "is this customer ordering more or less often than they used to?" — starts with simply seeing each order next to the one before it.' },
+      { type: 'code', language: 'sql', content: `SELECT customer_id, order_date,
+  LAG(order_date) OVER (PARTITION BY customer_id ORDER BY order_date) AS previous_order_date
+FROM orders
+WHERE status = 'delivered';` },
+      { type: 'paragraph', content: "This alone is already useful for spotting patterns by eye. Turning that gap into an actual day count needs a date subtraction function — Module 10 covers exactly that, and Mini Project 3 revisits this precise example once you have it." },
+
+      { type: 'heading', content: 'Running totals with SUM() OVER' },
+      { type: 'paragraph', content: 'The same aggregate functions you already know (SUM, AVG, COUNT) become running, row-by-row calculations the moment you add OVER() with an ORDER BY.' },
+      { type: 'code', language: 'sql', content: `SELECT order_date, total_amount,
+  SUM(total_amount) OVER (ORDER BY order_date) AS running_total
+FROM orders
+WHERE status = 'delivered'
+ORDER BY order_date;` },
+      { type: 'paragraph', content: 'Without PARTITION BY, this running total accumulates across every row in date order — exactly the shape of a "total revenue so far this year" chart.' },
+
+      { type: 'heading', content: 'A moving average, the simple way' },
+      { type: 'paragraph', content: 'Adding ROWS BETWEEN tells SQL exactly how wide a window to look at for each calculation, instead of the entire table.' },
+      { type: 'code', language: 'sql', content: `SELECT order_date, total_amount,
+  AVG(total_amount) OVER (
+    ORDER BY order_date
+    ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+  ) AS moving_avg_3_orders
+FROM orders
+WHERE status = 'delivered'
+ORDER BY order_date;` },
+      { type: 'paragraph', content: 'ROWS BETWEEN 2 PRECEDING AND CURRENT ROW means "average this row with the 2 rows directly before it" — a 3-order moving average that smooths out single spikes or dips.' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Calculate a running total of platform-wide revenue, ordered by order date, for delivered orders only.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+    ],
+  },
+
+  {
+    id: 'sql-i-9',
+    title: 'Cleaning and shaping text with string functions',
+    duration: '25 min',
+    sections: [
+      { type: 'heading', content: 'Why text never arrives clean' },
+      { type: 'paragraph', content: 'Restaurant names typed by different staff, customer-entered addresses, copy-pasted exports — text data is messy in practice almost everywhere it comes from. SQL has a small toolkit of string functions for cleaning and reshaping it directly inside a query, instead of fixing it by hand.' },
+
+      { type: 'heading', content: 'UPPER, LOWER, and consistent casing' },
+      { type: 'code', language: 'sql', content: `SELECT UPPER(name) AS shout_case, LOWER(name) AS lower_case
+FROM restaurants;` },
+
+      { type: 'heading', content: 'TRIM and removing extra spaces' },
+      { type: 'code', language: 'sql', content: `-- Removes leading/trailing whitespace -- the same problem from your beginner course's Excel module
+SELECT TRIM('  Spice Route  ') AS cleaned;` },
+
+      { type: 'heading', content: 'Cutting text with SUBSTR' },
+      { type: 'paragraph', content: 'SQLite\'s function for grabbing part of a string is SUBSTR(text, start_position, length). (Some other databases also offer LEFT() and RIGHT() as shortcuts for grabbing characters from one end — the underlying idea is identical, just spelled differently depending on which database you are using.)' },
+      { type: 'code', language: 'sql', content: `-- First 5 characters
+SELECT SUBSTR(name, 1, 5) AS first_five FROM restaurants;
+
+-- Everything from position 3 onward
+SELECT SUBSTR(name, 3) AS from_third_letter FROM restaurants;` },
+
+      { type: 'heading', content: 'Joining text together with ||' },
+      { type: 'paragraph', content: 'SQLite uses || to join (concatenate) text values — the same job CONCAT() does in MySQL, PostgreSQL, and SQL Server.' },
+      { type: 'code', language: 'sql', content: `SELECT name || ' (' || cuisine_type || ')' AS display_name
+FROM restaurants;` },
+
+      { type: 'heading', content: 'Finding text inside text' },
+      { type: 'paragraph', content: 'You already know LIKE from your beginner course for pattern matching in a WHERE clause. INSTR(text, search) does a related job inside a SELECT — it returns the position where a substring first appears, or 0 if it is not found at all.' },
+      { type: 'code', language: 'sql', content: `-- Does the name contain the word "House"? (a non-zero result means yes)
+SELECT name, INSTR(name, 'House') AS position_found
+FROM restaurants;` },
+
+      { type: 'heading', content: 'Real-life example: cleaning up restaurant names and addresses' },
+      { type: 'paragraph', content: 'A realistic cleanup pipeline often nests several of these together: TRIM to remove stray whitespace, then UPPER or a consistent case, then maybe || to rebuild a clean display string — the exact same nesting idea from your beginner Excel course\'s PROPER(TRIM(...)), just written in SQL.' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Build a single "menu listing" string for every menu item in the form "Butter Chicken — Main Course (350)", using || to join the name, category, and price together.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+    ],
+  },
+
+  {
+    id: 'sql-i-10',
+    title: 'Working with dates and times',
+    duration: '30 min',
+    sections: [
+      { type: 'heading', content: 'Why dates need their own set of tools' },
+      { type: 'paragraph', content: 'A date is not really "just text," even though it is often stored as text (you saw this with order_date and delivered_at in this dataset). SQL has dedicated functions for pulling dates apart, comparing them, and doing arithmetic on them correctly — including handling things like differing month lengths and leap years, which plain text comparison cannot do.' },
+
+      { type: 'heading', content: 'Getting the current date and time' },
+      { type: 'code', language: 'sql', content: `SELECT DATE('now') AS today, DATETIME('now') AS right_now;` },
+
+      { type: 'heading', content: 'Pulling out the year, month, or day from a date' },
+      { type: 'paragraph', content: 'strftime() formats a date into any piece you want, using formatting codes: %Y for year, %m for month, %d for day.' },
+      { type: 'code', language: 'sql', content: `SELECT order_date,
+  strftime('%Y', order_date) AS year,
+  strftime('%m', order_date) AS month,
+  strftime('%d', order_date) AS day
+FROM orders;` },
+      { type: 'callout', kind: 'tip', content: 'Other databases spell this differently — MySQL and PostgreSQL use EXTRACT(YEAR FROM date_column) or YEAR(date_column); SQL Server uses DATEPART(year, date_column). The concept ("give me just the year") is universal; only the exact function name changes per database.' },
+
+      { type: 'heading', content: 'Calculating the gap between two dates' },
+      { type: 'paragraph', content: 'julianday() converts any date into a single number (days since a fixed reference point in history). Subtracting two julianday() values gives you a clean difference in days.' },
+      { type: 'code', language: 'sql', content: `-- How many days passed between ordering and delivery? (in fractional days)
+SELECT order_id,
+  julianday(delivered_at) - julianday(order_date) AS days_to_deliver
+FROM orders
+WHERE delivered_at IS NOT NULL;` },
+      { type: 'paragraph', content: 'Since order_date and delivered_at in this dataset include a time component, this actually returns a small fraction of a day (delivery usually takes under an hour). Multiply by 24 to convert to hours, or by 1440 to convert to minutes.' },
+      { type: 'code', language: 'sql', content: `-- Same calculation, converted to minutes
+SELECT order_id,
+  (julianday(delivered_at) - julianday(order_date)) * 1440 AS minutes_to_deliver
+FROM orders
+WHERE delivered_at IS NOT NULL;` },
+
+      { type: 'heading', content: 'Grouping data by month or week' },
+      { type: 'paragraph', content: 'strftime() is also exactly how you build a "month" column to GROUP BY — turning raw timestamps into a clean, sortable bucket.' },
+      { type: 'code', language: 'sql', content: `SELECT strftime('%Y-%m', order_date) AS month, COUNT(*) AS orders_placed
+FROM orders
+GROUP BY month
+ORDER BY month;` },
+
+      { type: 'heading', content: 'Real-life example: how long delivery actually takes' },
+      { type: 'paragraph', content: 'Combining everything above, an operations team could ask: "what is our average delivery time, by city, by month?" — and answer it in one query, using a JOIN to bring in the city, strftime() to bucket by month, and julianday() to measure the delivery duration itself.' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Calculate the average delivery time (in minutes) for each restaurant, for delivered orders only.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+    ],
+  },
+
+  {
+    id: 'sql-mp-i-3',
+    title: 'Mini Project: Delivery Performance Tracker',
+    duration: '25 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'Quick practice before moving on' },
+      { type: 'paragraph', content: "Three more substantial skills, one connected tracker: looking at neighbouring rows with LAG, cleaning up text, and doing real arithmetic on dates. This is the kind of report an operations analyst would build to keep an eye on how the platform is actually performing, week to week." },
+      { type: 'list', items: [
+        'Concepts used: LAG, SUM() OVER, TRIM/UPPER/LOWER, julianday, strftime',
+      ]},
+
+      { type: 'heading', content: 'Task 1: Gap between a customer\'s orders' },
+      { type: 'paragraph', content: 'For every delivered order, show the number of days since that same customer\'s previous order (NULL is correct for each customer\'s very first order).' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+SELECT customer_id, order_date,
+  julianday(order_date) - julianday(
+    LAG(order_date) OVER (PARTITION BY customer_id ORDER BY order_date)
+  ) AS days_since_last_order
+FROM orders
+WHERE status = 'delivered';` },
+
+      { type: 'heading', content: 'Task 2: Running total of daily revenue' },
+      { type: 'paragraph', content: 'Build a running total of platform-wide revenue from delivered orders, in date order.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+SELECT order_date, total_amount,
+  SUM(total_amount) OVER (ORDER BY order_date) AS running_total
+FROM orders
+WHERE status = 'delivered'
+ORDER BY order_date;` },
+
+      { type: 'heading', content: 'Task 3: Clean restaurant names and cities' },
+      { type: 'paragraph', content: 'Show every restaurant\'s name and city, both passed through TRIM and a consistent case, ready for a clean report.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+SELECT TRIM(name) AS clean_name, UPPER(TRIM(city)) AS clean_city
+FROM restaurants;` },
+
+      { type: 'heading', content: 'Task 4: Average delivery time' },
+      { type: 'paragraph', content: 'Calculate the average delivery time, in minutes, across every delivered order on the entire platform.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+SELECT AVG((julianday(delivered_at) - julianday(order_date)) * 1440) AS avg_minutes
+FROM orders
+WHERE delivered_at IS NOT NULL;` },
+
+      { type: 'heading', content: 'Task 5: Busiest month' },
+      { type: 'paragraph', content: 'Group all orders by month, and find which month had the most orders placed.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+SELECT strftime('%Y-%m', order_date) AS month, COUNT(*) AS orders_placed
+FROM orders
+GROUP BY month
+ORDER BY orders_placed DESC
+LIMIT 1;` },
+    ],
+  },
+
+  {
+    id: 'sql-i-11',
+    title: 'Making values behave: type casting with CAST',
+    duration: '20 min',
+    sections: [
+      { type: 'heading', content: 'Why SQL sometimes treats a number like text (or the other way round)' },
+      { type: 'paragraph', content: 'Every column has a declared type, but real data does not always cooperate — a number might arrive as text from a messy import, or you might need a number to display as text so it can sit next to a label. CAST is how you convert a value from one type to another, on purpose, inside a query.' },
+
+      { type: 'heading', content: 'Converting types on purpose with CAST' },
+      { type: 'code', language: 'sql', content: `SELECT CAST('350' AS REAL) AS as_number;
+SELECT CAST(350 AS TEXT) AS as_text;
+SELECT CAST(3.7 AS INTEGER) AS as_integer;` },
+      { type: 'paragraph', content: 'The pattern is always CAST(value AS type) — common types you will use are INTEGER (whole numbers), REAL (decimals), and TEXT.' },
+
+      { type: 'heading', content: 'Common conversions: text to number, number to text, text to date' },
+      { type: 'paragraph', content: 'Remember Mini Project 1\'s callout about SQLite\'s flexible typing letting COALESCE mix a number and a fallback word without complaint? This is the function that closes that gap on stricter databases. CAST(rating AS TEXT) forces the number into text first, so a function that requires matching types — like COALESCE on PostgreSQL, MySQL, or SQL Server — will accept it.' },
+      { type: 'code', language: 'sql', content: `-- Works everywhere, not just on SQLite's relaxed typing
+SELECT name, COALESCE(CAST(rating AS TEXT), 'Not yet rated') AS rating_display
+FROM restaurants;` },
+
+      { type: 'heading', content: 'Real-life example: fixing a column that should have been a number all along' },
+      { type: 'paragraph', content: 'Imagine a CSV import where every column — including ones that are clearly numbers, like total_amount — gets imported as plain text because the import tool was not told any better. SUM() and AVG() on a text column either fail outright or (worse) silently return a wrong answer. Wrapping it in CAST(total_amount AS REAL) fixes it without needing to re-import or edit the raw file.' },
+
+      { type: 'heading', content: 'A note on rounding after casting' },
+      { type: 'paragraph', content: 'CAST(3.7 AS INTEGER) does not round to 4 — it truncates straight down to 3, simply chopping off the decimal part. If you actually want rounding (3.7 becoming 4), use ROUND() instead, optionally combined with CAST if you specifically need the result to be a whole-number type rather than a decimal.' },
+      { type: 'code', language: 'sql', content: `SELECT CAST(3.7 AS INTEGER) AS truncated;        -- 3, not 4
+SELECT ROUND(3.7) AS rounded;                    -- 4
+SELECT CAST(ROUND(3.7) AS INTEGER) AS rounded_and_whole;  -- 4, stored as an integer` },
+      { type: 'callout', kind: 'warning', content: 'This truncation behaviour catches a lot of people off guard, because in everyday maths "3.7 as a whole number" feels like it should round to 4. SQL\'s CAST does not round — it just discards everything after the decimal point. Reach for ROUND() whenever the actual rounding matters, not just the type.' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Calculate the average rating across all rated restaurants, rounded to one decimal place, and cast as text so it could be slotted directly into a sentence like "Average rating: 4.3".' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+    ],
+  },
+
+  {
+    id: 'sql-i-12',
+    title: 'Why queries are slow: a first look at performance',
+    duration: '30 min',
+    sections: [
+      { type: 'heading', content: 'Not every slow query is a bad query — some are just big' },
+      { type: 'paragraph', content: 'A query that takes 2 seconds on a 50-row practice table might take 2 minutes on a real production table with 50 million rows, even if you wrote it perfectly. Performance is not really about memorising tricks — it is about understanding what the database actually does to answer your question, so you can spot the difference between "this is inherently a lot of work" and "this is unnecessarily slow."' },
+
+      { type: 'heading', content: 'Reading an EXPLAIN plan, in plain English' },
+      { type: 'paragraph', content: 'Most databases let you ask "how would you actually run this?" without running it. In SQLite, that is EXPLAIN QUERY PLAN.' },
+      { type: 'code', language: 'sql', content: `EXPLAIN QUERY PLAN
+SELECT * FROM orders WHERE customer_id = 5;` },
+      { type: 'paragraph', content: 'On this table, that returns something like "SCAN orders" — meaning SQLite has to check every single row in the table, one by one, to find the ones matching customer_id = 5. On a tiny practice table that is instant. On a real table with millions of rows, a full scan like this can be genuinely slow.' },
+
+      { type: 'heading', content: 'What an index actually does' },
+      { type: 'paragraph', content: 'Think of an index the way you would think of a library\'s card catalogue: instead of walking every shelf looking for a book, you look the title up in the catalogue, which tells you exactly which shelf and position to go straight to. A database index works the same way — it is a separate, pre-sorted structure that lets the database jump straight to matching rows instead of checking every single one.' },
+      { type: 'code', language: 'sql', content: `CREATE INDEX idx_orders_customer ON orders(customer_id);
+
+EXPLAIN QUERY PLAN
+SELECT * FROM orders WHERE customer_id = 5;
+-- Now reads something like: SEARCH orders USING INDEX idx_orders_customer (customer_id=?)` },
+      { type: 'paragraph', content: 'Notice the plan changes from SCAN to SEARCH once the index exists — that single word is the entire difference between "check everything" and "jump straight to it."' },
+
+      { type: 'heading', content: 'Common habits that quietly slow a query down' },
+      { type: 'list', items: [
+        'Filtering or joining on a column with no index, on a genuinely large table',
+        'Applying a function to the column being filtered, like WHERE UPPER(city) = \'MUMBAI\' — this usually prevents the database from using an index on city at all',
+        'Pulling far more columns or rows than you actually need "just in case"',
+        'Using a correlated subquery (Module 3) where a plain JOIN would answer the same question and let the database optimise more freely',
+      ]},
+
+      { type: 'heading', content: 'SELECT * vs selecting only what you need, revisited' },
+      { type: 'paragraph', content: 'Your beginner course already warned against SELECT * for readability reasons. There is a performance reason too: pulling every column means more data has to be read off disk and sent over the network, even for columns you immediately throw away. On a wide table with dozens of columns, this adds up fast at scale.' },
+
+      { type: 'heading', content: 'Real-life example: the difference an index makes on a big table' },
+      { type: 'paragraph', content: 'A 50-row practice table cannot really demonstrate a slow query — everything is instant regardless of indexes. But the mental model transfers directly: on a real orders table with 50 million rows, the exact query above goes from "scan 50 million rows" to "jump straight to the handful that match," which is the difference between a query that takes minutes and one that takes milliseconds.' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Run EXPLAIN QUERY PLAN on a query filtering restaurants by city, before and after creating an index on restaurants(city), and compare the two plans.' },
+      { type: 'playground', language: 'sql', starter: '-- Before the index\nEXPLAIN QUERY PLAN\nSELECT * FROM restaurants WHERE city = \'Mumbai\';\n\n-- Now try adding the index, then run the same EXPLAIN QUERY PLAN again:\n-- CREATE INDEX idx_restaurants_city ON restaurants(city);', dataset: 'quickbite' },
+      { type: 'callout', kind: 'tip', content: "This module is intentionally a first look, not the full picture — real performance tuning also covers composite indexes (covering more than one column), how query optimisers make decisions, and trade-offs (every index speeds up reads but slightly slows down writes, since the index itself has to be kept up to date). That depth belongs in the Advanced track. For now, knowing what EXPLAIN QUERY PLAN tells you and what an index conceptually does will let you ask the right questions in any real job." },
+    ],
+  },
+
+  {
+    id: 'sql-i-capstone',
+    title: 'Capstone: The Complete QuickBite Report',
+    duration: '60 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'Practice time — no new concepts here' },
+      { type: 'paragraph', content: "You've finished every lesson in this track. This capstone is meant to be done after the rest of the course: one connected, realistic report covering NULL handling, CASE WHEN, subqueries, CTEs, UNION, every JOIN type, both window-function modules, string functions, date functions, and CAST. Nothing here is new — it's all about combining what you already know." },
+      { type: 'callout', kind: 'tip', content: 'Try every task yourself before checking the sample solution underneath it. By this point in the course, you have everything you need to solve each one without help — the sample solutions are there to check your work, not to be your first move.' },
+
+      { type: 'heading', content: 'Project 1 (Easy)' },
+      { type: 'paragraph', content: "The scenario: QuickBite's operations lead wants a clean monthly health-check report before a leadership meeting. Nothing here needs window functions yet — just the fundamentals from earlier in this track, applied cleanly." },
+
+      { type: 'heading', content: 'Task 1: Customers who have gone quiet' },
+      { type: 'paragraph', content: 'Find every customer who has not placed a single order in the 30 days before the most recent order in the entire dataset.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+SELECT c.customer_id, c.name
+FROM customers AS c
+WHERE c.customer_id NOT IN (
+  SELECT customer_id FROM orders
+  WHERE julianday((SELECT MAX(order_date) FROM orders)) - julianday(order_date) <= 30
+);` },
+
+      { type: 'heading', content: 'Task 2: Average order value per restaurant' },
+      { type: 'paragraph', content: "Calculate each restaurant's average order value (delivered orders only), using a CTE, and show it next to the restaurant's name." },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+WITH restaurant_avg AS (
+  SELECT restaurant_id, AVG(total_amount) AS avg_order_value
+  FROM orders
+  WHERE status = 'delivered'
+  GROUP BY restaurant_id
+)
+SELECT res.name, ra.avg_order_value
+FROM restaurant_avg AS ra
+INNER JOIN restaurants AS res ON ra.restaurant_id = res.restaurant_id;` },
+
+      { type: 'heading', content: 'Task 3: Labelling every review' },
+      { type: 'paragraph', content: 'For every delivered order, show a review label: "Positive" (rating 4-5), "Neutral" (rating 3), "Negative" (rating 1-2), or "No Review" (no review row at all).' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+SELECT o.order_id,
+  CASE
+    WHEN r.rating IS NULL THEN 'No Review'
+    WHEN r.rating >= 4 THEN 'Positive'
+    WHEN r.rating = 3 THEN 'Neutral'
+    ELSE 'Negative'
+  END AS review_label
+FROM orders AS o
+LEFT JOIN reviews AS r ON o.order_id = r.order_id
+WHERE o.status = 'delivered';` },
+
+      { type: 'heading', content: 'Task 4: Top cities by revenue and delivery speed' },
+      { type: 'paragraph', content: "Find the three cities with the highest total revenue (delivered orders only), and show each city's average delivery time in minutes alongside it, rounded to one decimal place." },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+SELECT res.city,
+  SUM(o.total_amount) AS total_revenue,
+  ROUND(AVG((julianday(o.delivered_at) - julianday(o.order_date)) * 1440), 1) AS avg_delivery_minutes
+FROM orders AS o
+INNER JOIN restaurants AS res ON o.restaurant_id = res.restaurant_id
+WHERE o.status = 'delivered'
+GROUP BY res.city
+ORDER BY total_revenue DESC
+LIMIT 3;` },
+
+      { type: 'heading', content: 'Task 5: Standardised city names' },
+      { type: 'paragraph', content: 'Produce a clean restaurant report showing every restaurant\'s id alongside its city name, trimmed and in a single consistent case.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+SELECT restaurant_id, TRIM(UPPER(city)) AS clean_city
+FROM restaurants;` },
+
+      { type: 'heading', content: 'Project 2 (Hard)' },
+      { type: 'paragraph', content: "The scenario: leadership liked Project 1, and now wants the deeper analysis to go with it — customer rankings, trends over time, and an honest look at where riders and restaurants are underperforming. This is where window functions and the rest of your toolkit earn their keep." },
+
+      { type: 'heading', content: 'Task 6: Customer rank within their own city' },
+      { type: 'paragraph', content: "Rank every customer by total spend (delivered orders only), but within their own city, not across the whole platform." },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+WITH customer_spend AS (
+  SELECT o.customer_id, c.city, SUM(o.total_amount) AS total_spent
+  FROM orders AS o
+  INNER JOIN customers AS c ON o.customer_id = c.customer_id
+  WHERE o.status = 'delivered'
+  GROUP BY o.customer_id, c.city
+)
+SELECT customer_id, city, total_spent,
+  RANK() OVER (PARTITION BY city ORDER BY total_spent DESC) AS city_rank
+FROM customer_spend;` },
+
+      { type: 'heading', content: "Task 7: Each customer's spending trend" },
+      { type: 'paragraph', content: "For every delivered order, show how much more (or less) the customer spent compared to their previous order." },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+SELECT customer_id, order_date, total_amount,
+  total_amount - LAG(total_amount) OVER (PARTITION BY customer_id ORDER BY order_date) AS spend_change
+FROM orders
+WHERE status = 'delivered';` },
+
+      { type: 'heading', content: 'Task 8: Running monthly revenue' },
+      { type: 'paragraph', content: "Build a running total of the platform's monthly revenue (delivered orders only) — one row per month, accumulating as the months go on." },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+WITH monthly AS (
+  SELECT strftime('%Y-%m', order_date) AS month, SUM(total_amount) AS monthly_revenue
+  FROM orders
+  WHERE status = 'delivered'
+  GROUP BY month
+)
+SELECT month, monthly_revenue,
+  SUM(monthly_revenue) OVER (ORDER BY month) AS running_monthly_total
+FROM monthly;` },
+
+      { type: 'heading', content: 'Task 9: Idle riders' },
+      { type: 'paragraph', content: 'Find every rider who has had no deliveries in the 14 days before the most recent order in the dataset (this includes riders with zero deliveries ever).' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+SELECT r.rider_id, r.name
+FROM riders AS r
+WHERE r.rider_id NOT IN (
+  SELECT rider_id FROM orders
+  WHERE rider_id IS NOT NULL
+  AND julianday((SELECT MAX(order_date) FROM orders)) - julianday(order_date) <= 14
+);` },
+
+      { type: 'heading', content: 'Task 10: Restaurants with no budget options' },
+      { type: 'paragraph', content: 'Find every restaurant where not a single menu item is priced under 200 — useful for a "budget-friendly" filter the app team is building.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+SELECT name FROM restaurants
+WHERE restaurant_id NOT IN (
+  SELECT restaurant_id FROM menu_items WHERE price < 200
+);` },
+
+      { type: 'heading', content: 'Task 11: Where would an index actually help?' },
+      { type: 'paragraph', content: 'Look back at Tasks 6 and 9 above. Both filter or group on a column that is not the table\'s primary key. Using EXPLAIN QUERY PLAN, check what each query currently does (look for SCAN vs SEARCH), then write 2-3 sentences on which column(s) you would index, and why, if these tables had millions of rows instead of a few dozen.' },
+      { type: 'playground', language: 'sql', starter: '-- Try EXPLAIN QUERY PLAN on the queries from Task 6 and Task 9\nEXPLAIN QUERY PLAN\nSELECT * FROM orders WHERE customer_id = 1;', dataset: 'quickbite' },
+      { type: 'callout', kind: 'tip', content: "There's no single sample solution here — this task is about judgment, not syntax. A reasonable answer: customer_id (used in Task 6's join and GROUP BY) and rider_id plus order_date (used together in Task 9's filter) are the strongest index candidates, since both queries currently have to scan the entire orders table to evaluate their conditions." },
+
+      { type: 'heading', content: "You're done with the SQL Intermediate track" },
+      { type: 'paragraph', content: "If you worked through both projects, you can now do what a working data or business analyst actually does day to day: handle messy, real, multi-table data — with missing values, evolving statuses, and dates that need real arithmetic — and turn it into rankings, trends, and judgment calls, not just flat lookups. That is a genuinely significant jump from where the beginner track left you." },
+      { type: 'paragraph', content: "The Advanced track goes further still: deeper window function patterns, recursive queries, transactions, and serious performance tuning beyond this module's first look. When ready, switch to Advanced from the sidebar." },
+    ],
+  },
+
+]
+
+/* ════════════════════════════════════════════════════════════════
+   SQL — ADVANCED TRACK (11 modules + 3 mini projects + capstone)
+   Same QuickBite dataset, now with a JSON metadata column on
+   restaurants and the customers.referred_by self-reference put to
+   real use for recursive queries.
+   ════════════════════════════════════════════════════════════════ */
+const SQL_ADVANCED = [
+  {
+    id: 'sql-a-1',
+    title: 'Recursive CTEs: querying hierarchies',
+    duration: '35 min',
+    sections: [
+      { type: 'heading', content: 'A new shape of question' },
+      { type: 'paragraph', content: 'Every query so far answers a question about rows you can see directly. Some real questions are different in kind: "find everyone in this customer\'s entire referral chain, no matter how many levels deep" cannot be answered by looking at one row, or even joining a fixed number of tables — the chain could be 1 level deep or 10. This is exactly the gap a recursive CTE fills.' },
+
+      { type: 'heading', content: 'The shape of a recursive CTE' },
+      { type: 'paragraph', content: 'A recursive CTE has two parts, joined by UNION ALL: an anchor (the starting point) and a recursive part (a query that refers back to the CTE itself, building on the previous round\'s results one step at a time).' },
+      { type: 'code', language: 'sql', content: `WITH RECURSIVE referral_chain AS (
+  -- Anchor: start with one specific customer
+  SELECT customer_id, name, referred_by, 0 AS depth
+  FROM customers
+  WHERE customer_id = 1
+
+  UNION ALL
+
+  -- Recursive part: find anyone referred_by someone already in the chain
+  SELECT c.customer_id, c.name, c.referred_by, rc.depth + 1
+  FROM customers AS c
+  INNER JOIN referral_chain AS rc ON c.referred_by = rc.customer_id
+)
+SELECT * FROM referral_chain;` },
+      { type: 'paragraph', content: 'Read it as a loop: round 0 is just customer 1. Round 1 finds everyone referred_by customer 1. Round 2 finds everyone referred_by anyone found in round 1. SQLite keeps running rounds, feeding each round\'s results back into the recursive part, until a round finds nothing new — at which point it stops automatically.' },
+
+      { type: 'heading', content: 'Real-life feel: how far does one referral actually reach?' },
+      { type: 'paragraph', content: 'A referral program\'s real value is not just "who did Aditi refer" — it is "how large is the entire network that traces back to Aditi, including people referred by people she referred." A single recursive query answers that at any depth, where a fixed number of JOINs would only answer it for a fixed number of levels.' },
+
+      { type: 'heading', content: 'A safety net: avoiding infinite recursion' },
+      { type: 'paragraph', content: 'If the underlying data ever formed a loop (customer A refers B, B refers C, C somehow refers back to A — a data error, but a possible one), a recursive CTE without a limit would run forever. SQLite lets you cap it directly.' },
+      { type: 'code', language: 'sql', content: `WITH RECURSIVE referral_chain AS (
+  SELECT customer_id, name, referred_by, 0 AS depth
+  FROM customers WHERE customer_id = 1
+  UNION ALL
+  SELECT c.customer_id, c.name, c.referred_by, rc.depth + 1
+  FROM customers AS c
+  INNER JOIN referral_chain AS rc ON c.referred_by = rc.customer_id
+)
+SELECT * FROM referral_chain LIMIT 1000;` },
+      { type: 'callout', kind: 'warning', content: "Always think through what stops a recursive CTE before running it on a table you do not fully trust. Here, it stops naturally because referred_by chains in clean data are finite — but adding a sensible LIMIT costs nothing and protects you if the data ever turns out to be messier than expected." },
+
+      { type: 'heading', content: 'Other classic uses of recursive CTEs' },
+      { type: 'list', items: [
+        'Org charts — every employee who reports up to a given manager, at any depth',
+        'Category trees — every subcategory nested under "Electronics," including subcategories of subcategories',
+        'Comment threads — every reply to a reply to a reply, on a forum or social post',
+        'Generating a sequence of numbers or dates without a source table at all (the anchor can just be SELECT 1, with no FROM clause)',
+      ]},
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Write a recursive CTE that finds every customer in customer 7\'s (Yuki Tanaka\'s) referral chain.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your recursive CTE here\n', dataset: 'quickbite' },
+      { type: 'callout', kind: 'tip', content: "Next module: you've used window functions to rank and look at neighbouring rows. A few more patterns — grabbing the first or last value in a window, and splitting rows into equal buckets — round out the toolkit." },
+    ],
+  },
+
+  {
+    id: 'sql-a-2',
+    title: 'Advanced window function patterns: FIRST_VALUE, LAST_VALUE, NTILE',
+    duration: '30 min',
+    sections: [
+      { type: 'heading', content: 'A quick recap' },
+      { type: 'paragraph', content: 'From the intermediate track: ROW_NUMBER, RANK, and DENSE_RANK number rows; LAG and LEAD look at neighbouring rows; SUM() OVER builds running totals. Three more patterns round out the window function toolkit for genuinely advanced reporting.' },
+
+      { type: 'heading', content: 'FIRST_VALUE and LAST_VALUE' },
+      { type: 'paragraph', content: 'These grab a specific value from within the window — not the current row, but whichever row is first or last according to the window\'s ordering.' },
+      { type: 'code', language: 'sql', content: `-- Each customer's very first order, shown next to every one of their orders
+SELECT customer_id, order_date, total_amount,
+  FIRST_VALUE(total_amount) OVER (
+    PARTITION BY customer_id ORDER BY order_date
+  ) AS first_order_amount
+FROM orders
+WHERE status = 'delivered';` },
+      { type: 'paragraph', content: "This is subtly different from LAG: LAG always looks at the row immediately before the current one, while FIRST_VALUE always returns the very first row in the entire window, no matter how many rows down you currently are. Real-life use: \"how does each order compare to this customer's very first order\" is a genuinely different (and common) question from \"how does it compare to their previous one.\"" },
+
+      { type: 'heading', content: 'A frame-clause gotcha with LAST_VALUE' },
+      { type: 'code', language: 'sql', content: `-- This usually does NOT do what people expect
+SELECT customer_id, order_date, total_amount,
+  LAST_VALUE(total_amount) OVER (
+    PARTITION BY customer_id ORDER BY order_date
+  ) AS last_order_amount
+FROM orders;
+
+-- The fix: explicitly widen the frame to the whole partition
+SELECT customer_id, order_date, total_amount,
+  LAST_VALUE(total_amount) OVER (
+    PARTITION BY customer_id ORDER BY order_date
+    RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+  ) AS last_order_amount
+FROM orders;` },
+      { type: 'callout', kind: 'warning', content: 'By default, a window\'s "frame" only extends from the start of the partition up to the current row — so LAST_VALUE without an explicit frame just returns the current row itself, not the actual last row. This is one of the most common silent mistakes with window functions. Explicitly widening the frame with RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING fixes it.' },
+
+      { type: 'heading', content: 'NTILE: splitting rows into equal buckets' },
+      { type: 'paragraph', content: 'NTILE(n) divides the rows in a window into n roughly equal-sized groups, numbered 1 through n. This is exactly how you would calculate quartiles, quintiles, or any other percentile-style split.' },
+      { type: 'code', language: 'sql', content: `-- Split customers into 4 groups (quartiles) by total spend
+WITH customer_totals AS (
+  SELECT customer_id, SUM(total_amount) AS total_spent
+  FROM orders
+  WHERE status = 'delivered'
+  GROUP BY customer_id
+)
+SELECT customer_id, total_spent,
+  NTILE(4) OVER (ORDER BY total_spent DESC) AS spend_quartile
+FROM customer_totals;` },
+      { type: 'paragraph', content: 'spend_quartile = 1 is the top-spending quarter of customers, exactly the kind of segment a marketing team would target for a "VIP customers" campaign.' },
+
+      { type: 'heading', content: 'Frame clauses, properly explained' },
+      { type: 'paragraph', content: 'A frame clause controls exactly which rows within a partition a window function actually looks at, relative to the current row.' },
+      { type: 'list', items: [
+        'ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW — from the start of the partition up to here (the default for most ordered window functions)',
+        'ROWS BETWEEN 2 PRECEDING AND CURRENT ROW — a moving window of exactly 3 rows (seen already in the intermediate track\'s moving average)',
+        'ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING — the entire partition, regardless of the current row\'s position',
+      ]},
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Split delivered orders into 4 quartiles by total_amount, highest first.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'callout', kind: 'tip', content: "Next module: two set operations that round out what you learned about UNION — finding rows that exist in both result sets, or only in one." },
+    ],
+  },
+
+  {
+    id: 'sql-a-3',
+    title: 'INTERSECT and EXCEPT: set operations beyond UNION',
+    duration: '20 min',
+    sections: [
+      { type: 'heading', content: 'A quick recap of UNION' },
+      { type: 'paragraph', content: 'UNION and UNION ALL stack two result sets on top of each other. INTERSECT and EXCEPT compare two result sets differently — instead of combining everything, they ask "what do both have in common?" or "what is in one but not the other?"' },
+
+      { type: 'heading', content: 'INTERSECT: only rows that appear in both' },
+      { type: 'code', language: 'sql', content: `-- Customers who ordered in January AND ordered again in February
+SELECT customer_id FROM orders WHERE strftime('%Y-%m', order_date) = '2024-01'
+INTERSECT
+SELECT customer_id FROM orders WHERE strftime('%Y-%m', order_date) = '2024-02';` },
+      { type: 'paragraph', content: 'This answers a genuinely different question than a JOIN would. A JOIN between two filtered lists of the same column would also work here, but INTERSECT reads more directly as "give me whoever shows up on both lists" — exactly the retention question being asked.' },
+
+      { type: 'heading', content: 'EXCEPT: rows in the first, but not the second' },
+      { type: 'code', language: 'sql', content: `-- Customers who ordered in January but never came back in February
+SELECT customer_id FROM orders WHERE strftime('%Y-%m', order_date) = '2024-01'
+EXCEPT
+SELECT customer_id FROM orders WHERE strftime('%Y-%m', order_date) = '2024-02';` },
+      { type: 'paragraph', content: 'This is a churn question, answered in two lines: everyone who was active in January, minus everyone still active in February, leaves exactly the customers who dropped off.' },
+
+      { type: 'heading', content: 'The same column rules as UNION apply' },
+      { type: 'paragraph', content: 'INTERSECT and EXCEPT both require the same number of columns, in compatible types, just like UNION. They compare rows by full value, not by a chosen key — so if you select multiple columns, every column has to match for a row to count as "the same."' },
+
+      { type: 'heading', content: 'Real-life feel: cohort analysis in two lines' },
+      { type: 'paragraph', content: '"How many of last month\'s customers are still ordering this month?" is a question every subscription or repeat-purchase business asks constantly. INTERSECT answers the "still here" half, EXCEPT answers the "we lost them" half — together, that is the entire basic retention report.' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Find every restaurant that has a delivered order AND a cancelled order (using INTERSECT on restaurant_id).' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'callout', kind: 'tip', content: "Next module: a query you write once and reuse forever, instead of retyping it (or a CTE version of it) in every report — views." },
+    ],
+  },
+
+  {
+    id: 'sql-a-4',
+    title: 'Views: saving a query as a reusable virtual table',
+    duration: '25 min',
+    sections: [
+      { type: 'heading', content: 'The problem with retyping the same query' },
+      { type: 'paragraph', content: 'Imagine five different reports all need "customers who have spent over ₹2,000, with their city and total spend." Without a view, that logic — a JOIN and a GROUP BY and a HAVING — gets copy-pasted into five different places, and if the business definition of "high spender" ever changes, all five need to be found and updated.' },
+
+      { type: 'heading', content: 'Creating a view' },
+      { type: 'code', language: 'sql', content: `CREATE VIEW high_value_customers AS
+SELECT c.customer_id, c.name, c.city, SUM(o.total_amount) AS total_spent
+FROM customers AS c
+INNER JOIN orders AS o ON c.customer_id = o.customer_id
+WHERE o.status = 'delivered'
+GROUP BY c.customer_id, c.name, c.city
+HAVING SUM(o.total_amount) > 2000;` },
+      { type: 'paragraph', content: 'This does not run the query or store any data yet — it just saves the query itself, under a name, for SQL to re-run automatically every time you reference it.' },
+
+      { type: 'heading', content: 'Querying a view exactly like a table' },
+      { type: 'code', language: 'sql', content: `SELECT * FROM high_value_customers ORDER BY total_spent DESC;
+
+SELECT * FROM high_value_customers WHERE city = 'Mumbai';` },
+      { type: 'paragraph', content: 'This is the entire point: from here on, high_value_customers behaves like any other table in a FROM clause, including being filtered, sorted, or joined to other tables — but it is always asking the live, underlying tables fresh, every single time.' },
+
+      { type: 'heading', content: 'Views vs tables: no duplicate storage' },
+      { type: 'paragraph', content: 'A view stores zero rows of its own. Every time you query it, the database re-runs the saved query against the real, current data. If a new order gets added to the orders table, high_value_customers reflects it on the very next query — no refresh step, no stale data, because there was never a copy to go stale.' },
+      { type: 'callout', kind: 'tip', content: "Some databases (PostgreSQL, SQL Server) also offer a materialized view — a view that does pre-calculate and cache its results, trading instant freshness for faster repeated reads on an expensive query. SQLite does not support materialized views directly. The plain view in this module is the one concept that exists almost everywhere." },
+
+      { type: 'heading', content: 'Real-life feel: the dashboard nobody has to maintain' },
+      { type: 'paragraph', content: 'A "high value customers" view, once created, can be plugged into a dashboard tool, a weekly export, or another analyst\'s query — and the underlying business logic (what counts as "high value") lives in exactly one place. Change the HAVING threshold once, in the view definition, and every single thing built on top of it updates automatically.' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Create a view called active_restaurants showing every restaurant where is_active = 1, then query it filtered to a specific city.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your CREATE VIEW statement, then a SELECT from it\n', dataset: 'quickbite' },
+      { type: 'callout', kind: 'tip', content: 'A quick mini project next puts recursive CTEs, advanced window functions, set operations, and views to work together, before the track moves into keeping data safe and correct.' },
+    ],
+  },
+
+  {
+    id: 'sql-mp-a-1',
+    title: 'Mini Project: Customer Network Report',
+    duration: '25 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'Quick practice before moving on' },
+      { type: 'paragraph', content: 'Four genuinely advanced tools, one connected report: tracing referral networks, ranking with advanced window functions, comparing customer cohorts, and packaging the result as a view.' },
+      { type: 'list', items: [
+        'Concepts used: WITH RECURSIVE, NTILE, INTERSECT/EXCEPT, CREATE VIEW',
+      ]},
+
+      { type: 'heading', content: "Task 1: Trace customer 1's full referral network" },
+      { type: 'paragraph', content: "Find every customer who traces back to customer 1 (Aditi Rao), at any depth, using a recursive CTE." },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+WITH RECURSIVE network AS (
+  SELECT customer_id, name, referred_by FROM customers WHERE customer_id = 1
+  UNION ALL
+  SELECT c.customer_id, c.name, c.referred_by
+  FROM customers AS c
+  INNER JOIN network AS n ON c.referred_by = n.customer_id
+)
+SELECT * FROM network;` },
+
+      { type: 'heading', content: 'Task 2: Spend quartiles' },
+      { type: 'paragraph', content: 'Split every customer into 4 quartiles by total delivered spend, highest-spending quartile first.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+WITH customer_totals AS (
+  SELECT customer_id, SUM(total_amount) AS total_spent
+  FROM orders WHERE status = 'delivered'
+  GROUP BY customer_id
+)
+SELECT customer_id, total_spent,
+  NTILE(4) OVER (ORDER BY total_spent DESC) AS quartile
+FROM customer_totals;` },
+
+      { type: 'heading', content: 'Task 3: Who ordered in both January and February' },
+      { type: 'paragraph', content: 'Find every customer_id that placed an order in both January 2024 and February 2024.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+SELECT customer_id FROM orders WHERE strftime('%Y-%m', order_date) = '2024-01'
+INTERSECT
+SELECT customer_id FROM orders WHERE strftime('%Y-%m', order_date) = '2024-02';` },
+
+      { type: 'heading', content: 'Task 4: Package it as a view' },
+      { type: 'paragraph', content: 'Create a view called returning_customers containing exactly the customer_ids from Task 3.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your CREATE VIEW statement here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+CREATE VIEW returning_customers AS
+SELECT customer_id FROM orders WHERE strftime('%Y-%m', order_date) = '2024-01'
+INTERSECT
+SELECT customer_id FROM orders WHERE strftime('%Y-%m', order_date) = '2024-02';
+
+SELECT * FROM returning_customers;` },
+    ],
+  },
+
+  {
+    id: 'sql-a-5',
+    title: 'Transactions: BEGIN, COMMIT, and ROLLBACK',
+    duration: '30 min',
+    sections: [
+      { type: 'heading', content: 'Why a single statement is not always safe' },
+      { type: 'paragraph', content: 'Imagine moving loyalty points from one customer to another: subtract 100 points from customer A, then add 100 points to customer B. That is two separate statements. If the database crashes, loses power, or hits an error between those two statements, customer A loses 100 points that simply vanish — never credited to B. A transaction is how you guarantee that either both statements happen, or neither does.' },
+
+      { type: 'heading', content: 'BEGIN, COMMIT, and ROLLBACK' },
+      { type: 'paragraph', content: 'QuickBite does not have a real loyalty_points column, so this module builds a small standalone "loyalty" table to practice on — the pattern itself is identical to whatever real table you would use it on in an actual job.' },
+      { type: 'code', language: 'sql', content: `BEGIN TRANSACTION;
+
+UPDATE loyalty SET points = points - 100 WHERE customer_id = 1;
+UPDATE loyalty SET points = points + 100 WHERE customer_id = 2;
+
+COMMIT;` },
+      { type: 'paragraph', content: 'BEGIN TRANSACTION marks the start of a group of statements that must succeed or fail together. COMMIT makes every change inside it permanent, all at once. If anything goes wrong before COMMIT, ROLLBACK undoes every change made since BEGIN, as if none of it ever happened.' },
+      { type: 'code', language: 'sql', content: `BEGIN TRANSACTION;
+
+UPDATE loyalty SET points = points - 100 WHERE customer_id = 1;
+-- Imagine an error is detected here, or customer 2 turns out not to exist
+ROLLBACK;
+
+-- customer 1's points are exactly what they were before BEGIN -- the
+-- partial update never happened, from the database's point of view` },
+
+      { type: 'heading', content: 'ACID, in plain English' },
+      { type: 'paragraph', content: 'ACID is the four-letter checklist that a properly-behaving transaction satisfies. You do not need to memorise the formal definitions — you already understand the actual ideas:' },
+      { type: 'list', items: [
+        'Atomicity — all the statements in a transaction happen together, or none of them do (the loyalty points example)',
+        'Consistency — a transaction can never leave the database in a state that violates its own rules (like a CHECK constraint, covered next module)',
+        'Isolation — one transaction in progress should not see another transaction\'s half-finished changes (covered properly in the concurrency module later in this track)',
+        'Durability — once a transaction commits, the change survives even if the power goes out one second later',
+      ]},
+
+      { type: 'heading', content: 'Real-life feel: the bank transfer everyone trusts' },
+      { type: 'paragraph', content: 'Every bank transfer in the world is built on exactly this pattern: debit one account, credit another, wrapped in a transaction. No one has ever had money vanish because a transfer was "half-completed" by a system crash — that guarantee exists specifically because of atomicity, the same property this module just taught you to use directly.' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Add a loyalty_points column to a temporary copy of the idea, simulate a transfer inside a transaction, then deliberately roll it back and confirm nothing changed.' },
+      { type: 'playground', language: 'sql', starter: `-- A small standalone demo table, so we don't touch the real customers table
+CREATE TABLE loyalty (customer_id INTEGER, points INTEGER);
+INSERT INTO loyalty VALUES (1, 500), (2, 200);
+
+BEGIN TRANSACTION;
+UPDATE loyalty SET points = points - 100 WHERE customer_id = 1;
+UPDATE loyalty SET points = points + 100 WHERE customer_id = 2;
+ROLLBACK;
+
+SELECT * FROM loyalty;
+-- TODO: confirm the points are unchanged after the rollback
+-- TODO: now try the same transfer again, but COMMIT instead of ROLLBACK
+`, dataset: 'quickbite' },
+      { type: 'callout', kind: 'tip', content: "Next module: a transaction protects you from a crash mid-operation, but it does not stop you from inserting genuinely invalid data on purpose, like a negative price. That is what constraints and triggers are for." },
+    ],
+  },
+
+  {
+    id: 'sql-a-6',
+    title: 'Keeping data correct: constraints and triggers',
+    duration: '30 min',
+    sections: [
+      { type: 'heading', content: 'Two ways to stop bad data' },
+      { type: 'paragraph', content: 'A constraint is a rule the database enforces automatically, rejecting any INSERT or UPDATE that would break it. A trigger goes further — it runs a small piece of extra logic automatically whenever something happens, like an INSERT, without you having to remember to run that logic yourself every time.' },
+
+      { type: 'heading', content: 'CHECK: a rule on the values themselves' },
+      { type: 'code', language: 'sql', content: `CREATE TABLE menu_item_demo (
+  item_id INTEGER PRIMARY KEY,
+  name TEXT,
+  price REAL CHECK (price >= 0)
+);
+
+INSERT INTO menu_item_demo VALUES (1, 'Butter Chicken', 350);  -- works fine
+
+-- This one is rejected before it ever reaches the table:
+INSERT INTO menu_item_demo VALUES (2, 'Mystery Item', -50);
+-- Error: CHECK constraint failed: price >= 0` },
+      { type: 'paragraph', content: 'CHECK constraints are the database refusing to even temporarily hold a value that breaks a rule you defined once, at table-creation time — far more reliable than hoping every application that ever writes to this table remembers to validate it.' },
+
+      { type: 'heading', content: 'NOT NULL, UNIQUE, and FOREIGN KEY, as a quick recap' },
+      { type: 'list', items: [
+        'NOT NULL — this column may never be empty',
+        'UNIQUE — no two rows may share the same value in this column (e.g., no two customers with the same email)',
+        'FOREIGN KEY — a value in this column must already exist as a real row in another table (e.g., an order\'s customer_id must be a real customer)',
+      ]},
+      { type: 'code', language: 'sql', content: `CREATE TABLE customer_demo (
+  customer_id INTEGER PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL
+);` },
+
+      { type: 'heading', content: 'Triggers: code that runs automatically' },
+      { type: 'paragraph', content: 'A trigger watches a table for a specific event (INSERT, UPDATE, or DELETE) and runs its own SQL automatically every time that event happens — without the application that inserted the row ever needing to know the trigger exists.' },
+      { type: 'code', language: 'sql', content: `CREATE TABLE order_log (
+  log_id INTEGER PRIMARY KEY,
+  order_id INTEGER,
+  logged_at TEXT
+);
+
+CREATE TRIGGER log_new_order
+AFTER INSERT ON orders
+BEGIN
+  INSERT INTO order_log (order_id, logged_at) VALUES (NEW.order_id, datetime('now'));
+END;
+
+-- From this point on, every single new order automatically gets logged --
+-- no application code anywhere has to remember to do it.` },
+      { type: 'paragraph', content: "NEW refers to the row that was just inserted — NEW.order_id reaches into the exact row that triggered this, the same way a function parameter refers to whatever was passed in." },
+
+      { type: 'heading', content: 'Real-life feel: the audit trail nobody had to remember to write' },
+      { type: 'paragraph', content: 'Many real systems use triggers exactly like this to maintain audit logs ("who changed this price, and when"), enforce business rules too complex for a plain CHECK (like "a rider cannot be assigned to two orders with overlapping delivery windows"), or automatically keep a summary column up to date as the detailed data underneath it changes.' },
+      { type: 'callout', kind: 'warning', content: "Triggers are powerful, but invisible by nature — anyone reading the application code that does INSERT INTO orders has no way to know a trigger is silently doing extra work unless they specifically go looking in the database for it. Use triggers for genuine data-integrity rules, document them clearly, and avoid hiding important business logic somewhere only a database administrator would think to check." },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Create a small ratings table with a CHECK constraint that only allows values from 1 to 5, then try inserting a value of 9 and observe the rejection.' },
+      { type: 'playground', language: 'sql', starter: `CREATE TABLE rating_demo (
+  id INTEGER PRIMARY KEY,
+  stars INTEGER CHECK (stars BETWEEN 1 AND 5)
+);
+
+-- TODO: insert a valid row with stars = 4
+-- TODO: try inserting an invalid row with stars = 9, and read the error message
+`, dataset: 'quickbite' },
+      { type: 'callout', kind: 'tip', content: 'Next module: a different kind of flexibility — storing semi-structured data (a small set of tags, a varying list of attributes) directly inside a column using JSON, instead of forcing it into rigid extra columns.' },
+    ],
+  },
+
+  {
+    id: 'sql-a-7',
+    title: 'Working with JSON inside SQL',
+    duration: '25 min',
+    sections: [
+      { type: 'heading', content: 'Why JSON shows up inside a relational database' },
+      { type: 'paragraph', content: "Most restaurant data fits neatly into columns: name, city, rating. But some attributes are genuinely variable — one restaurant has 2 tags, another has 5, a third has none yet. Adding tag_1, tag_2, tag_3... columns is rigid and wasteful. Storing a small JSON document in a single column is the common, pragmatic middle ground modern relational databases support directly." },
+
+      { type: 'heading', content: "QuickBite's restaurants.metadata column" },
+      { type: 'paragraph', content: 'Take a look at the raw column first — it is just text that happens to be valid JSON.' },
+      { type: 'code', language: 'sql', content: `SELECT name, metadata FROM restaurants;
+-- e.g. Spice Route -> {"tags":["spicy","vegetarian-friendly"],"delivery_radius_km":6}` },
+
+      { type: 'heading', content: 'Pulling a value out with json_extract' },
+      { type: 'code', language: 'sql', content: `SELECT name,
+  json_extract(metadata, '$.delivery_radius_km') AS radius_km
+FROM restaurants;` },
+      { type: 'paragraph', content: "The '$.delivery_radius_km' path means \"starting from the root of the JSON document, get the delivery_radius_km field.\" The dollar sign always represents the whole document." },
+
+      { type: 'heading', content: 'Reaching into an array' },
+      { type: 'code', language: 'sql', content: `-- The first tag for every restaurant
+SELECT name, json_extract(metadata, '$.tags[0]') AS first_tag
+FROM restaurants;` },
+      { type: 'paragraph', content: 'Square brackets with a number index into a JSON array, exactly like indexing a Python list — [0] is the first item.' },
+
+      { type: 'heading', content: 'Filtering on a JSON value' },
+      { type: 'code', language: 'sql', content: `-- Restaurants with a delivery radius of 5km or more
+SELECT name FROM restaurants
+WHERE json_extract(metadata, '$.delivery_radius_km') >= 5;` },
+      { type: 'paragraph', content: 'Once extracted, a JSON value behaves like a normal SQL value — you can compare it, sort by it, or use it in any WHERE clause exactly as if it had been a regular column all along.' },
+
+      { type: 'heading', content: 'Checking if an array contains a value' },
+      { type: 'paragraph', content: 'There is no single built-in "does this array contain X" function in plain SQLite JSON1 — the standard approach is json_each, which unpacks a JSON array into one row per element, ready to filter or join against.' },
+      { type: 'code', language: 'sql', content: `-- Every restaurant that has "spicy" anywhere in its tags
+SELECT DISTINCT r.name
+FROM restaurants AS r, json_each(r.metadata, '$.tags') AS tag
+WHERE tag.value = 'spicy';` },
+      { type: 'paragraph', content: 'json_each treats a JSON array like a tiny table you can join against — here, one row per tag, per restaurant. This is the JSON equivalent of the unpacking idea from your beginner Python course, just running inside SQL.' },
+
+      { type: 'heading', content: 'Real-life feel: flexible attributes without a messy schema' },
+      { type: 'paragraph', content: 'Product catalogs, user preferences, and configuration settings are the classic real-world uses of a JSON column — anything where different rows genuinely need different sets of extra fields, and redesigning the table schema every time a new attribute shows up would be impractical.' },
+      { type: 'callout', kind: 'tip', content: 'JSON columns are a pragmatic escape hatch, not a replacement for proper columns. If a field is on every row, gets queried constantly, and benefits from an index, it almost always belongs as a real column — reach for JSON specifically when the data is genuinely sparse or variable in shape.' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Find every restaurant tagged "vegetarian-friendly", using json_each.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'callout', kind: 'tip', content: 'A quick mini project next combines transactions, constraints, and JSON, before the track moves into serious performance work.' },
+    ],
+  },
+
+  {
+    id: 'sql-mp-a-2',
+    title: 'Mini Project: Safe Updates and Flexible Data',
+    duration: '25 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'Quick practice before moving on' },
+      { type: 'paragraph', content: 'Keeping data both safe (transactions, constraints) and flexible (JSON) are two sides of the same coin: trusting what is in your database. This project practices both.' },
+      { type: 'list', items: [
+        'Concepts used: BEGIN/COMMIT/ROLLBACK, CHECK constraints, triggers, json_extract, json_each',
+      ]},
+
+      { type: 'heading', content: 'Task 1: A safe stock transfer' },
+      { type: 'paragraph', content: 'Two riders share a single set of delivery bags. Simulate moving 3 bags from rider 301 to rider 302 inside a transaction, and commit it.' },
+      { type: 'playground', language: 'sql', starter: `CREATE TABLE rider_bags (rider_id INTEGER, bag_count INTEGER);
+INSERT INTO rider_bags VALUES (301, 10), (302, 4);
+
+-- TODO: wrap the transfer in BEGIN TRANSACTION / COMMIT
+-- TODO: subtract 3 bags from rider 301, add 3 bags to rider 302
+-- TODO: select * from rider_bags to confirm
+`, dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution (includes the same setup as the starter, so this
+-- works even if you replace the starter code entirely)
+CREATE TABLE rider_bags (rider_id INTEGER, bag_count INTEGER);
+INSERT INTO rider_bags VALUES (301, 10), (302, 4);
+
+BEGIN TRANSACTION;
+UPDATE rider_bags SET bag_count = bag_count - 3 WHERE rider_id = 301;
+UPDATE rider_bags SET bag_count = bag_count + 3 WHERE rider_id = 302;
+COMMIT;
+SELECT * FROM rider_bags;` },
+
+      { type: 'heading', content: 'Task 2: Prevent an impossible value' },
+      { type: 'paragraph', content: 'Create a table for menu item discounts with a CHECK constraint ensuring discount_percent is between 0 and 100, then prove it rejects an invalid value.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your CREATE TABLE statement, then try inserting an invalid row\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+CREATE TABLE discounts (item_id INTEGER, discount_percent INTEGER CHECK (discount_percent BETWEEN 0 AND 100));
+INSERT INTO discounts VALUES (201, 20);     -- works
+INSERT INTO discounts VALUES (202, 150);    -- rejected: CHECK constraint failed` },
+
+      { type: 'heading', content: 'Task 3: Find restaurants by tag' },
+      { type: 'paragraph', content: 'Find every restaurant tagged "fine-dining", using json_each on the metadata column.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+SELECT DISTINCT r.name
+FROM restaurants AS r, json_each(r.metadata, '$.tags') AS tag
+WHERE tag.value = 'fine-dining';` },
+    ],
+  },
+
+  {
+    id: 'sql-a-8',
+    title: 'Composite and covering indexes',
+    duration: '30 min',
+    sections: [
+      { type: 'heading', content: 'A quick recap' },
+      { type: 'paragraph', content: 'The intermediate track\'s "first look" at performance covered a single-column index and the SCAN-to-SEARCH change in EXPLAIN QUERY PLAN. Real tables are rarely filtered on just one column, which is exactly what composite indexes are for.' },
+
+      { type: 'heading', content: 'A composite index: more than one column, one index' },
+      { type: 'code', language: 'sql', content: `CREATE INDEX idx_orders_customer_status ON orders(customer_id, status);
+
+EXPLAIN QUERY PLAN
+SELECT * FROM orders WHERE customer_id = 5 AND status = 'delivered';
+-- SEARCH orders USING INDEX idx_orders_customer_status (customer_id=? AND status=?)` },
+      { type: 'paragraph', content: 'A composite index on (customer_id, status) is built like a phone book sorted first by customer_id, then by status within each customer — it can satisfy a query filtering on both columns together far faster than two separate single-column indexes could.' },
+
+      { type: 'heading', content: 'Column order matters — a lot' },
+      { type: 'paragraph', content: 'A composite index on (customer_id, status) helps a query filtering on customer_id alone, or on customer_id AND status together. It does almost nothing for a query filtering on status alone — the same way a phone book sorted by last-name-then-first-name is useless if all you have is someone\'s first name.' },
+      { type: 'code', language: 'sql', content: `-- Helped by idx_orders_customer_status (uses the leading column)
+SELECT * FROM orders WHERE customer_id = 5;
+
+-- NOT helped by idx_orders_customer_status (skips the leading column)
+SELECT * FROM orders WHERE status = 'delivered';` },
+      { type: 'callout', kind: 'warning', content: 'The rule of thumb: put the column you filter on most often, or that narrows the results down the most, first in a composite index. An index on the wrong column order can sit in your database taking up space and slowing down writes, while barely helping any of your actual queries.' },
+
+      { type: 'heading', content: 'Covering indexes: when the index has everything you need' },
+      { type: 'paragraph', content: 'If an index contains every column a query needs — both for filtering and for the columns you are selecting — the database can answer the entire query from the index alone, never even touching the actual table.' },
+      { type: 'code', language: 'sql', content: `CREATE INDEX idx_orders_covering ON orders(customer_id, status, total_amount);
+
+EXPLAIN QUERY PLAN
+SELECT status, total_amount FROM orders WHERE customer_id = 5;
+-- SEARCH orders USING COVERING INDEX idx_orders_covering (customer_id=?)` },
+      { type: 'paragraph', content: 'Notice the word "COVERING" in the plan — that is SQLite explicitly telling you it never had to look at the orders table itself, because the index already held every value the query needed.' },
+
+      { type: 'heading', content: 'The honest tradeoff: indexes are not free' },
+      { type: 'paragraph', content: 'Every index speeds up matching reads, but slightly slows down every INSERT, UPDATE, and DELETE on that table, because the index itself has to be kept up to date too. A table with ten indexes on it can become noticeably slower to write to, even if every individual read is fast. This is why real database design is a deliberate balance, not "add an index on everything."' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Create a composite index on orders(restaurant_id, status), then use EXPLAIN QUERY PLAN to confirm a query filtering on both columns uses it.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your CREATE INDEX statement, then an EXPLAIN QUERY PLAN to test it\n', dataset: 'quickbite' },
+      { type: 'callout', kind: 'tip', content: "Next module: reading EXPLAIN QUERY PLAN output for more than a single SCAN/SEARCH line — joins, sorts, and what the optimizer is actually choosing between." },
+    ],
+  },
+
+  {
+    id: 'sql-a-9',
+    title: 'Reading query plans like an expert',
+    duration: '30 min',
+    sections: [
+      { type: 'heading', content: 'Beyond SCAN vs SEARCH' },
+      { type: 'paragraph', content: 'A query with a JOIN, a GROUP BY, and an ORDER BY produces a multi-line query plan, not just one. Reading it properly means understanding what each line is doing, and in what order the database actually executes them.' },
+
+      { type: 'heading', content: 'A JOIN\'s query plan' },
+      { type: 'code', language: 'sql', content: `EXPLAIN QUERY PLAN
+SELECT c.name, o.total_amount
+FROM customers AS c
+INNER JOIN orders AS o ON c.customer_id = o.customer_id
+WHERE c.city = 'Mumbai';
+-- SCAN c
+-- SEARCH o USING INDEX ... (customer_id=?)` },
+      { type: 'paragraph', content: 'Reading top to bottom roughly tells you the order of operations: the database scans customers (filtering for Mumbai), and for each matching customer, searches orders for matches — exactly the "loop over one table, look up matches in the other" mental model JOINs actually use under the hood.' },
+
+      { type: 'heading', content: 'Spotting an expensive sort' },
+      { type: 'code', language: 'sql', content: `EXPLAIN QUERY PLAN
+SELECT * FROM orders ORDER BY total_amount DESC;
+-- SCAN orders
+-- USE TEMP B-TREE FOR ORDER BY` },
+      { type: 'paragraph', content: '"USE TEMP B-TREE FOR ORDER BY" means SQLite had to build a temporary sorted structure in memory (or on disk, for huge tables) because no index already existed in the right order. An index on total_amount would let it read rows already in sorted order, skipping this step entirely.' },
+      { type: 'code', language: 'sql', content: `CREATE INDEX idx_orders_total ON orders(total_amount);
+
+EXPLAIN QUERY PLAN
+SELECT * FROM orders ORDER BY total_amount DESC;
+-- SCAN orders USING INDEX idx_orders_total
+-- (the TEMP B-TREE line is gone)` },
+
+      { type: 'heading', content: 'GROUP BY and the optimizer' },
+      { type: 'code', language: 'sql', content: `EXPLAIN QUERY PLAN
+SELECT restaurant_id, COUNT(*) FROM orders GROUP BY restaurant_id;
+-- SCAN orders USING INDEX ... (if a suitable index exists)
+-- or: SCAN orders + USE TEMP B-TREE FOR GROUP BY (if it does not)` },
+      { type: 'paragraph', content: 'The same logic as ORDER BY applies to GROUP BY: without a helpful index, SQLite needs a temporary structure to gather rows into their groups efficiently.' },
+
+      { type: 'heading', content: 'Real-life feel: diagnosing a report that suddenly got slow' },
+      { type: 'paragraph', content: 'A genuinely common real scenario: a report query ran fine for months, then started taking 30 seconds as the table grew past a few million rows. Running EXPLAIN QUERY PLAN on it and seeing an unexpected SCAN (instead of a SEARCH) or a TEMP B-TREE line is usually the first and fastest way to find exactly which part of the query is the actual bottleneck, instead of guessing.' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Run EXPLAIN QUERY PLAN on a query joining orders to restaurants and grouping by city. Identify any TEMP B-TREE lines, then add an index that removes one of them.' },
+      { type: 'playground', language: 'sql', starter: `EXPLAIN QUERY PLAN
+SELECT res.city, SUM(o.total_amount)
+FROM orders AS o
+INNER JOIN restaurants AS res ON o.restaurant_id = res.restaurant_id
+GROUP BY res.city;
+`, dataset: 'quickbite' },
+      { type: 'callout', kind: 'tip', content: "Next module: some of the most common ways perfectly valid SQL still ends up slow — and the specific rewrites that fix each one." },
+    ],
+  },
+
+  {
+    id: 'sql-a-10',
+    title: 'Common query anti-patterns and how to rewrite them',
+    duration: '30 min',
+    sections: [
+      { type: 'heading', content: 'Valid SQL is not the same as good SQL' },
+      { type: 'paragraph', content: 'Every query in this module runs and returns a correct answer. Each one also has a specific, well-known performance problem, and a known rewrite that fixes it — exactly the kind of pattern recognition that separates "I can write a query that works" from "I can write a query that works well at scale."' },
+
+      { type: 'heading', content: 'Anti-pattern 1: functions on the filtered column' },
+      { type: 'code', language: 'sql', content: `-- Slow: wrapping the column in a function blocks index usage
+SELECT * FROM customers WHERE UPPER(city) = 'MUMBAI';
+
+-- Fast: keep the column bare, transform the literal instead (or store
+-- the data already normalised, like consistently-cased city names)
+SELECT * FROM customers WHERE city = 'Mumbai';` },
+      { type: 'paragraph', content: 'An index is built on a column\'s actual stored values. The moment you wrap that column in UPPER(), LOWER(), or any other function, the database can no longer match it directly against the index — it typically has to fall back to scanning every row and applying the function to each one.' },
+
+      { type: 'heading', content: 'Anti-pattern 2: SELECT * when you need 2 columns' },
+      { type: 'code', language: 'sql', content: `-- Wasteful on a wide table
+SELECT * FROM orders WHERE customer_id = 5;
+
+-- Reads and transfers only what is actually needed
+SELECT order_id, total_amount FROM orders WHERE customer_id = 5;` },
+      { type: 'paragraph', content: "This is the same advice from the beginner track, but it matters more here: it can also be the difference between a query that can use a covering index (Module 8) and one that cannot, because the covering index never included every column SELECT * would demand." },
+
+      { type: 'heading', content: 'Anti-pattern 3: OR across different columns' },
+      { type: 'code', language: 'sql', content: `-- Hard for the optimizer to use a single clean index for
+SELECT * FROM orders WHERE customer_id = 5 OR rider_id = 301;
+
+-- Often faster: split into two indexed lookups, combined with UNION
+SELECT * FROM orders WHERE customer_id = 5
+UNION
+SELECT * FROM orders WHERE rider_id = 301;` },
+      { type: 'paragraph', content: 'An OR across two different columns often cannot use a single index efficiently for both halves at once. Splitting it into two separate, individually-indexable queries joined with UNION frequently outperforms the single OR query on a large table, even though it looks like "more work" on the page.' },
+
+      { type: 'heading', content: 'Anti-pattern 4: a correlated subquery where a JOIN would do' },
+      { type: 'code', language: 'sql', content: `-- Re-runs the subquery once per outer row
+SELECT name FROM restaurants AS r
+WHERE (SELECT COUNT(*) FROM orders AS o WHERE o.restaurant_id = r.restaurant_id) > 5;
+
+-- Often faster: let the optimizer plan it as a single join + aggregation
+SELECT r.name
+FROM restaurants AS r
+INNER JOIN orders AS o ON r.restaurant_id = o.restaurant_id
+GROUP BY r.name
+HAVING COUNT(*) > 5;` },
+      { type: 'paragraph', content: 'Both queries are correct. The correlated version conceptually re-checks every restaurant one at a time; the JOIN + GROUP BY version lets the optimizer consider the whole operation at once, which is frequently (not always — always check with EXPLAIN QUERY PLAN) the faster plan on larger tables.' },
+
+      { type: 'heading', content: 'The actual discipline: measure, don\'t guess' },
+      { type: 'callout', kind: 'warning', content: "These four patterns are common, well-documented tendencies — not absolute laws. The only way to know whether a specific rewrite actually helped on your specific data and your specific database engine is to check EXPLAIN QUERY PLAN before and after, exactly like every 'Try it yourself' in this track has trained you to do. Treat this module as a list of prime suspects to check, not a checklist to blindly apply everywhere." },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Rewrite this query to avoid wrapping the filtered column in a function, then confirm with EXPLAIN QUERY PLAN that it changed from a SCAN to a SEARCH (after creating an index on city).' },
+      { type: 'playground', language: 'sql', starter: `CREATE INDEX idx_restaurants_city ON restaurants(city);
+
+EXPLAIN QUERY PLAN
+SELECT * FROM restaurants WHERE UPPER(city) = 'MUMBAI';
+
+-- TODO: rewrite the query above so it can actually use the index
+`, dataset: 'quickbite' },
+      { type: 'callout', kind: 'tip', content: 'A quick mini project next puts indexing and query-plan reading to work together, before the track\'s final lesson on what happens when two queries run at the same time.' },
+    ],
+  },
+
+  {
+    id: 'sql-mp-a-3',
+    title: 'Mini Project: Diagnose and Fix Slow Queries',
+    duration: '25 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'Quick practice before moving on' },
+      { type: 'paragraph', content: 'This project is a performance audit in miniature: build the right indexes, read what EXPLAIN QUERY PLAN actually says, and rewrite one query that has a real anti-pattern in it.' },
+      { type: 'list', items: [
+        'Concepts used: composite indexes, covering indexes, EXPLAIN QUERY PLAN, anti-pattern rewriting',
+      ]},
+
+      { type: 'heading', content: 'Task 1: Build the right composite index' },
+      { type: 'paragraph', content: 'A common query filters orders by restaurant_id and status together. Create the composite index that helps it, then confirm with EXPLAIN QUERY PLAN.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your CREATE INDEX statement, then verify it with EXPLAIN QUERY PLAN\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+CREATE INDEX idx_orders_restaurant_status ON orders(restaurant_id, status);
+
+EXPLAIN QUERY PLAN
+SELECT * FROM orders WHERE restaurant_id = 101 AND status = 'delivered';` },
+
+      { type: 'heading', content: 'Task 2: Make it a covering index' },
+      { type: 'paragraph', content: 'A dashboard query only ever needs order_id and total_amount, filtered by restaurant_id and status. Build a covering index for exactly this query.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your CREATE INDEX statement, then verify with EXPLAIN QUERY PLAN\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+CREATE INDEX idx_orders_covering2 ON orders(restaurant_id, status, order_id, total_amount);
+
+EXPLAIN QUERY PLAN
+SELECT order_id, total_amount FROM orders WHERE restaurant_id = 101 AND status = 'delivered';
+-- Should mention COVERING INDEX` },
+
+      { type: 'heading', content: 'Task 3: Rewrite the anti-pattern' },
+      { type: 'paragraph', content: 'This query wraps the filtered column in a function. Rewrite it so it can use a plain index on cuisine_type.' },
+      { type: 'playground', language: 'sql', starter: `CREATE INDEX idx_restaurants_cuisine ON restaurants(cuisine_type);
+
+-- Original (cannot use the index):
+-- SELECT * FROM restaurants WHERE LOWER(cuisine_type) = 'indian';
+
+-- TODO: write a version of this query that CAN use the index
+`, dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+SELECT * FROM restaurants WHERE cuisine_type = 'Indian';` },
+    ],
+  },
+
+  {
+    id: 'sql-a-11',
+    title: 'Concurrency and locking, conceptually',
+    duration: '25 min',
+    sections: [
+      { type: 'heading', content: 'What happens when two queries run at the same time' },
+      { type: 'paragraph', content: 'Every query so far in this entire SQL track has run alone, with nothing else touching the database at the same moment. Real production databases are never this quiet — dozens, sometimes thousands, of queries run simultaneously. This module is about what happens at the moments those queries collide.' },
+
+      { type: 'heading', content: 'The problem in one scenario' },
+      { type: 'paragraph', content: 'Two customers try to order the very last unit of a popular menu item at almost the same instant. Both queries check "is there stock left?", both see "yes," and both proceed to place an order — even though only one unit actually existed. Without any protection, this genuinely happens; it is one of the most common real bugs in e-commerce and food delivery systems.' },
+
+      { type: 'heading', content: 'Locks: shared vs exclusive' },
+      { type: 'paragraph', content: 'A lock is how a database stops two operations from stepping on each other. A shared lock lets multiple queries read the same data at once (reading does not conflict with other reading). An exclusive lock is needed to write, and blocks everyone else — both other writes and, depending on the isolation level, sometimes other reads — until it is released.' },
+      { type: 'code', language: 'sql', content: `BEGIN IMMEDIATE TRANSACTION;
+-- "IMMEDIATE" tells SQLite to take a lock right away, rather than waiting
+-- until the first actual write, reducing the chance of two transactions
+-- both proceeding partway before discovering they conflict
+
+UPDATE menu_items SET price = price WHERE item_id = 201;  -- (a stand-in write)
+COMMIT;` },
+
+      { type: 'heading', content: 'Isolation levels, in plain English' },
+      { type: 'paragraph', content: 'Isolation levels are different answers to the question "how much should one transaction be allowed to see of another transaction\'s unfinished work?" — from most permissive (and fastest) to strictest (and safest):' },
+      { type: 'list', items: [
+        'Read Uncommitted — you can see other transactions\' changes before they even commit (rare in practice, risks reading data that gets rolled back moments later)',
+        'Read Committed — you only ever see changes that have actually been committed (the common default in many databases)',
+        'Repeatable Read — if you read the same row twice in one transaction, you get the same answer both times, even if another transaction changed it in between',
+        'Serializable — the strictest level: transactions behave as if they ran one at a time, in some order, even though they actually overlapped',
+      ]},
+      { type: 'paragraph', content: 'The general tradeoff is consistent across every database: stricter isolation means fewer surprising bugs, but more transactions end up waiting on each other (or failing and needing a retry), which can mean lower overall throughput under heavy load.' },
+
+      { type: 'heading', content: 'Deadlocks: when two transactions wait on each other forever' },
+      { type: 'paragraph', content: 'A deadlock happens when transaction A is waiting for a lock that transaction B holds, while B is simultaneously waiting for a lock that A holds — neither can ever proceed. Real databases detect this automatically and forcibly fail one of the two transactions (which then has to retry), rather than letting both wait forever.' },
+      { type: 'callout', kind: 'tip', content: "A practical habit that avoids most deadlocks: when a piece of application code needs to update multiple tables (or multiple rows) inside one transaction, always touch them in the same consistent order every time, everywhere in your codebase. Most real-world deadlocks come from two different parts of an application locking the same two tables in opposite order." },
+
+      { type: 'heading', content: 'Real-life feel: the last-item-in-stock race condition' },
+      { type: 'paragraph', content: "The fix for the earlier scenario — two customers ordering the last unit — is exactly this module's content applied: the stock check and the stock decrement need to happen inside one transaction, with a lock that prevents a second transaction from also seeing 'stock available' until the first transaction has fully committed (or rolled back) its decision." },
+
+      { type: 'heading', content: 'Why this module has no live coding exercise' },
+      { type: 'paragraph', content: "This platform's SQL playground runs one query at a time, in a single browser tab — there is no second, truly simultaneous connection to demonstrate an actual lock conflict against. Every other module in this entire SQL track gave you something to run and observe directly; this one is intentionally the exception, because the concept itself only exists when two things happen at once. Understanding the vocabulary (locks, isolation levels, deadlocks) is what lets you read documentation and reason about a production incident — actually tuning isolation levels is something you will configure on a real multi-user database, not practice in a single-connection playground." },
+    ],
+  },
+
+  {
+    id: 'sql-a-capstone',
+    title: 'Capstone: The QuickBite Platform Audit',
+    duration: '60 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'Practice time — no new concepts here' },
+      { type: 'paragraph', content: "You've finished every lesson in this track. This capstone is meant to be done after the rest of the course: one connected platform audit covering recursive CTEs, advanced window functions, set operations, views, transactions, constraints, JSON, and serious performance work. Nothing here is new — it's all about combining what you already know." },
+      { type: 'callout', kind: 'tip', content: 'Try every task yourself before checking the sample solution underneath it.' },
+
+      { type: 'heading', content: 'Project 1 (Easy)' },
+      { type: 'paragraph', content: "The scenario: QuickBite's data team wants a structural audit of the platform before a board presentation — referral network health, customer segments, and packaged views leadership can reuse." },
+
+      { type: 'heading', content: "Task 1: Full referral network size" },
+      { type: 'paragraph', content: "For every customer who has referred at least one other person, find the total size of their downstream referral network (everyone who traces back to them, at any depth)." },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+WITH RECURSIVE downstream AS (
+  SELECT customer_id AS root_id, customer_id, referred_by FROM customers
+  UNION ALL
+  SELECT d.root_id, c.customer_id, c.referred_by
+  FROM customers AS c
+  INNER JOIN downstream AS d ON c.referred_by = d.customer_id
+)
+SELECT root_id, COUNT(*) - 1 AS network_size
+FROM downstream
+GROUP BY root_id
+HAVING COUNT(*) - 1 > 0;` },
+
+      { type: 'heading', content: 'Task 2: Customer spend quartiles, packaged as a view' },
+      { type: 'paragraph', content: 'Create a view called customer_segments showing each customer\'s total delivered spend and their spend quartile (NTILE(4)).' },
+      { type: 'playground', language: 'sql', starter: '-- Write your CREATE VIEW statement here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+CREATE VIEW customer_segments AS
+WITH customer_totals AS (
+  SELECT customer_id, SUM(total_amount) AS total_spent
+  FROM orders WHERE status = 'delivered'
+  GROUP BY customer_id
+)
+SELECT customer_id, total_spent, NTILE(4) OVER (ORDER BY total_spent DESC) AS quartile
+FROM customer_totals;
+
+SELECT * FROM customer_segments;` },
+
+      { type: 'heading', content: 'Task 3: Restaurants tagged both "spicy" and "popular"' },
+      { type: 'paragraph', content: 'Using json_each twice (or INTERSECT), find restaurants tagged with both "spicy" and "popular".' },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+SELECT r.restaurant_id, r.name
+FROM restaurants AS r, json_each(r.metadata, '$.tags') AS tag
+WHERE tag.value = 'spicy'
+INTERSECT
+SELECT r.restaurant_id, r.name
+FROM restaurants AS r, json_each(r.metadata, '$.tags') AS tag
+WHERE tag.value = 'popular';` },
+
+      { type: 'heading', content: 'Project 2 (Hard)' },
+      { type: 'paragraph', content: "The scenario: leadership liked Project 1, and now wants the operational and data-integrity side covered too — safe stock updates, protections against bad data, and a serious look at where the platform's queries would slow down at 100x the current data volume." },
+
+      { type: 'heading', content: 'Task 4: A safe, all-or-nothing rider reassignment' },
+      { type: 'paragraph', content: "Riders sometimes need every one of their currently-active orders transferred to another rider at once (e.g., they log off mid-shift). Simulate reassigning every order currently belonging to rider 304 over to rider 301, wrapped in a transaction." },
+      { type: 'playground', language: 'sql', starter: '-- Write your query here\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+BEGIN TRANSACTION;
+UPDATE orders SET rider_id = 301 WHERE rider_id = 304;
+COMMIT;
+
+SELECT * FROM orders WHERE rider_id = 301;` },
+
+      { type: 'heading', content: 'Task 5: A constraint that protects order integrity' },
+      { type: 'paragraph', content: 'Create a small demo orders_v2 table with a CHECK constraint ensuring total_amount can never be negative, and prove it rejects a bad insert.' },
+      { type: 'playground', language: 'sql', starter: '-- Write your CREATE TABLE statement, then try an invalid insert\n', dataset: 'quickbite' },
+      { type: 'code', language: 'sql', content: `-- Sample solution
+CREATE TABLE orders_v2 (order_id INTEGER, total_amount REAL CHECK (total_amount >= 0));
+INSERT INTO orders_v2 VALUES (1, 500);   -- works
+INSERT INTO orders_v2 VALUES (2, -50);   -- rejected` },
+
+      { type: 'heading', content: 'Task 6: The query that would not survive 100x the data' },
+      { type: 'paragraph', content: 'Find a query anywhere in this track\'s lessons that filters with a function wrapped around a column (like UPPER() or LOWER()), explain in 2-3 sentences why it would get progressively slower as the orders or restaurants table grows, and write the corrected version.' },
+      { type: 'playground', language: 'sql', starter: '-- Write the corrected query here, and add a comment explaining the fix\n', dataset: 'quickbite' },
+      { type: 'callout', kind: 'tip', content: "There's no single sample solution here — this task is about judgment, not syntax. A reasonable answer references Module 10's WHERE UPPER(city) = 'MUMBAI' anti-pattern: wrapping a column in a function prevents the database from using an index on that column, forcing a full table scan that gets linearly slower as the table grows. The fix is comparing against a properly-cased literal instead, or normalising the data\'s casing once at write time." },
+
+      { type: 'heading', content: "You're done with the SQL Advanced track" },
+      { type: 'paragraph', content: "Across all three tracks, you have gone from your first SELECT to recursive hierarchies, transactional safety, semi-structured JSON data, and genuine performance judgment. That is the complete, real range of what working SQL professionals — analysts, data engineers, and backend developers alike — actually use day to day. The depth from here is specialisation: a specific database engine's advanced features, a specific industry's data model, or going deeper into the database internals this track has only introduced." },
+    ],
+  },
+
+]
+
+/* ════════════════════════════════════════════════════════════════
    PYTHON — BEGINNER TRACK (7 modules, all complete)
    ════════════════════════════════════════════════════════════════ */
 const PYTHON_BEGINNER = [
@@ -1760,6 +3528,1251 @@ print(f"Top city by revenue: {top_city} ({top_amount})")` },
 ]
 
 /* ════════════════════════════════════════════════════════════════
+   PYTHON — INTERMEDIATE TRACK (11 modules + 3 mini projects + capstone)
+   Live pandas / NumPy / matplotlib / requests-style fetch / BeautifulSoup,
+   all running for real in-browser via Pyodide.
+   ════════════════════════════════════════════════════════════════ */
+const PYTHON_INTERMEDIATE = [
+  {
+    id: 'py-i-1',
+    title: 'Why pandas? Your first DataFrame',
+    duration: '30 min',
+    sections: [
+      { type: 'heading', content: 'The problem with lists of dictionaries' },
+      { type: 'paragraph', content: 'In the beginner track, you represented a table of data as a list of dictionaries — one dictionary per row. That pattern works, but the moment you want to filter, sort, group, or calculate across hundreds of rows, you end up writing loop after loop by hand. pandas is a library built specifically to make that kind of work feel like a single line of code instead of ten.' },
+
+      { type: 'heading', content: 'Meet the DataFrame' },
+      { type: 'paragraph', content: 'A DataFrame is pandas\' version of a table — rows and columns, exactly like an Excel sheet or a SQL table, except you can manipulate it directly in Python code.' },
+      { type: 'code', language: 'python', content: `import pandas as pd
+
+data = {
+    "city": ["Mumbai", "Delhi", "Bengaluru"],
+    "sales": [120000, 95000, 150000]
+}
+
+df = pd.DataFrame(data)
+print(df)
+# Output:
+#         city   sales
+# 0     Mumbai  120000
+# 1      Delhi   95000
+# 2  Bengaluru  150000` },
+      { type: 'paragraph', content: 'Notice the "import pandas as pd" line — pd is the universal nickname everyone uses for pandas, the same way Excel users just say "VLOOKUP" without spelling out "Vertical Lookup." You will see pd. in front of almost every pandas command.' },
+
+      { type: 'heading', content: 'Reading real data with read_csv' },
+      { type: 'paragraph', content: 'Typing out a dictionary by hand is fine for a toy example, but real data almost always arrives as a CSV file — exactly like the ones you read in the beginner track\'s files module. pandas reads an entire CSV into a DataFrame in one line.' },
+      { type: 'code', language: 'python', content: `import pandas as pd
+import io
+
+csv_text = """order_id,region,category,product,quantity,unit_price
+1,North,Electronics,Wireless Mouse,2,799
+2,South,Apparel,Cotton T-Shirt,3,599
+3,West,Electronics,Laptop Stand,1,1499
+4,North,Grocery,Coffee Beans,5,899
+"""
+
+df = pd.read_csv(io.StringIO(csv_text))
+print(df)` },
+      { type: 'paragraph', content: 'io.StringIO lets you treat a piece of text as if it were a file, which is why this works without ever touching a real file on disk. In a real job, you would write pd.read_csv("sales.csv") and point it at an actual file — the rest of pandas behaves identically either way.' },
+
+      { type: 'heading', content: 'Looking at your data: head, shape, info' },
+      { type: 'paragraph', content: 'The very first thing every analyst does after loading data is look at it — not all of it, just enough to sanity-check that it loaded correctly.' },
+      { type: 'code', language: 'python', content: `print(df.head())       # first 5 rows (use df.head(10) for the first 10)
+print(df.shape)        # (rows, columns) -- e.g. (4, 6)
+print(df.columns)      # the column names
+print(df.info())       # column names, types, and how many non-empty values each has` },
+      { type: 'paragraph', content: 'df.info() is particularly useful for spotting problems early — if a column you expected to be full of numbers shows up as "object" (pandas\' word for text), or a column has fewer non-null values than the total row count, that is your first sign the data is messier than it looks.' },
+
+      { type: 'heading', content: 'Picking a single column' },
+      { type: 'code', language: 'python', content: `print(df["product"])          # one column, as a pandas Series
+print(df["unit_price"].mean())  # the average unit price across all rows
+print(df["unit_price"].sum())   # the total of the unit_price column` },
+      { type: 'paragraph', content: 'df["product"] returns something called a Series — think of it as a single column of a DataFrame, with the same row-by-row superpowers (you can call .mean(), .sum(), .max() on it directly, no loop required).' },
+
+      { type: 'heading', content: 'Real-life feel: this is just Excel, with code instead of clicking' },
+      { type: 'paragraph', content: 'Everything you are doing here — loading a sheet, glancing at the first few rows, averaging a column — is exactly what opening a spreadsheet and scrolling through it accomplishes. The advantage of pandas shows up the moment your "spreadsheet" has 2 million rows: Excel would crawl or refuse to open it, while pandas handles it in the same one line of code.' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Load the sample sales data below, then print its shape, its column names, and the average unit_price.' },
+      { type: 'playground', language: 'python', starter: `import pandas as pd
+import io
+
+csv_text = """order_id,region,category,product,quantity,unit_price
+1,North,Electronics,Wireless Mouse,2,799
+2,South,Apparel,Cotton T-Shirt,3,599
+3,West,Electronics,Laptop Stand,1,1499
+4,North,Grocery,Coffee Beans,5,899
+5,East,Apparel,Running Shoes,1,3499
+"""
+
+df = pd.read_csv(io.StringIO(csv_text))
+
+# TODO: print df.shape
+# TODO: print df.columns
+# TODO: print the average of the unit_price column
+` },
+      { type: 'callout', kind: 'tip', content: "Next module: once your data is loaded, the next question is almost always \"show me just the rows I care about\" — filtering and sorting a DataFrame, the pandas way." },
+    ],
+  },
+
+  {
+    id: 'py-i-2',
+    title: 'Selecting, filtering, and sorting in pandas',
+    duration: '30 min',
+    sections: [
+      { type: 'heading', content: 'From "the whole table" to "just what I need"' },
+      { type: 'paragraph', content: 'This module is pandas\' answer to SQL\'s WHERE and ORDER BY, and Excel\'s filters and sort buttons — if you have taken this platform\'s SQL course, almost everything here will feel familiar, just spelled differently.' },
+
+      { type: 'heading', content: 'Selecting specific columns' },
+      { type: 'code', language: 'python', content: `# One column -> a Series
+df["product"]
+
+# Multiple columns -> a DataFrame (note the double square brackets)
+df[["product", "unit_price"]]` },
+      { type: 'paragraph', content: 'The double brackets in df[["product", "unit_price"]] are not a typo — the outer brackets mean "select from df," and the inner brackets are a list of the column names you want.' },
+
+      { type: 'heading', content: 'Filtering rows with boolean masks' },
+      { type: 'paragraph', content: 'This is the single most important pandas idea: df["unit_price"] > 1000 does not return rows — it returns a column of True/False values, one per row. Wrapping that inside df[...] then keeps only the rows where it was True.' },
+      { type: 'code', language: 'python', content: `expensive = df[df["unit_price"] > 1000]
+print(expensive)
+
+# Filtering on text
+electronics_only = df[df["category"] == "Electronics"]
+print(electronics_only)` },
+      { type: 'paragraph', content: 'Read df[df["unit_price"] > 1000] like English: "from df, give me the rows where unit_price is greater than 1000." This is the exact same idea as SQL\'s WHERE unit_price > 1000 — just written with brackets instead of a keyword.' },
+
+      { type: 'heading', content: 'Combining conditions with & and |' },
+      { type: 'paragraph', content: 'Combining filters needs & (and) and | (or) instead of Python\'s normal and/or keywords, and each condition needs its own parentheses. This trips up almost everyone the first time.' },
+      { type: 'code', language: 'python', content: `# Electronics AND over 1000
+filtered = df[(df["category"] == "Electronics") & (df["unit_price"] > 1000)]
+
+# North region OR South region
+filtered2 = df[(df["region"] == "North") | (df["region"] == "South")]` },
+      { type: 'callout', kind: 'warning', content: 'Forgetting the parentheses around each condition is the #1 pandas beginner mistake — df[df["category"] == "Electronics" & df["unit_price"] > 1000] (no inner parentheses) throws a confusing error. Always wrap each condition: (condition1) & (condition2).' },
+
+      { type: 'heading', content: 'A cleaner way to check a list of values: isin' },
+      { type: 'code', language: 'python', content: `# Same idea as SQL's WHERE category IN ('Electronics', 'Apparel')
+selected = df[df["category"].isin(["Electronics", "Apparel"])]` },
+
+      { type: 'heading', content: 'Sorting with sort_values' },
+      { type: 'code', language: 'python', content: `# Cheapest first (ascending is the default)
+df.sort_values("unit_price")
+
+# Most expensive first
+df.sort_values("unit_price", ascending=False)
+
+# Sort by region first, then by price within each region
+df.sort_values(["region", "unit_price"])` },
+
+      { type: 'heading', content: 'Real-life feel: a sales manager\'s daily question' },
+      { type: 'paragraph', content: '"Show me every Electronics order over ₹1000, sorted by price, highest first" is a completely normal request. In pandas, that is one line: df[(df["category"] == "Electronics") & (df["unit_price"] > 1000)].sort_values("unit_price", ascending=False) — filter, then sort, chained together exactly like a sentence.' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Filter the sample data to orders with quantity greater than 2, then sort the result by unit_price from highest to lowest.' },
+      { type: 'playground', language: 'python', starter: `import pandas as pd
+import io
+
+csv_text = """order_id,region,category,product,quantity,unit_price
+1,North,Electronics,Wireless Mouse,2,799
+2,South,Apparel,Cotton T-Shirt,3,599
+3,West,Electronics,Laptop Stand,1,1499
+4,North,Grocery,Coffee Beans,5,899
+5,East,Apparel,Running Shoes,1,3499
+6,South,Electronics,Wireless Mouse,4,799
+"""
+
+df = pd.read_csv(io.StringIO(csv_text))
+
+# TODO: filter to rows where quantity > 2
+# TODO: sort that result by unit_price, highest first
+# TODO: print the final result
+` },
+      { type: 'callout', kind: 'tip', content: 'Next module: real data is never as clean as these examples — missing values, inconsistent capitalisation, and duplicate rows are the normal state of things. Time to clean it up.' },
+    ],
+  },
+
+  {
+    id: 'py-i-3',
+    title: 'Cleaning messy data with pandas',
+    duration: '35 min',
+    sections: [
+      { type: 'heading', content: 'Real data always needs cleaning' },
+      { type: 'paragraph', content: 'Every dataset you will ever load professionally has some combination of: missing values, inconsistent text casing, duplicate rows, and columns stored as the wrong type. This module is the pandas equivalent of the Excel and SQL "cleaning" lessons you have already seen — same problems, pandas\' tools.' },
+
+      { type: 'heading', content: 'Finding missing values' },
+      { type: 'code', language: 'python', content: `print(df.isnull())          # True/False for every cell
+print(df.isnull().sum())    # how many missing values, per column` },
+      { type: 'paragraph', content: 'df.isnull().sum() is the single most useful line in this entire module — run it on any new dataset immediately after loading it, before doing anything else.' },
+
+      { type: 'heading', content: 'Handling missing values' },
+      { type: 'code', language: 'python', content: `# Drop any row that has at least one missing value
+df_dropped = df.dropna()
+
+# Fill missing values with something specific instead
+df_filled = df.fillna({"product": "Unknown Product"})
+
+# Fill a numeric column's missing values with that column's average
+df["unit_price"] = df["unit_price"].fillna(df["unit_price"].mean())` },
+      { type: 'paragraph', content: 'Which approach is right depends entirely on the question you are answering. Dropping rows is safest when missing data is rare and you cannot reasonably guess the value. Filling with a sensible default (like a category\'s average price) keeps more data usable, but only do this when a reasonable default actually exists.' },
+
+      { type: 'heading', content: 'Fixing inconsistent text' },
+      { type: 'paragraph', content: 'This is the exact same problem you cleaned up with TRIM/UPPER/PROPER in the Excel course and SQL course — pandas just has its own names for the same ideas.' },
+      { type: 'code', language: 'python', content: `df["product"] = df["product"].str.strip()        # remove extra whitespace
+df["product"] = df["product"].str.title()         # Consistent Title Case
+df["category"] = df["category"].str.upper()        # ALL CAPS, if that is what you need` },
+      { type: 'paragraph', content: 'The .str accessor is what unlocks string methods on an entire column at once — .str.strip() runs Python\'s .strip() on every single value in that column, in one line, instead of a loop.' },
+
+      { type: 'heading', content: 'Removing duplicate rows' },
+      { type: 'code', language: 'python', content: `print(df.duplicated().sum())   # how many fully duplicate rows exist
+df = df.drop_duplicates()      # keep only the first copy of each` },
+
+      { type: 'heading', content: 'Fixing column types' },
+      { type: 'paragraph', content: 'Sometimes a column that should be numeric gets loaded as text — usually because of a stray non-numeric value somewhere in the column, like "N/A" mixed in with real numbers.' },
+      { type: 'code', language: 'python', content: `# errors="coerce" turns anything it cannot convert into NaN (missing),
+# instead of crashing the whole operation
+df["unit_price"] = pd.to_numeric(df["unit_price"], errors="coerce")
+
+# Same idea for dates
+df["order_date"] = pd.to_datetime(df["order_date"], errors="coerce")` },
+      { type: 'callout', kind: 'tip', content: 'errors="coerce" is worth remembering by name — it is the pandas equivalent of the try/except pattern from your beginner Python course: instead of crashing on the first bad value, it quietly turns problem values into NaN (missing) so you can find and handle them deliberately afterward, rather than losing the whole column to one typo.' },
+
+      { type: 'heading', content: 'Real-life feel: the CSV someone emailed you' },
+      { type: 'paragraph', content: 'Picture a CSV exported from someone else\'s system: "wireless mouse" in one row, "Wireless Mouse" in another, a blank cell where a product name should be, and a price column that loaded as text because one row says "799 " with a trailing space. None of this is unusual — it is the normal starting condition of real data, and this module is the toolkit for turning it into something trustworthy.' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Clean the messy sample data below: strip and title-case the product column, fill missing prices with the column average, and remove duplicate rows.' },
+      { type: 'playground', language: 'python', starter: `import pandas as pd
+import io
+
+csv_text = """order_id,product,unit_price
+1, wireless mouse ,799
+2,Wireless Mouse,799
+3,LAPTOP STAND,1499
+4,Coffee Beans,
+5,running shoes,3499
+"""
+
+df = pd.read_csv(io.StringIO(csv_text))
+
+# TODO: strip whitespace and title-case the "product" column
+# TODO: fill missing unit_price values with the column's average
+# TODO: drop duplicate rows
+# TODO: print the cleaned DataFrame
+` },
+      { type: 'callout', kind: 'tip', content: 'Next module: once your data is clean, the real analysis begins — grouping rows into categories and calculating totals per group, the pandas equivalent of SQL\'s GROUP BY.' },
+    ],
+  },
+
+  {
+    id: 'py-i-4',
+    title: 'Grouping and aggregating: groupby and pivot tables',
+    duration: '35 min',
+    sections: [
+      { type: 'heading', content: 'From individual rows to insights' },
+      { type: 'paragraph', content: 'If you have taken this platform\'s SQL course, you already understand this module conceptually — GROUP BY in SQL and groupby() in pandas solve the exact same problem: "give me one number per category, not one number per row."' },
+
+      { type: 'heading', content: 'Your first groupby' },
+      { type: 'code', language: 'python', content: `# Total sales value per category
+df["total"] = df["quantity"] * df["unit_price"]
+print(df.groupby("category")["total"].sum())` },
+      { type: 'paragraph', content: 'Read it in three steps: groupby("category") buckets the rows by category, ["total"] picks which column to calculate on, and .sum() decides what to calculate. Swap .sum() for .mean(), .count(), .max(), or .min() to ask a different question about the same groups.' },
+
+      { type: 'heading', content: 'Grouping by more than one column' },
+      { type: 'code', language: 'python', content: `# Total sales per region, per category
+print(df.groupby(["region", "category"])["total"].sum())` },
+
+      { type: 'heading', content: 'Multiple statistics at once with agg' },
+      { type: 'code', language: 'python', content: `summary = df.groupby("category")["total"].agg(["sum", "mean", "count"])
+print(summary)
+# Gives you sum, average, and row count, per category, in one table` },
+
+      { type: 'heading', content: 'Pivot tables: the Excel feature, in code' },
+      { type: 'paragraph', content: 'If you have built a pivot table in Excel, pivot_table() is doing the literal same thing — categories down the side, another category across the top, and a calculated value filling the grid.' },
+      { type: 'code', language: 'python', content: `pivot = df.pivot_table(
+    values="total",
+    index="region",
+    columns="category",
+    aggfunc="sum",
+    fill_value=0
+)
+print(pivot)
+# Rows = region, columns = category, cells = total sales, 0 where there is no data` },
+      { type: 'paragraph', content: 'fill_value=0 matters here — without it, any region/category combination with no orders shows up as NaN (missing), which looks like an error rather than "zero sales," and can break further calculations.' },
+
+      { type: 'heading', content: 'Real-life feel: the monthly report someone always asks for' },
+      { type: 'paragraph', content: '"Can you send me total sales by region and category?" is one of the most common requests in any data job. Without groupby, this means manually filtering and summing for every single combination by hand. With it, it is the pivot_table() call above, and it stays correct automatically every time new rows get added to the underlying data.' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Calculate total sales (quantity × unit_price) per category, then build a pivot table showing total sales by region and category.' },
+      { type: 'playground', language: 'python', starter: `import pandas as pd
+import io
+
+csv_text = """order_id,region,category,product,quantity,unit_price
+1,North,Electronics,Wireless Mouse,2,799
+2,South,Apparel,Cotton T-Shirt,3,599
+3,West,Electronics,Laptop Stand,1,1499
+4,North,Grocery,Coffee Beans,5,899
+5,East,Apparel,Running Shoes,1,3499
+6,South,Electronics,Wireless Mouse,4,799
+7,North,Home,Table Lamp,2,1299
+8,West,Grocery,Green Tea Pack,6,349
+"""
+
+df = pd.read_csv(io.StringIO(csv_text))
+df["total"] = df["quantity"] * df["unit_price"]
+
+# TODO: print total sales per category, using groupby
+# TODO: build and print a pivot table: rows = region, columns = category, values = total
+` },
+      { type: 'callout', kind: 'tip', content: 'A quick mini project next puts everything from Modules 1-4 to work on one connected dataset, before the track moves on to NumPy and combining multiple tables.' },
+    ],
+  },
+
+  {
+    id: 'py-mp-i-1',
+    title: 'Mini Project: Sales Data Explorer',
+    duration: '30 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'Quick practice before moving on' },
+      { type: 'paragraph', content: "You've learned to load, filter, clean, and group data with pandas. This project ties all four together on a single, realistically messy sales dataset for a small retail chain called BrightMart — the kind of dataset that would actually land in a junior analyst's inbox on day one." },
+      { type: 'list', items: [
+        'Concepts used: read_csv, filtering, str cleaning, fillna/drop_duplicates, groupby, pivot_table',
+      ]},
+
+      { type: 'heading', content: 'The dataset' },
+      { type: 'paragraph', content: 'Twenty rows of BrightMart sales data — deliberately a little messy, just like Mini Project 1 from the beginner Excel and SQL tracks. Run the starter code below to load it before working through the tasks.' },
+      { type: 'code', language: 'python', content: `import pandas as pd
+import io
+
+csv_text = """order_id,region,category,product,quantity,unit_price,customer_name
+1,North,Electronics,Wireless Mouse,2,799,Aditi Rao
+2,South,Apparel,Cotton T-Shirt,3,599,Rohan Kumar
+3,West,Electronics,Laptop Stand,1,1499, Sarah Chen
+4,North,Grocery,Coffee Beans,5,899,Marcus Johnson
+5,East,Apparel,running shoes,1,3499,Priya Sharma
+6,South,Electronics,Wireless Mouse,4,799,James Okonkwo
+7,North,Home,Table Lamp,2,1299,Yuki Tanaka
+8,West,Grocery,Green Tea Pack,6,349,Diego Martinez
+9,East,Electronics,Laptop Stand,1,1499,Fatima Al-Sayed
+10,South,Home,Throw Pillow,3,599, Liam O'Brien
+11,North,Apparel,Cotton T-Shirt,2,599,Aditi Rao
+12,West,Electronics,WIRELESS MOUSE,1,799,Rohan Kumar
+13,East,Grocery,Coffee Beans,4,899,Sarah Chen
+14,South,Home,Table Lamp,1,1299,Marcus Johnson
+15,North,Electronics,Laptop Stand,2,1499,Priya Sharma
+16,West,Apparel,Running Shoes,1,3499,James Okonkwo
+17,East,Home,Throw Pillow,5,599,Yuki Tanaka
+18,South,Grocery,Green Tea Pack,3,349,Diego Martinez
+19,North,Grocery,,2,899,Fatima Al-Sayed
+20,West,Electronics,Wireless Mouse ,3,799,Liam O'Brien
+"""
+
+df = pd.read_csv(io.StringIO(csv_text))
+print(df.shape)` },
+
+      { type: 'heading', content: 'Task 1: Clean the product column' },
+      { type: 'paragraph', content: 'The product column has inconsistent capitalisation ("WIRELESS MOUSE" vs "Wireless Mouse") and stray whitespace. Clean it so every variant of the same product reads identically.' },
+      { type: 'playground', language: 'python', starter: `# Reload the dataset, then write your cleaning code below
+import pandas as pd
+import io
+
+csv_text = """order_id,region,category,product,quantity,unit_price,customer_name
+1,North,Electronics,Wireless Mouse,2,799,Aditi Rao
+3,West,Electronics,Laptop Stand,1,1499, Sarah Chen
+5,East,Apparel,running shoes,1,3499,Priya Sharma
+12,West,Electronics,WIRELESS MOUSE,1,799,Rohan Kumar
+16,West,Apparel,Running Shoes,1,3499,James Okonkwo
+20,West,Electronics,Wireless Mouse ,3,799,Liam O'Brien
+"""
+df = pd.read_csv(io.StringIO(csv_text))
+
+# Write your code here
+` },
+      { type: 'code', language: 'python', content: `# Sample solution
+df["product"] = df["product"].str.strip().str.title()
+print(df["product"].unique())
+# Output: ['Wireless Mouse' 'Laptop Stand' 'Running Shoes']` },
+
+      { type: 'heading', content: 'Task 2: Handle the missing product name' },
+      { type: 'paragraph', content: 'Order 19 has no product listed. Fill it with the text "Unknown Product" rather than dropping the whole row — the order still represents real revenue.' },
+      { type: 'playground', language: 'python', starter: `import pandas as pd
+import io
+
+csv_text = """order_id,product
+17,Throw Pillow
+18,Green Tea Pack
+19,
+20,Wireless Mouse
+"""
+df = pd.read_csv(io.StringIO(csv_text))
+
+# Write your code here
+` },
+      { type: 'code', language: 'python', content: `# Sample solution
+df["product"] = df["product"].fillna("Unknown Product")
+print(df)` },
+
+      { type: 'heading', content: 'Task 3: Total revenue by category' },
+      { type: 'paragraph', content: 'Calculate a "total" column (quantity × unit_price), then find total revenue per category, sorted highest to lowest.' },
+      { type: 'playground', language: 'python', starter: `import pandas as pd
+import io
+
+csv_text = """order_id,region,category,product,quantity,unit_price,customer_name
+1,North,Electronics,Wireless Mouse,2,799,Aditi Rao
+2,South,Apparel,Cotton T-Shirt,3,599,Rohan Kumar
+3,West,Electronics,Laptop Stand,1,1499,Sarah Chen
+4,North,Grocery,Coffee Beans,5,899,Marcus Johnson
+5,East,Apparel,Running Shoes,1,3499,Priya Sharma
+6,South,Electronics,Wireless Mouse,4,799,James Okonkwo
+7,North,Home,Table Lamp,2,1299,Yuki Tanaka
+8,West,Grocery,Green Tea Pack,6,349,Diego Martinez
+9,East,Electronics,Laptop Stand,1,1499,Fatima Al-Sayed
+10,South,Home,Throw Pillow,3,599,Liam O'Brien
+11,North,Apparel,Cotton T-Shirt,2,599,Aditi Rao
+12,West,Electronics,Wireless Mouse,1,799,Rohan Kumar
+13,East,Grocery,Coffee Beans,4,899,Sarah Chen
+14,South,Home,Table Lamp,1,1299,Marcus Johnson
+15,North,Electronics,Laptop Stand,2,1499,Priya Sharma
+16,West,Apparel,Running Shoes,1,3499,James Okonkwo
+17,East,Home,Throw Pillow,5,599,Yuki Tanaka
+18,South,Grocery,Green Tea Pack,3,349,Diego Martinez
+19,North,Grocery,Unknown Product,2,899,Fatima Al-Sayed
+20,West,Electronics,Wireless Mouse,3,799,Liam O'Brien
+"""
+df = pd.read_csv(io.StringIO(csv_text))
+
+# TODO: add a "total" column (quantity * unit_price)
+# TODO: print total revenue per category, sorted highest to lowest
+` },
+      { type: 'code', language: 'python', content: `# Sample solution
+df["total"] = df["quantity"] * df["unit_price"]
+print(df.groupby("category")["total"].sum().sort_values(ascending=False))` },
+
+      { type: 'heading', content: 'Task 4: A region-by-category pivot table' },
+      { type: 'paragraph', content: 'Using the same cleaned data, build a pivot table showing total revenue with regions as rows and categories as columns.' },
+      { type: 'playground', language: 'python', starter: `import pandas as pd
+import io
+
+csv_text = """order_id,region,category,product,quantity,unit_price,customer_name
+1,North,Electronics,Wireless Mouse,2,799,Aditi Rao
+2,South,Apparel,Cotton T-Shirt,3,599,Rohan Kumar
+3,West,Electronics,Laptop Stand,1,1499,Sarah Chen
+4,North,Grocery,Coffee Beans,5,899,Marcus Johnson
+5,East,Apparel,Running Shoes,1,3499,Priya Sharma
+6,South,Electronics,Wireless Mouse,4,799,James Okonkwo
+7,North,Home,Table Lamp,2,1299,Yuki Tanaka
+8,West,Grocery,Green Tea Pack,6,349,Diego Martinez
+9,East,Electronics,Laptop Stand,1,1499,Fatima Al-Sayed
+10,South,Home,Throw Pillow,3,599,Liam O'Brien
+11,North,Apparel,Cotton T-Shirt,2,599,Aditi Rao
+12,West,Electronics,Wireless Mouse,1,799,Rohan Kumar
+13,East,Grocery,Coffee Beans,4,899,Sarah Chen
+14,South,Home,Table Lamp,1,1299,Marcus Johnson
+15,North,Electronics,Laptop Stand,2,1499,Priya Sharma
+16,West,Apparel,Running Shoes,1,3499,James Okonkwo
+17,East,Home,Throw Pillow,5,599,Yuki Tanaka
+18,South,Grocery,Green Tea Pack,3,349,Diego Martinez
+19,North,Grocery,Unknown Product,2,899,Fatima Al-Sayed
+20,West,Electronics,Wireless Mouse,3,799,Liam O'Brien
+"""
+df = pd.read_csv(io.StringIO(csv_text))
+df["total"] = df["quantity"] * df["unit_price"]
+
+# TODO: build a pivot table -- rows = region, columns = category,
+#       values = total, fill_value = 0
+` },
+      { type: 'code', language: 'python', content: `# Sample solution
+pivot = df.pivot_table(values="total", index="region", columns="category", aggfunc="sum", fill_value=0)
+print(pivot)` },
+
+      { type: 'heading', content: 'Task 5: Top customer' },
+      { type: 'paragraph', content: 'After cleaning the customer_name column (it has the same stray-whitespace problem as product), find which customer has spent the most overall.' },
+      { type: 'playground', language: 'python', starter: `import pandas as pd
+import io
+
+csv_text = """order_id,quantity,unit_price,customer_name
+1,2,799, Aditi Rao
+2,2,599,Aditi Rao
+3,1,1499,Rohan Kumar
+4,4,799, Rohan Kumar
+5,1,3499,Priya Sharma
+"""
+df = pd.read_csv(io.StringIO(csv_text))
+df["total"] = df["quantity"] * df["unit_price"]
+
+# TODO: strip extra whitespace from customer_name
+# TODO: find which customer has the highest total spend
+` },
+      { type: 'code', language: 'python', content: `# Sample solution
+df["customer_name"] = df["customer_name"].str.strip()
+print(df.groupby("customer_name")["total"].sum().sort_values(ascending=False).head(1))` },
+    ],
+  },
+
+  {
+    id: 'py-i-5',
+    title: 'NumPy: fast numerical computing',
+    duration: '30 min',
+    sections: [
+      { type: 'heading', content: 'What NumPy actually is' },
+      { type: 'paragraph', content: 'NumPy is the library pandas itself is built on top of. Where a Python list can hold anything (numbers, text, mixed together) and is relatively slow for maths, a NumPy array holds only one type of value and is dramatically faster — important once you are working with thousands or millions of numbers.' },
+
+      { type: 'heading', content: 'Creating an array' },
+      { type: 'code', language: 'python', content: `import numpy as np
+
+prices = np.array([799, 599, 1499, 899, 3499])
+print(prices)
+print(prices.mean())   # average
+print(prices.sum())    # total
+print(prices.max())    # largest
+print(prices.std())    # standard deviation -- how spread out the values are` },
+      { type: 'paragraph', content: 'If "standard deviation" sounds unfamiliar, this platform\'s Statistics course covers it properly — for now, just know it tells you how spread out a set of numbers is around the average. A small std means everything is close to the average; a large one means there is wide variation.' },
+
+      { type: 'heading', content: 'The real superpower: vectorised operations' },
+      { type: 'paragraph', content: 'In plain Python, applying 18% tax to every price means writing a loop. In NumPy, you just write the maths directly on the whole array — no loop at all.' },
+      { type: 'code', language: 'python', content: `prices = np.array([799, 599, 1499, 899, 3499])
+
+with_tax = prices * 1.18
+print(with_tax)
+# array([ 942.82,  706.82, 1768.82, 1060.82, 4128.82])
+
+discounted = prices - (prices * 0.10)
+print(discounted)` },
+      { type: 'paragraph', content: 'prices * 1.18 applies the multiplication to every single element simultaneously. This is called a vectorised operation, and it is both shorter to write and dramatically faster to run than a for loop over the same data — this is the actual reason NumPy (and pandas, built on top of it) can handle huge datasets that would make plain Python crawl.' },
+
+      { type: 'heading', content: 'Filtering arrays, the NumPy way' },
+      { type: 'code', language: 'python', content: `prices = np.array([799, 599, 1499, 899, 3499])
+
+# This is the exact same boolean-mask idea from the pandas filtering module
+expensive = prices[prices > 1000]
+print(expensive)   # array([1499, 3499])
+
+print(np.sum(prices > 1000))   # 2 -- counts how many values matched` },
+      { type: 'paragraph', content: 'This is not a coincidence — pandas\' df[df["price"] > 1000] filtering pattern you learned earlier works because pandas columns are built on NumPy arrays underneath. Learning this syntax here reinforces the exact same mental model.' },
+
+      { type: 'heading', content: 'Useful array-building shortcuts' },
+      { type: 'code', language: 'python', content: `print(np.arange(1, 11))        # [1 2 3 4 5 6 7 8 9 10] -- like range(), but an array
+print(np.zeros(5))              # [0. 0. 0. 0. 0.]
+print(np.round(3.456, 2))       # 3.46
+print(np.sqrt(81))               # 9.0` },
+
+      { type: 'heading', content: 'Real-life feel: why this matters at scale' },
+      { type: 'paragraph', content: 'On 5 numbers, a Python loop and a NumPy vectorised operation feel identical. On 5 million numbers — a year of transaction-level data for a mid-sized company — the loop can take minutes while the vectorised version takes a fraction of a second, because NumPy runs the actual maths in fast, compiled code instead of Python\'s slower line-by-line execution.' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Given an array of order totals, calculate the mean and standard deviation, then find every order above the mean using a boolean mask.' },
+      { type: 'playground', language: 'python', starter: `import numpy as np
+
+totals = np.array([1200, 450, 3000, 899, 60, 2100, 750])
+
+# TODO: print the mean
+# TODO: print the standard deviation
+# TODO: print every value greater than the mean
+` },
+      { type: 'callout', kind: 'tip', content: "Next module: real analysis almost never lives in one table. Combining a customers table with an orders table — the pandas equivalent of SQL's JOIN — is next." },
+    ],
+  },
+
+  {
+    id: 'py-i-6',
+    title: 'Combining datasets: merge, join, and concat',
+    duration: '35 min',
+    sections: [
+      { type: 'heading', content: 'When one table is not enough' },
+      { type: 'paragraph', content: 'If you have taken this platform\'s SQL course, this entire module is "JOIN, but in pandas." Customer details live in one table, orders live in another, and you need to bring them together to answer real questions.' },
+
+      { type: 'heading', content: 'merge: the pandas equivalent of JOIN' },
+      { type: 'code', language: 'python', content: `import pandas as pd
+
+customers = pd.DataFrame({
+    "customer_id": [1, 2, 3],
+    "name": ["Aditi Rao", "Rohan Kumar", "Priya Sharma"]
+})
+
+orders = pd.DataFrame({
+    "order_id": [101, 102, 103],
+    "customer_id": [1, 2, 1],
+    "total": [799, 1499, 599]
+})
+
+merged = pd.merge(customers, orders, on="customer_id")
+print(merged)` },
+      { type: 'paragraph', content: 'on="customer_id" tells pandas which column links the two tables — exactly like SQL\'s ON customers.id = orders.customer_id. By default, pd.merge() behaves like an INNER JOIN: only customers who actually have a matching order appear in the result.' },
+
+      { type: 'heading', content: 'Keeping everyone: the how= argument' },
+      { type: 'code', language: 'python', content: `# Keep every customer, even ones with no orders (pandas' LEFT JOIN)
+left_merged = pd.merge(customers, orders, on="customer_id", how="left")
+print(left_merged)
+# Priya Sharma appears with NaN in order_id and total, since she has no orders` },
+      { type: 'paragraph', content: 'how="left" is the direct equivalent of SQL\'s LEFT JOIN. how="right", how="outer" (FULL OUTER JOIN), and how="inner" (the default) all exist too, mapping one-to-one with the JOIN types from the SQL course.' },
+
+      { type: 'heading', content: 'When column names do not match' },
+      { type: 'code', language: 'python', content: `orders2 = orders.rename(columns={"customer_id": "cust_id"})
+
+merged2 = pd.merge(customers, orders2, left_on="customer_id", right_on="cust_id")` },
+
+      { type: 'heading', content: 'concat: stacking tables instead of joining them' },
+      { type: 'paragraph', content: 'merge connects tables sideways (adding columns). concat stacks tables on top of each other (adding rows) — the pandas equivalent of SQL\'s UNION.' },
+      { type: 'code', language: 'python', content: `jan_sales = pd.DataFrame({"product": ["Mouse", "Keyboard"], "total": [799, 1200]})
+feb_sales = pd.DataFrame({"product": ["Mouse", "Monitor"], "total": [799, 8500]})
+
+all_sales = pd.concat([jan_sales, feb_sales], ignore_index=True)
+print(all_sales)
+# All 4 rows stacked together; ignore_index=True renumbers the rows cleanly` },
+
+      { type: 'heading', content: 'Real-life feel: the report that needs two tables' },
+      { type: 'paragraph', content: '"Show me each customer\'s name next to their total spend" is impossible to answer from either the customers table or the orders table alone — the name lives in one, the spend lives in the other. pd.merge() followed by a groupby (from Module 4) is exactly how this gets solved in two lines.' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Merge the two tables below, keeping every customer even if they have no orders, then calculate each customer\'s total spend (customers with no orders should show 0, not NaN — hint: fillna after merging).' },
+      { type: 'playground', language: 'python', starter: `import pandas as pd
+
+customers = pd.DataFrame({
+    "customer_id": [1, 2, 3, 4],
+    "name": ["Aditi Rao", "Rohan Kumar", "Priya Sharma", "Marcus Johnson"]
+})
+
+orders = pd.DataFrame({
+    "order_id": [101, 102, 103, 104],
+    "customer_id": [1, 2, 1, 2],
+    "total": [799, 1499, 599, 350]
+})
+
+# TODO: merge customers and orders, keeping every customer (how="left")
+# TODO: fill any missing "total" values with 0
+# TODO: print each customer's total spend, grouped by name
+` },
+      { type: 'callout', kind: 'tip', content: 'Next module: turning the numbers you can now compute into an actual chart, with matplotlib.' },
+    ],
+  },
+
+  {
+    id: 'py-i-7',
+    title: 'Visualizing data with matplotlib',
+    duration: '35 min',
+    sections: [
+      { type: 'heading', content: 'Why a chart beats a table' },
+      { type: 'paragraph', content: 'A table of 12 monthly revenue numbers takes real effort to read. The same 12 numbers as a line going up and to the right communicates the trend in under a second. matplotlib is Python\'s most widely used charting library, and it works directly with the pandas DataFrames you already know how to build.' },
+
+      { type: 'heading', content: 'Your first chart' },
+      { type: 'paragraph', content: 'In this playground, call show_plot() instead of matplotlib\'s usual plt.show() — show_plot() is a small helper already provided here that renders the chart as an actual image in your results panel.' },
+      { type: 'code', language: 'python', content: `import matplotlib.pyplot as plt
+
+cities = ["Mumbai", "Delhi", "Bengaluru"]
+sales = [120000, 95000, 150000]
+
+fig, ax = plt.subplots()
+ax.bar(cities, sales)
+ax.set_title("Sales by City")
+ax.set_ylabel("Total Sales (₹)")
+show_plot()` },
+      { type: 'paragraph', content: 'fig, ax = plt.subplots() creates a blank chart canvas (fig) and the actual plotting area on it (ax). Almost every matplotlib chart starts with that exact line.' },
+
+      { type: 'heading', content: 'The chart types you will use most' },
+      { type: 'code', language: 'python', content: `# Bar chart -- comparing categories
+ax.bar(cities, sales)
+
+# Line chart -- a trend over time
+ax.plot(months, monthly_revenue)
+
+# Scatter plot -- the relationship between two numeric columns
+ax.scatter(df["quantity"], df["unit_price"])
+
+# Pie chart -- share of a total (use sparingly, same advice as the Excel course)
+ax.pie(sales, labels=cities)` },
+      { type: 'paragraph', content: 'This is the exact same guidance from the Excel course\'s charting module: bar charts for comparing categories, line charts for trends over time, pie charts only for a handful of categories. The advice does not change just because the tool did.' },
+
+      { type: 'heading', content: 'Charting straight from a pandas DataFrame' },
+      { type: 'paragraph', content: 'pandas has a built-in shortcut that skips most of the matplotlib setup — useful for a quick look while you are still exploring data.' },
+      { type: 'code', language: 'python', content: `import pandas as pd
+import matplotlib.pyplot as plt
+
+df = pd.DataFrame({
+    "category": ["Electronics", "Apparel", "Grocery", "Home"],
+    "total": [45000, 22000, 18000, 15000]
+})
+
+df.plot(kind="bar", x="category", y="total", title="Revenue by Category", legend=False)
+show_plot()` },
+
+      { type: 'heading', content: 'Labels, titles, and making a chart readable' },
+      { type: 'code', language: 'python', content: `fig, ax = plt.subplots()
+ax.bar(cities, sales)
+ax.set_title("Monthly Sales by City")
+ax.set_xlabel("City")
+ax.set_ylabel("Sales (₹)")
+plt.xticks(rotation=45)   # angles long labels so they don't overlap
+show_plot()` },
+      { type: 'callout', kind: 'tip', content: 'A chart with no title and no axis labels forces the reader to guess what they are looking at. Get in the habit of adding both every single time — it takes two extra lines and makes the difference between a chart someone trusts and one they question.' },
+
+      { type: 'heading', content: 'Real-life feel: the slide in tomorrow\'s meeting' },
+      { type: 'paragraph', content: 'Almost every business presentation that includes a "revenue by region" or "sales over time" slide started life as exactly this: a pandas groupby to get the numbers, then three or four lines of matplotlib to turn them into the chart that actually ends up on the slide.' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Using the category totals below, build a bar chart titled "Revenue by Category" with proper axis labels.' },
+      { type: 'playground', language: 'python', starter: `import matplotlib.pyplot as plt
+
+categories = ["Electronics", "Apparel", "Grocery", "Home"]
+totals = [45000, 22000, 18000, 15000]
+
+# TODO: create a bar chart of totals by category
+# TODO: add a title and axis labels
+# TODO: call show_plot()
+` },
+      { type: 'callout', kind: 'tip', content: 'A quick mini project next combines pandas, NumPy, and matplotlib into one visual report, before the track moves on to pulling data from the outside world.' },
+    ],
+  },
+
+  {
+    id: 'py-mp-i-2',
+    title: 'Mini Project: Visual Sales Report',
+    duration: '30 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'Quick practice before moving on' },
+      { type: 'paragraph', content: 'This project combines everything from the last three modules — NumPy for the numbers, merge for combining tables, and matplotlib for the chart — into a small but complete report on BrightMart\'s sales performance.' },
+      { type: 'list', items: [
+        'Concepts used: NumPy statistics, pd.merge, groupby, matplotlib bar charts',
+      ]},
+
+      { type: 'heading', content: 'Task 1: Order value statistics' },
+      { type: 'paragraph', content: 'Using NumPy, calculate the mean, standard deviation, and maximum order value from the totals below.' },
+      { type: 'playground', language: 'python', starter: `import numpy as np
+
+order_totals = np.array([1598, 1797, 1499, 4495, 3499, 3196, 2598, 2094, 1499, 1797])
+
+# TODO: print the mean, standard deviation, and max
+` },
+      { type: 'code', language: 'python', content: `# Sample solution
+print("Mean:", order_totals.mean())
+print("Std Dev:", order_totals.std())
+print("Max:", order_totals.max())` },
+
+      { type: 'heading', content: 'Task 2: Merge customers with their orders' },
+      { type: 'paragraph', content: 'Merge the two tables below so every customer appears, even ones with no orders yet.' },
+      { type: 'playground', language: 'python', starter: `import pandas as pd
+
+customers = pd.DataFrame({
+    "customer_id": [1, 2, 3, 4, 5],
+    "name": ["Aditi Rao", "Rohan Kumar", "Priya Sharma", "Marcus Johnson", "Yuki Tanaka"]
+})
+
+orders = pd.DataFrame({
+    "customer_id": [1, 2, 1, 3, 2],
+    "category": ["Electronics", "Apparel", "Electronics", "Grocery", "Home"],
+    "total": [1598, 1797, 1499, 4495, 2598]
+})
+
+# TODO: merge customers and orders with how="left"
+# TODO: print the result
+` },
+      { type: 'code', language: 'python', content: `# Sample solution
+merged = pd.merge(customers, orders, on="customer_id", how="left")
+print(merged)` },
+
+      { type: 'heading', content: 'Task 3: Revenue per category, charted' },
+      { type: 'paragraph', content: 'Group the merged data by category, total the revenue, and build a bar chart of the result.' },
+      { type: 'playground', language: 'python', starter: `import pandas as pd
+import matplotlib.pyplot as plt
+
+orders = pd.DataFrame({
+    "category": ["Electronics", "Apparel", "Electronics", "Grocery", "Home"],
+    "total": [1598, 1797, 1499, 4495, 2598]
+})
+
+# TODO: group by category and sum the total
+# TODO: build a bar chart of the result, with a title and axis labels
+# TODO: call show_plot()
+` },
+      { type: 'code', language: 'python', content: `# Sample solution
+by_category = orders.groupby("category")["total"].sum()
+
+fig, ax = plt.subplots()
+ax.bar(by_category.index, by_category.values)
+ax.set_title("Revenue by Category")
+ax.set_xlabel("Category")
+ax.set_ylabel("Revenue (₹)")
+show_plot()` },
+    ],
+  },
+
+  {
+    id: 'py-i-8',
+    title: 'Working with APIs and JSON',
+    duration: '35 min',
+    sections: [
+      { type: 'heading', content: 'Where data actually comes from' },
+      { type: 'paragraph', content: 'Every dataset so far has been handed to you as a ready-made CSV string. In the real world, a huge amount of data lives on someone else\'s server, and you fetch it on demand through an API (Application Programming Interface) — a defined way for your code to ask another system for data and get a structured answer back.' },
+
+      { type: 'heading', content: 'JSON: the format almost every API speaks' },
+      { type: 'paragraph', content: 'JSON (JavaScript Object Notation) looks almost exactly like a Python dictionary — curly braces, key-value pairs, lists in square brackets. That similarity is not an accident; it is why JSON became the standard format for APIs to communicate in.' },
+      { type: 'code', language: 'json', content: `{
+  "name": "Aditi Rao",
+  "city": "Mumbai",
+  "is_active": true,
+  "orders": [101, 102, 105]
+}` },
+      { type: 'paragraph', content: 'Once this arrives in Python, it behaves like a regular dictionary — data["name"] gives you "Aditi Rao", data["orders"] gives you the list [101, 102, 105].' },
+
+      { type: 'heading', content: 'Making your first API request' },
+      { type: 'paragraph', content: 'pyfetch is this playground\'s way of making a real network request from inside the browser. This example calls a free, public test API that exists specifically for practicing exactly this.' },
+      { type: 'code', language: 'python', content: `import pyodide.http
+
+response = await pyodide.http.pyfetch("https://jsonplaceholder.typicode.com/users/1")
+data = await response.json()
+
+print(data["name"])
+print(data["email"])
+print(data["address"]["city"])` },
+      { type: 'paragraph', content: 'Notice the await keyword before pyfetch and before .json() — a network request takes time (the request has to travel to a server and back), so Python pauses at await without freezing everything else, then continues once the response actually arrives.' },
+      { type: 'callout', kind: 'tip', content: 'In a real Python script running on your own computer (not in this browser playground), you would typically use the requests library instead — response = requests.get(url) followed by response.json(), with no await needed. This playground uses pyfetch specifically because it works safely inside a browser tab; the underlying idea (send a request, get JSON back) is identical either way.' },
+
+      { type: 'heading', content: 'Looping through a list of results' },
+      { type: 'paragraph', content: 'Most real APIs return a list of records, not just one — exactly like a table.' },
+      { type: 'code', language: 'python', content: `import pyodide.http
+
+response = await pyodide.http.pyfetch("https://jsonplaceholder.typicode.com/users")
+users = await response.json()
+
+print(f"Got {len(users)} users")
+for user in users[:5]:
+    print(f"{user['name']} — {user['company']['name']}")` },
+
+      { type: 'heading', content: 'From JSON straight into a DataFrame' },
+      { type: 'paragraph', content: 'Since a JSON list of objects is shaped exactly like the "list of dictionaries" pattern from your beginner course, pandas can turn it directly into a DataFrame — bridging everything you have learned about APIs straight back into everything you have learned about pandas.' },
+      { type: 'code', language: 'python', content: `import pyodide.http
+import pandas as pd
+
+response = await pyodide.http.pyfetch("https://jsonplaceholder.typicode.com/users")
+users = await response.json()
+
+df = pd.DataFrame(users)
+print(df[["name", "email"]].head())` },
+
+      { type: 'heading', content: 'Real-life feel: the weather widget, the stock ticker, the delivery tracker' },
+      { type: 'paragraph', content: 'Any app feature that shows live, constantly-changing data — today\'s weather, a live stock price, "your order is 10 minutes away" — is almost always an API call happening behind the scenes, fetched, parsed as JSON, and displayed. You now know the exact mechanism behind all of it.' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Fetch a single post from the same test API and print its title and body.' },
+      { type: 'playground', language: 'python', starter: `import pyodide.http
+
+# TODO: fetch https://jsonplaceholder.typicode.com/posts/1
+# TODO: parse the JSON response
+# TODO: print the "title" and "body" fields
+` },
+      { type: 'callout', kind: 'tip', content: "Next module: not every site offers a clean API — sometimes the data you need is only available as a regular web page, and you have to extract it from the HTML yourself. That is web scraping." },
+    ],
+  },
+
+  {
+    id: 'py-i-9',
+    title: 'Web scraping basics with BeautifulSoup',
+    duration: '30 min',
+    sections: [
+      { type: 'heading', content: 'When there is no API' },
+      { type: 'paragraph', content: 'Not every website offers a clean JSON API. Sometimes the only way to get data is to load the actual web page and pull what you need out of its HTML structure. That process is called web scraping, and BeautifulSoup is the most popular Python library for doing it.' },
+
+      { type: 'heading', content: 'A quick refresher on HTML structure' },
+      { type: 'paragraph', content: 'HTML is just nested tags — a <ul> (unordered list) contains <li> (list item) tags, a <div> can contain anything, and tags can have attributes like class="price" that help you find exactly the piece you want.' },
+      { type: 'code', language: 'html', content: `<div class="product">
+  <h3 class="name">Wireless Mouse</h3>
+  <span class="price">₹799</span>
+</div>` },
+
+      { type: 'heading', content: 'Parsing HTML with BeautifulSoup' },
+      { type: 'paragraph', content: 'In a real scraping script, you would fetch the page first (with pyfetch or requests, exactly like the previous module) and then hand the resulting HTML text to BeautifulSoup. Here, we will practice on a small HTML sample directly, since that is the part that actually matters: knowing how to pull structured data out of messy markup.' },
+      { type: 'code', language: 'python', content: `from bs4 import BeautifulSoup
+
+html = """
+<div class="product"><h3 class="name">Wireless Mouse</h3><span class="price">799</span></div>
+<div class="product"><h3 class="name">Laptop Stand</h3><span class="price">1499</span></div>
+<div class="product"><h3 class="name">Coffee Beans</h3><span class="price">899</span></div>
+"""
+
+soup = BeautifulSoup(html, "html.parser")
+print(soup.find("h3").get_text())   # finds the FIRST matching tag: "Wireless Mouse"` },
+
+      { type: 'heading', content: 'find_all: getting every match, not just the first' },
+      { type: 'code', language: 'python', content: `products = soup.find_all("div", class_="product")
+print(f"Found {len(products)} products")
+
+for product in products:
+    name = product.find("h3", class_="name").get_text()
+    price = product.find("span", class_="price").get_text()
+    print(f"{name}: ₹{price}")` },
+      { type: 'paragraph', content: 'class_ (with a trailing underscore) is BeautifulSoup\'s way of matching an HTML class attribute — the underscore exists because class is already a reserved word in Python, used for defining classes elsewhere in the language.' },
+
+      { type: 'heading', content: 'Turning scraped data into a DataFrame' },
+      { type: 'paragraph', content: 'Once the data is out of the HTML, it is just another list of dictionaries — feed it straight into pandas, exactly like the API data from the last module.' },
+      { type: 'code', language: 'python', content: `from bs4 import BeautifulSoup
+import pandas as pd
+
+html = """
+<div class="product"><h3 class="name">Wireless Mouse</h3><span class="price">799</span></div>
+<div class="product"><h3 class="name">Laptop Stand</h3><span class="price">1499</span></div>
+"""
+
+soup = BeautifulSoup(html, "html.parser")
+rows = []
+for product in soup.find_all("div", class_="product"):
+    rows.append({
+        "name": product.find("h3", class_="name").get_text(),
+        "price": int(product.find("span", class_="price").get_text())
+    })
+
+df = pd.DataFrame(rows)
+print(df)` },
+
+      { type: 'callout', kind: 'warning', content: "Before scraping any real website, check its terms of service and its robots.txt file (e.g. example.com/robots.txt), which states what the site allows automated tools to access. Scraping a site against its stated rules can get your IP address blocked, and in some cases carries legal risk. Always prefer a real API when one exists — scraping is a last resort, not a first choice." },
+
+      { type: 'heading', content: 'Real-life feel: price comparison sites' },
+      { type: 'paragraph', content: 'A price-comparison website that shows "this product across 5 stores" is very often built on scraping — visiting each store\'s product page, pulling out the price and availability with exactly this find/find_all pattern, and repeating it on a schedule to stay current.' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Parse the HTML below and print every restaurant name alongside its rating.' },
+      { type: 'playground', language: 'python', starter: `from bs4 import BeautifulSoup
+
+html = """
+<div class="restaurant"><h3 class="name">Spice Route</h3><span class="rating">4.8</span></div>
+<div class="restaurant"><h3 class="name">Tokyo Bites</h3><span class="rating">4.3</span></div>
+<div class="restaurant"><h3 class="name">Curry House</h3><span class="rating">4.5</span></div>
+"""
+
+soup = BeautifulSoup(html, "html.parser")
+
+# TODO: find every div with class "restaurant"
+# TODO: for each one, print the name and rating together
+` },
+      { type: 'callout', kind: 'tip', content: 'A quick mini project next combines fetching live data and parsing structured data into one small pipeline, before the track wraps up with how working Python developers actually set up their tools.' },
+    ],
+  },
+
+  {
+    id: 'py-mp-i-3',
+    title: 'Mini Project: Build a Mini Data Pipeline',
+    duration: '30 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'Quick practice before moving on' },
+      { type: 'paragraph', content: 'A "data pipeline" sounds intimidating, but it is just this: get data from somewhere, turn it into a clean DataFrame, and calculate something useful from it. This project builds one small pipeline from a live API, and one from scraped HTML, since real jobs need both skills.' },
+      { type: 'list', items: [
+        'Concepts used: pyfetch, JSON parsing, BeautifulSoup, pandas DataFrames',
+      ]},
+
+      { type: 'heading', content: 'Task 1: Fetch and summarise live data' },
+      { type: 'paragraph', content: 'Fetch every post from the test API, load it into a DataFrame, and count how many posts exist per userId.' },
+      { type: 'playground', language: 'python', starter: `import pyodide.http
+import pandas as pd
+
+# TODO: fetch https://jsonplaceholder.typicode.com/posts
+# TODO: load the result into a DataFrame
+# TODO: print how many posts exist per userId, using groupby and count
+` },
+      { type: 'code', language: 'python', content: `# Sample solution
+response = await pyodide.http.pyfetch("https://jsonplaceholder.typicode.com/posts")
+posts = await response.json()
+
+df = pd.DataFrame(posts)
+print(df.groupby("userId")["id"].count())` },
+
+      { type: 'heading', content: 'Task 2: Scrape, clean, and rank' },
+      { type: 'paragraph', content: 'Parse the HTML below into a DataFrame, then find the highest-rated restaurant.' },
+      { type: 'playground', language: 'python', starter: `from bs4 import BeautifulSoup
+import pandas as pd
+
+html = """
+<div class="restaurant"><h3 class="name">Spice Route</h3><span class="rating">4.8</span></div>
+<div class="restaurant"><h3 class="name">Tokyo Bites</h3><span class="rating">4.3</span></div>
+<div class="restaurant"><h3 class="name">Curry House</h3><span class="rating">4.5</span></div>
+<div class="restaurant"><h3 class="name">Pasta Palace</h3><span class="rating">3.0</span></div>
+"""
+
+soup = BeautifulSoup(html, "html.parser")
+
+# TODO: parse every restaurant into a list of dicts (name, rating as a float)
+# TODO: load the list into a DataFrame
+# TODO: print the single highest-rated restaurant
+` },
+      { type: 'code', language: 'python', content: `# Sample solution
+rows = []
+for r in soup.find_all("div", class_="restaurant"):
+    rows.append({
+        "name": r.find("h3", class_="name").get_text(),
+        "rating": float(r.find("span", class_="rating").get_text())
+    })
+
+df = pd.DataFrame(rows)
+print(df.sort_values("rating", ascending=False).head(1))` },
+
+      { type: 'heading', content: 'Task 3: Combine both into one chart' },
+      { type: 'paragraph', content: 'Using the restaurant ratings from Task 2, build a bar chart comparing all four restaurants.' },
+      { type: 'playground', language: 'python', starter: `from bs4 import BeautifulSoup
+import pandas as pd
+import matplotlib.pyplot as plt
+
+html = """
+<div class="restaurant"><h3 class="name">Spice Route</h3><span class="rating">4.8</span></div>
+<div class="restaurant"><h3 class="name">Tokyo Bites</h3><span class="rating">4.3</span></div>
+<div class="restaurant"><h3 class="name">Curry House</h3><span class="rating">4.5</span></div>
+<div class="restaurant"><h3 class="name">Pasta Palace</h3><span class="rating">3.0</span></div>
+"""
+
+soup = BeautifulSoup(html, "html.parser")
+rows = []
+for r in soup.find_all("div", class_="restaurant"):
+    rows.append({
+        "name": r.find("h3", class_="name").get_text(),
+        "rating": float(r.find("span", class_="rating").get_text())
+    })
+df = pd.DataFrame(rows)
+
+# TODO: build a bar chart: restaurant name on the x-axis, rating on the y-axis
+# TODO: call show_plot()
+` },
+      { type: 'code', language: 'python', content: `# Sample solution
+fig, ax = plt.subplots()
+ax.bar(df["name"], df["rating"])
+ax.set_title("Restaurant Ratings")
+ax.set_ylabel("Rating")
+plt.xticks(rotation=30)
+show_plot()` },
+    ],
+  },
+
+  {
+    id: 'py-i-10',
+    title: 'Jupyter notebooks: a different way of working',
+    duration: '20 min',
+    sections: [
+      { type: 'heading', content: 'What a notebook actually is' },
+      { type: 'paragraph', content: 'Every playground on this platform already gave you a taste of this: write some code, run just that piece, see the result immediately below it, then write more code building on what you already have. A Jupyter notebook is the real-world, professional version of exactly that workflow, run on your own computer.' },
+
+      { type: 'heading', content: 'Cells: the building block of a notebook' },
+      { type: 'paragraph', content: 'A notebook is a sequence of cells. A code cell runs Python, exactly like this platform\'s playgrounds. A markdown cell holds formatted text — headings, bullet points, explanations — letting you mix your analysis with the actual narrative around it, like a lab report that runs.' },
+      { type: 'code', language: 'text', content: `[ Markdown cell ]
+# Monthly Sales Analysis
+Looking at BrightMart's performance for Q1 2024.
+
+[ Code cell ]
+import pandas as pd
+df = pd.read_csv("sales.csv")
+df.head()
+   -> shows the actual DataFrame output, right below the cell
+
+[ Markdown cell ]
+## Findings
+Electronics is the top-performing category this quarter.
+
+[ Code cell ]
+df.groupby("category")["total"].sum().sort_values(ascending=False)
+   -> shows the actual numbers backing up that claim` },
+
+      { type: 'heading', content: 'Why data scientists love notebooks' },
+      { type: 'list', items: [
+        'You can run one cell at a time, instantly see if it worked, and fix it before moving to the next step — much faster feedback than running an entire script and waiting',
+        'Charts and tables render directly below the code that produced them, not in a separate window',
+        'A finished notebook doubles as documentation: anyone (including future you) can read top to bottom and see both the code and the reasoning behind it',
+        'It is the standard format for sharing exploratory data analysis — most data science tutorials, Kaggle competition write-ups, and academic data papers are published as notebooks',
+      ]},
+
+      { type: 'heading', content: 'Installing and running Jupyter on your own computer' },
+      { type: 'paragraph', content: 'This is something you would do on your own machine, not inside this browser-based platform — the next module covers exactly the tool (pip) you would use to install it.' },
+      { type: 'code', language: 'text', content: `pip install notebook
+jupyter notebook
+# This opens a tab in your browser where you create and run .ipynb notebook files` },
+      { type: 'callout', kind: 'tip', content: 'JupyterLab and VS Code (with the Jupyter extension) are two very popular ways to actually open and edit notebooks today — "jupyter notebook" launches the original, simplest interface, which is the best starting point while you are still learning.' },
+
+      { type: 'heading', content: 'Notebooks vs scripts: when to use which' },
+      { type: 'paragraph', content: 'Notebooks are built for exploration — messing around with data, trying five different approaches, looking at intermediate results along the way. A regular .py script is better once you know exactly what the code needs to do and want it to run reliably, end to end, without a human clicking through cells — for example, a script that runs automatically every night to refresh a report. Most real data work uses both: explore and prototype in a notebook, then move the finished, working logic into a proper script once it is solid.' },
+
+      { type: 'heading', content: 'Real-life feel: you have basically been using one' },
+      { type: 'paragraph', content: 'Every "Try it yourself" playground in this course — write code, run it, see the result right there, adjust and run again — is deliberately modeled on the notebook experience. The moment you install Jupyter on your own machine, the workflow itself will already feel completely familiar; only the surroundings change.' },
+    ],
+  },
+
+  {
+    id: 'py-i-11',
+    title: 'Virtual environments and managing packages',
+    duration: '25 min',
+    sections: [
+      { type: 'heading', content: 'The problem this solves' },
+      { type: 'paragraph', content: "Imagine two projects on your computer: one needs pandas version 1.5 because of an old tutorial, and a brand new project needs pandas version 2.2 to use a newer feature. If Python only had one single, global set of installed packages, installing one would break the other. A virtual environment is a separate, isolated set of installed packages, one per project, so they never collide." },
+
+      { type: 'heading', content: 'What a virtual environment actually is' },
+      { type: 'paragraph', content: 'It is just a folder containing its own private copy of Python and its own private collection of installed packages, completely separate from your computer\'s main Python installation and from every other project\'s environment.' },
+
+      { type: 'heading', content: 'Creating and activating one' },
+      { type: 'code', language: 'text', content: `# Create a virtual environment named "venv" inside your project folder
+python -m venv venv
+
+# Activate it (the exact command depends on your operating system)
+# macOS / Linux:
+source venv/bin/activate
+
+# Windows:
+venv\\Scripts\\activate
+
+# Your terminal prompt now shows (venv) at the start, confirming it's active` },
+      { type: 'paragraph', content: 'Once activated, any package you install with pip goes into that project\'s private folder, not your computer\'s global Python — leaving every other project completely untouched.' },
+
+      { type: 'heading', content: 'Installing packages with pip' },
+      { type: 'code', language: 'text', content: `pip install pandas numpy matplotlib
+
+# See everything currently installed in this environment
+pip list
+
+# Save the exact list to a file, so anyone else can recreate it
+pip freeze > requirements.txt
+
+# Someone else (or you, on a different computer) recreates your exact setup with:
+pip install -r requirements.txt` },
+      { type: 'paragraph', content: 'requirements.txt is the single most important habit in this module. It is a plain text list of every package (and often the exact version) a project needs — without it, sharing your code means also having to explain, by hand, everything someone needs to install before it will run.' },
+
+      { type: 'heading', content: 'Real-life feel: "it works on my machine"' },
+      { type: 'paragraph', content: 'This is one of the most common frustrations in all of software: code that runs perfectly for you and breaks immediately for a teammate, because their globally-installed pandas is a different version than yours, with some function behaving slightly differently. A requirements.txt file plus a virtual environment per project is the standard fix — it makes "what packages, what versions" an explicit, shareable fact instead of an invisible assumption.' },
+
+      { type: 'heading', content: 'A quick note on conda' },
+      { type: 'paragraph', content: 'conda is a popular alternative to venv + pip, especially common in data science specifically, because it can also manage non-Python dependencies (like certain C libraries that NumPy and pandas rely on under the hood) that pip alone sometimes struggles to install cleanly. If you see conda create -n myenv or conda install pandas in someone else\'s instructions, it is solving the exact same isolation problem as venv, just with a different tool.' },
+
+      { type: 'callout', kind: 'tip', content: "You do not need to memorise every pip/venv command right now — what matters is recognising the problem (different projects need different package versions) and knowing the solution exists (a virtual environment per project, with a requirements.txt to make it shareable). The exact commands are a five-second search away whenever you actually need them." },
+    ],
+  },
+
+  {
+    id: 'py-i-capstone',
+    title: 'Capstone: The Complete BrightMart Analysis',
+    duration: '60 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'Practice time — no new concepts here' },
+      { type: 'paragraph', content: "You've finished every lesson in this track. This capstone is meant to be done after the rest of the course: one connected analysis covering pandas (loading, filtering, cleaning, grouping, merging), NumPy, and matplotlib — everything except the tooling modules, which are about your own machine rather than a specific skill to practice. Nothing here is new; it is all about combining what you already know." },
+      { type: 'callout', kind: 'tip', content: 'Try every task yourself before checking the sample solution underneath it. By this point in the course, you have everything you need to solve each one without help.' },
+
+      { type: 'heading', content: 'Project 1 (Easy)' },
+      { type: 'paragraph', content: "The scenario: BrightMart's regional manager wants a clean monthly summary before a leadership meeting. Nothing here needs merging multiple tables yet — just loading, cleaning, and grouping, applied cleanly." },
+
+      { type: 'heading', content: 'Task 1: Load and inspect' },
+      { type: 'paragraph', content: 'Load the dataset below and print its shape and the count of missing values per column.' },
+      { type: 'playground', language: 'python', starter: `import pandas as pd
+import io
+
+csv_text = """order_id,order_date,region,category,product,quantity,unit_price,customer_name
+1,2024-01-05,North,Electronics,Wireless Mouse,2,799,Aditi Rao
+2,2024-01-07,South,Apparel,Cotton T-Shirt,3,599,Rohan Kumar
+3,2024-01-10,West,Electronics,Laptop Stand,1,1499, Sarah Chen
+4,2024-01-12,North,Grocery,Coffee Beans,5,899,Marcus Johnson
+5,2024-01-15,East,Apparel,running shoes,1,3499,Priya Sharma
+6,2024-01-18,South,Electronics,Wireless Mouse,4,799,James Okonkwo
+7,2024-01-20,North,Home,Table Lamp,2,1299,Yuki Tanaka
+8,2024-01-22,West,Grocery,Green Tea Pack,6,349,Diego Martinez
+9,2024-01-25,East,Electronics,Laptop Stand,1,1499,Fatima Al-Sayed
+10,2024-01-28,South,Home,Throw Pillow,3,599, Liam O'Brien
+11,2024-02-02,North,Apparel,Cotton T-Shirt,2,599,Aditi Rao
+12,2024-02-05,West,Electronics,WIRELESS MOUSE,1,799,Rohan Kumar
+13,2024-02-08,East,Grocery,Coffee Beans,4,899,Sarah Chen
+14,2024-02-10,South,Home,Table Lamp,1,1299,Marcus Johnson
+15,2024-02-14,North,Electronics,Laptop Stand,2,1499,Priya Sharma
+16,2024-02-18,West,Apparel,Running Shoes,1,3499,James Okonkwo
+17,2024-02-20,East,Home,Throw Pillow,5,599,Yuki Tanaka
+18,2024-02-22,South,Grocery,Green Tea Pack,3,349,Diego Martinez
+19,2024-02-25,North,Grocery,,2,899,Fatima Al-Sayed
+20,2024-02-28,West,Electronics,Wireless Mouse ,3,799,Liam O'Brien
+"""
+
+df = pd.read_csv(io.StringIO(csv_text))
+
+# TODO: print df.shape
+# TODO: print df.isnull().sum()
+` },
+      { type: 'code', language: 'python', content: `# Sample solution
+print(df.shape)
+print(df.isnull().sum())` },
+
+      { type: 'heading', content: 'Task 2: Clean the product and customer columns' },
+      { type: 'paragraph', content: 'Strip and title-case the product column, fill the one missing product with "Unknown Product", and strip extra whitespace from customer_name.' },
+      { type: 'code', language: 'python', content: `# Sample solution
+df["product"] = df["product"].str.strip().str.title()
+df["product"] = df["product"].fillna("Unknown Product")
+df["customer_name"] = df["customer_name"].str.strip()` },
+
+      { type: 'heading', content: 'Task 3: Total revenue by category' },
+      { type: 'paragraph', content: 'Add a "total" column and calculate total revenue per category, sorted highest to lowest.' },
+      { type: 'code', language: 'python', content: `# Sample solution
+df["total"] = df["quantity"] * df["unit_price"]
+print(df.groupby("category")["total"].sum().sort_values(ascending=False))` },
+
+      { type: 'heading', content: 'Task 4: Revenue by month' },
+      { type: 'paragraph', content: 'Convert order_date to an actual date type, extract the month, and calculate total revenue per month.' },
+      { type: 'code', language: 'python', content: `# Sample solution
+df["order_date"] = pd.to_datetime(df["order_date"])
+df["month"] = df["order_date"].dt.month
+print(df.groupby("month")["total"].sum())` },
+
+      { type: 'heading', content: 'Task 5: Chart it' },
+      { type: 'paragraph', content: 'Build a bar chart of total revenue by category, with a proper title and axis labels.' },
+      { type: 'code', language: 'python', content: `# Sample solution
+import matplotlib.pyplot as plt
+
+by_category = df.groupby("category")["total"].sum().sort_values(ascending=False)
+fig, ax = plt.subplots()
+ax.bar(by_category.index, by_category.values)
+ax.set_title("BrightMart Revenue by Category")
+ax.set_ylabel("Revenue (₹)")
+show_plot()` },
+
+      { type: 'heading', content: 'Project 2 (Hard)' },
+      { type: 'paragraph', content: "The scenario: leadership liked Project 1, and now wants a deeper analysis that brings in customer-level data too — something that needs merging multiple tables and a bit more statistical thinking." },
+
+      { type: 'heading', content: 'Task 6: Merge in customer signup data' },
+      { type: 'paragraph', content: 'A separate table tracks when each customer signed up. Merge it with the cleaned order data, keeping every order even if a customer\'s signup date is missing.' },
+      { type: 'playground', language: 'python', starter: `import pandas as pd
+
+orders = pd.DataFrame({
+    "customer_name": ["Aditi Rao", "Rohan Kumar", "Priya Sharma", "Marcus Johnson"],
+    "total": [1598, 2796, 3499, 4495]
+})
+
+signups = pd.DataFrame({
+    "customer_name": ["Aditi Rao", "Rohan Kumar", "Yuki Tanaka"],
+    "signup_date": ["2023-11-01", "2023-12-15", "2024-01-20"]
+})
+
+# TODO: merge orders and signups, keeping every order (how="left")
+# TODO: print the result
+` },
+      { type: 'code', language: 'python', content: `# Sample solution
+merged = pd.merge(orders, signups, on="customer_name", how="left")
+print(merged)
+# Priya Sharma and Marcus Johnson show NaN for signup_date -- they ordered
+# without a signup record on file, which is exactly the kind of gap a real
+# analysis needs to surface, not hide.` },
+
+      { type: 'heading', content: 'Task 7: Order value statistics with NumPy' },
+      { type: 'paragraph', content: 'Using NumPy, calculate the mean, standard deviation, and the number of orders above the mean.' },
+      { type: 'code', language: 'python', content: `# Sample solution
+import numpy as np
+
+totals = np.array([1598, 2796, 3499, 4495, 5394, 2097, 1499])
+print("Mean:", totals.mean())
+print("Std Dev:", totals.std())
+print("Orders above mean:", np.sum(totals > totals.mean()))` },
+
+      { type: 'heading', content: 'Task 8: Top region per category' },
+      { type: 'paragraph', content: 'Using a pivot table, find which single region generates the most revenue within the Electronics category specifically.' },
+      { type: 'code', language: 'python', content: `# Sample solution (continuing with the original BrightMart df from Project 1)
+pivot = df.pivot_table(values="total", index="region", columns="category", aggfunc="sum", fill_value=0)
+print(pivot["Electronics"].sort_values(ascending=False).head(1))` },
+
+      { type: 'heading', content: "You're done with the Python Intermediate track" },
+      { type: 'paragraph', content: "If you worked through both projects, you can now do what a working data analyst actually does day to day: load real, messy data, clean it with intention, combine it with other tables, calculate real statistics, and turn the result into a chart someone outside the data team can actually understand. That is a genuinely significant jump from the beginner track's foundation." },
+      { type: 'paragraph', content: "The Advanced track goes further still: deeper statistical analysis, working with larger and messier real-world datasets, and the habits that separate a working script from production-quality code. When ready, switch to Advanced from the sidebar." },
+    ],
+  },
+
+]
+
+/* ════════════════════════════════════════════════════════════════
    EXCEL — BEGINNER (full real first module)
    ════════════════════════════════════════════════════════════════ */
 const EXCEL_BEGINNER = [
@@ -2561,34 +5574,12 @@ const productionList = (titles, baseWeeks = 2) =>
 export const COURSE_CONTENT = {
   sql: {
     beginner: SQL_BEGINNER,
-    intermediate: productionList([
-      'Subqueries: queries inside queries',
-      'CASE WHEN: if-then-else in SQL',
-      'More JOIN types: RIGHT, FULL, SELF',
-      'Working with dates and times',
-      'String functions you will actually use',
-      'CTEs: naming your query parts',
-    ]),
-    advanced: productionList([
-      'Window functions: running totals, ranks, moving averages',
-      'Query optimisation and indexes',
-      'Recursive queries',
-      'Transactions and isolation levels',
-      'Pivot and unpivot patterns',
-      'Performance tuning',
-    ], 4),
+    intermediate: SQL_INTERMEDIATE,
+    advanced: SQL_ADVANCED,
   },
   python: {
     beginner: PYTHON_BEGINNER,
-    intermediate: productionList([
-      'pandas: data manipulation',
-      'NumPy: numerical computing',
-      'Plotting with matplotlib',
-      'Working with APIs',
-      'Web scraping basics',
-      'Jupyter notebooks',
-      'Virtual environments',
-    ], 3),
+    intermediate: PYTHON_INTERMEDIATE,
     advanced: productionList([
       'Object-oriented Python',
       'Decorators and generators',

@@ -39,14 +39,25 @@ export default function CourseDetail() {
     const modules = getModuleList(course.slug, activeLevel)
     if (!modules.length) return
 
+    // Resume where the learner left off: jump to the first module they
+    // haven't completed yet, or module 1 if they haven't started (or have
+    // finished everything).
+    let completed = new Set()
+    try {
+      completed = new Set(JSON.parse(localStorage.getItem(`lds_completed_${course.slug}_${activeLevel}`) || '[]'))
+    } catch {}
+    const firstIncompleteIndex = modules.findIndex(m => !completed.has(m.id))
+    const targetIndex = firstIncompleteIndex === -1 ? 0 : firstIncompleteIndex
+
     trackEvent('start_course', {
       course_slug: course.slug,
       course_title: course.title,
       level: activeLevel,
-      first_module_id: modules[0].id,
+      first_module_id: modules[targetIndex].id,
+      resumed: targetIndex > 0,
     })
 
-    navigate(`/courses/${course.slug}/${activeLevel}/1`)
+    navigate(`/courses/${course.slug}/${activeLevel}/${targetIndex + 1}`)
   }
 
   return (

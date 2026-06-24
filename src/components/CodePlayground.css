@@ -170,6 +170,18 @@
   word-break: break-word;
 }
 
+.pg-image-output {
+  padding: 16px 18px;
+  background: white;
+  text-align: center;
+  border-top: 1px solid var(--s1);
+}
+.pg-image-output img {
+  max-width: 100%;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--s2);
+}
+
 .pg-table-wrap {
   overflow-x: auto;
   background: white;

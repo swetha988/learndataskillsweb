@@ -23,6 +23,7 @@ export default function ModulePage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [openTopicModules, setOpenTopicModules] = useState({})
   const [completed, setCompleted] = useState(new Set())
+  const [activeAnchorId, setActiveAnchorId] = useState(null)
 
   const course = findCourse(slug)
   const idx = parseInt(moduleIndex, 10) - 1
@@ -68,6 +69,43 @@ export default function ModulePage() {
       target.scrollIntoView({ behavior: 'smooth', block: 'start' })
     })
   }, [location.hash, moduleIndex, slug, level])
+
+  // Track which section heading is currently in view, so the sidebar
+  // can colour the one the reader is actually on right now.
+  useEffect(() => {
+    if (!module || topicLinks.length === 0) {
+      setActiveAnchorId(null)
+      return
+    }
+
+    setActiveAnchorId(topicLinks[0].anchorId)
+
+    let observer
+    const timer = setTimeout(() => {
+      const headingEls = topicLinks
+        .map(t => document.getElementById(t.anchorId))
+        .filter(Boolean)
+      if (headingEls.length === 0) return
+
+      observer = new IntersectionObserver(
+        (entries) => {
+          const visible = entries.filter(e => e.isIntersecting)
+          if (visible.length === 0) return
+          const topmost = visible.reduce((a, b) =>
+            a.boundingClientRect.top < b.boundingClientRect.top ? a : b
+          )
+          setActiveAnchorId(topmost.target.id)
+        },
+        { rootMargin: '-96px 0px -65% 0px', threshold: 0 }
+      )
+      headingEls.forEach(el => observer.observe(el))
+    }, 0)
+
+    return () => {
+      clearTimeout(timer)
+      if (observer) observer.disconnect()
+    }
+  }, [module, topicLinks])
 
   const markComplete = () => {
     if (!module) return
@@ -239,7 +277,7 @@ export default function ModulePage() {
                           <button
                             key={topic.anchorId}
                             type="button"
-                            className="mp-topic-link"
+                            className={`mp-topic-link ${m.id === module.id && topic.anchorId === activeAnchorId ? 'is-active' : ''}`}
                             onClick={() => {
                               if (m.id === module.id) {
                                 scrollToTopic(topic.anchorId)

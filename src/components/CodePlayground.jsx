@@ -58,24 +58,67 @@ const loadPyodideEngine = () => {
 }
 
 /* Runs user code with stdout captured, so print() output shows up
-   in the results panel instead of disappearing into the console. */
-const runPythonCaptured = (pyodide, code) => {
+   in the results panel instead of disappearing into the console.
+   Also injects a show_plot() helper so matplotlib figures can be
+   rendered as an actual image, not just lost in a headless backend. */
+const PLOT_START_MARKER = '__PLOT_IMG_START__'
+const PLOT_END_MARKER = '__PLOT_IMG_END__'
+
+const runPythonCaptured = async (pyodide, code) => {
   pyodide.globals.set('_user_code', code)
-  pyodide.runPython(`
-import sys, io
+  // runPythonAsync (not runPython) + the PyCF_ALLOW_TOP_LEVEL_AWAIT compile
+  // flag is what lets a student write a bare `await pyfetch(...)` without
+  // wrapping it in an async function themselves — the same mechanism
+  // Pyodide's own interactive console uses.
+  await pyodide.runPythonAsync(`
+import sys, io, ast
 _stdout = sys.stdout
 sys.stdout = io.StringIO()
 _error = None
+
 try:
-    exec(_user_code, {})
+    import matplotlib
+    matplotlib.use('Agg')
+except ImportError:
+    pass
+
+def show_plot():
+    import base64 as _b64
+    try:
+        import matplotlib.pyplot as _plt
+        _buf = io.BytesIO()
+        _plt.savefig(_buf, format='png', bbox_inches='tight', dpi=110)
+        _buf.seek(0)
+        print("${PLOT_START_MARKER}" + _b64.b64encode(_buf.read()).decode('utf-8') + "${PLOT_END_MARKER}")
+        _plt.close('all')
+    except Exception as e:
+        print(f"Could not render plot: {e}")
+
+_user_globals = {'show_plot': show_plot}
+try:
+    _compiled = compile(_user_code, '<user_code>', 'exec', flags=ast.PyCF_ALLOW_TOP_LEVEL_AWAIT)
+    _coro = eval(_compiled, _user_globals)
+    if _coro is not None:
+        await _coro
 except Exception as e:
     _error = f"{type(e).__name__}: {e}"
 _output = sys.stdout.getvalue()
 sys.stdout = _stdout
 `)
-  const output = pyodide.globals.get('_output')
+  const rawOutput = pyodide.globals.get('_output')
   const error = pyodide.globals.get('_error')
-  return { output, error }
+
+  let output = rawOutput
+  let imageBase64 = null
+  if (rawOutput && rawOutput.includes(PLOT_START_MARKER)) {
+    const startIdx = rawOutput.indexOf(PLOT_START_MARKER)
+    const endIdx = rawOutput.indexOf(PLOT_END_MARKER)
+    if (endIdx > startIdx) {
+      imageBase64 = rawOutput.slice(startIdx + PLOT_START_MARKER.length, endIdx)
+      output = (rawOutput.slice(0, startIdx) + rawOutput.slice(endIdx + PLOT_END_MARKER.length)).trim()
+    }
+  }
+  return { output, error, imageBase64 }
 }
 
 export default function CodePlayground({ language = 'sql', starter = '', dataset = null }) {
@@ -130,11 +173,11 @@ export default function CodePlayground({ language = 'sql', starter = '', dataset
     setDbReady(true)
   }, [language, dataset])
 
-  const handleRun = () => {
+  const handleRun = async () => {
     setError('')
     setResults(null)
     setAiFeedback('')
-    
+
     trackEvent('quiz_attempted', {
       exercise_type: 'code_playground',
       language,
@@ -156,6 +199,16 @@ export default function CodePlayground({ language = 'sql', starter = '', dataset
 
     let executionResultStr = ''
     let isError = false
+
+    if (language === 'python') {
+      try {
+        // Auto-install whatever the code imports (pandas, numpy, matplotlib,
+        // bs4...) the first time each package is needed. Cached afterward.
+        await pyodideRef.current.loadPackagesFromImports(code)
+      } catch (e) {
+        console.error('Package auto-load failed', e)
+      }
+    }
 
     if (language === 'sql') {
       try {
@@ -190,14 +243,19 @@ export default function CodePlayground({ language = 'sql', starter = '', dataset
       }
     } else if (language === 'python') {
       try {
-        const { output, error: pyError } = runPythonCaptured(pyodideRef.current, code)
+        const { output, error: pyError, imageBase64 } = await runPythonCaptured(pyodideRef.current, code)
         if (pyError) {
           isError = true
           executionResultStr = pyError
           setError(pyError)
         } else {
-          setResults({ text: output, columns: [], values: [], message: output ? 'Ran successfully.' : 'Ran successfully. No output printed.' })
-          executionResultStr = output ? `Output:\n${output}` : 'Ran successfully. No output printed (did you forget a print() statement?).'
+          const message = imageBase64
+            ? 'Ran successfully.'
+            : (output ? 'Ran successfully.' : 'Ran successfully. No output printed.')
+          setResults({ text: output, image: imageBase64, columns: [], values: [], message })
+          executionResultStr = imageBase64
+            ? `Output:\n${output}\n(a matplotlib chart was also rendered)`
+            : output ? `Output:\n${output}` : 'Ran successfully. No output printed (did you forget a print() statement?).'
           trackEvent('quiz_completed', {
             exercise_type: 'code_playground',
             language,
@@ -292,7 +350,7 @@ export default function CodePlayground({ language = 'sql', starter = '', dataset
       {!dbReady && language === 'python' && (
         <div className="pg-output pg-output-loading">
           <Loader2 size={14} className="spin" />
-          <span>Loading Python engine… (first run can take a few seconds, then it's instant)</span>
+          <span>Loading Python engine… (first run can take a few seconds — longer if the code imports pandas, numpy, or matplotlib, since those download the first time you use them)</span>
         </div>
       )}
 
@@ -313,7 +371,12 @@ export default function CodePlayground({ language = 'sql', starter = '', dataset
             <span>{results.message}</span>
           </div>
           {results.text !== undefined && (
-            <pre className="pg-text-output">{results.text || '(no output — try adding a print() statement)'}</pre>
+            <pre className="pg-text-output">{results.text || (results.image ? '' : '(no output — try adding a print() statement)')}</pre>
+          )}
+          {results.image && (
+            <div className="pg-image-output">
+              <img src={`data:image/png;base64,${results.image}`} alt="Plot output" />
+            </div>
           )}
           {results.columns.length > 0 && (
             <div className="pg-table-wrap">

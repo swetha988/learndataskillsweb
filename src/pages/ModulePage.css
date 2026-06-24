@@ -325,6 +325,11 @@
   color: var(--blue-dark);
 }
 
+.mp-topic-link.is-active {
+  color: var(--blue-dark);
+  font-weight: 600;
+}
+
 .mp-topic-empty {
   margin: 0;
   padding: 6px 10px 2px;

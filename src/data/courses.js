@@ -25,10 +25,10 @@ export const COURSE_CATALOG = [
     datasets: ['NYC Taxi (US)', 'UK Retail (Europe)', 'Zomato Orders (India)', 'Spotify Streams (Global)'],
     tracks: {
       beginner: { modules: 10, hours: 6, label: 'Your first query, 3 mini projects, 2 capstones' },
-      intermediate: { modules: 6, hours: 5, label: 'JOINs, aggregations, real reporting' },
-      advanced: { modules: 6, hours: 6, label: 'Window functions, CTEs, optimisation' }
+      intermediate: { modules: 16, hours: 9, label: 'NULLs, CASE, subqueries, CTEs, window functions' },
+      advanced: { modules: 15, hours: 9, label: 'Recursive CTEs, transactions, JSON, performance tuning' }
     },
-    totalModules: 22,
+    totalModules: 41,
   },
   {
     id: 'python',
@@ -50,10 +50,10 @@ export const COURSE_CATALOG = [
     datasets: ['Titanic (Global)', 'IPL Matches (India)', 'World Bank Indicators', 'Kaggle Housing'],
     tracks: {
       beginner: { modules: 14, hours: 8, label: 'From print() to 5 mini projects + 2 capstones' },
-      intermediate: { modules: 7, hours: 6, label: 'pandas, NumPy, matplotlib' },
-      advanced: { modules: 7, hours: 8, label: 'APIs, web scraping, automation' }
+      intermediate: { modules: 15, hours: 9, label: 'pandas, NumPy, matplotlib, APIs, web scraping' },
+      advanced: { modules: 7, hours: 8, label: 'OOP, decorators, async, testing, packaging' }
     },
-    totalModules: 28,
+    totalModules: 36,
   },
   {
     id: 'excel',
