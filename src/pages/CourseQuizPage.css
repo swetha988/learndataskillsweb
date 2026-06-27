@@ -263,4 +263,12 @@
 .quiz-nav-btns {
   display: flex;
   gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.quiz-review-page-label {
+  font-size: 0.9rem;
+  color: var(--text-muted, #6b7280);
+  font-weight: 500;
 }

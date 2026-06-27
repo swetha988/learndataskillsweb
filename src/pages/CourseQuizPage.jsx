@@ -15,6 +15,8 @@ export default function CourseQuizPage() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [answers, setAnswers] = useState({})
   const [submitted, setSubmitted] = useState(false)
+  const [reviewPage, setReviewPage] = useState(0)
+  const REVIEW_PAGE_SIZE = 10
 
   React.useEffect(() => {
     if (quiz) {
@@ -35,7 +37,11 @@ export default function CourseQuizPage() {
     }
     
     if (question.type === 'code') {
-      const codeStr = String(answer).toLowerCase().replace(/[;,()]/g, ' ')
+      // Split on every punctuation character that can otherwise glue a
+      // keyword to its neighbour — a dot (df.groupby), an equals sign
+      // (ascending=False), quotes (a literal string), or a star (*args) —
+      // so each meaningful word becomes its own matchable token.
+      const codeStr = String(answer).toLowerCase().replace(/[;,()=:'"*.]/g, ' ')
       const words = codeStr.split(/\s+/)
       return question.expectedKeywords.every(kw => words.includes(kw.toLowerCase()))
     }
@@ -78,7 +84,12 @@ export default function CourseQuizPage() {
     setAnswers({})
     setSubmitted(false)
     setCurrentIndex(0)
+    setReviewPage(0)
   }
+
+  const totalReviewPages = Math.ceil(quiz.questions.length / REVIEW_PAGE_SIZE)
+  const reviewStart = reviewPage * REVIEW_PAGE_SIZE
+  const reviewEnd = reviewStart + REVIEW_PAGE_SIZE
 
   return (
     <div className="container page-container quiz-page">
@@ -105,6 +116,7 @@ export default function CourseQuizPage() {
       <div className="quiz-content">
         {quiz.questions.map((question, index) => {
           if (!submitted && index !== currentIndex) return null
+          if (submitted && (index < reviewStart || index >= reviewEnd)) return null
 
           const answer = answers[question.id]
           const isCorrect = evaluateQuestion(question, answer)
@@ -164,14 +176,14 @@ export default function CourseQuizPage() {
 
                 {question.type === 'code' && (
                   <div className="quiz-code-area">
-                    <p className="body-sm mb-2 text-muted">Test your query in the playground below:</p>
-                    <CodePlayground language="sql" dataset={question.dataset} />
+                    <p className="body-sm mb-2 text-muted">Test your {question.language === 'python' ? 'code' : 'query'} in the playground below:</p>
+                    <CodePlayground language={question.language || 'sql'} dataset={question.dataset} />
                     <div className="mt-4">
-                      <p className="body-sm mb-2 text-muted"><strong>Final Answer:</strong> Paste your final working query here:</p>
+                      <p className="body-sm mb-2 text-muted"><strong>Final Answer:</strong> Paste your final working {question.language === 'python' ? 'code' : 'query'} here:</p>
                       <textarea
                         className={`form-input code-input ${submitted ? (isCorrect ? 'is-correct' : 'is-wrong') : ''}`}
                         rows={4}
-                        placeholder="SELECT * FROM..."
+                        placeholder={question.language === 'python' ? 'def my_function():...' : 'SELECT * FROM...'}
                         value={answer || ''}
                         onChange={e => handleSelect(question.id, e.target.value)}
                         disabled={submitted}
@@ -195,9 +207,32 @@ export default function CourseQuizPage() {
 
       <div className="quiz-actions">
         {submitted ? (
-          <button className="btn btn-primary btn-lg" onClick={handleReset}>
-            <RotateCcw size={16} /> Try Again
-          </button>
+          <div className="quiz-nav-btns">
+            {totalReviewPages > 1 && (
+              <>
+                <button
+                  className="btn btn-secondary btn-lg"
+                  onClick={() => setReviewPage(p => p - 1)}
+                  disabled={reviewPage === 0}
+                >
+                  Back 10
+                </button>
+                <span className="quiz-review-page-label">
+                  Questions {reviewStart + 1}–{Math.min(reviewEnd, quiz.questions.length)} of {quiz.questions.length}
+                </span>
+                <button
+                  className="btn btn-secondary btn-lg"
+                  onClick={() => setReviewPage(p => p + 1)}
+                  disabled={reviewPage >= totalReviewPages - 1}
+                >
+                  Next 10
+                </button>
+              </>
+            )}
+            <button className="btn btn-primary btn-lg" onClick={handleReset}>
+              <RotateCcw size={16} /> Try Again
+            </button>
+          </div>
         ) : (
           <div className="quiz-nav-btns">
             {currentIndex > 0 && (

@@ -4766,7 +4766,1337 @@ print(pivot["Electronics"].sort_values(ascending=False).head(1))` },
 
       { type: 'heading', content: "You're done with the Python Intermediate track" },
       { type: 'paragraph', content: "If you worked through both projects, you can now do what a working data analyst actually does day to day: load real, messy data, clean it with intention, combine it with other tables, calculate real statistics, and turn the result into a chart someone outside the data team can actually understand. That is a genuinely significant jump from the beginner track's foundation." },
-      { type: 'paragraph', content: "The Advanced track goes further still: deeper statistical analysis, working with larger and messier real-world datasets, and the habits that separate a working script from production-quality code. When ready, switch to Advanced from the sidebar." },
+      { type: 'paragraph', content: "The Advanced track goes further still: organising code into classes, writing decorators and generators, async programming, profiling for real performance bottlenecks, type hints, automated testing, and packaging your work so someone else can actually install and reuse it. That is the difference between a script that works once and code that is genuinely production-ready. When ready, switch to Advanced from the sidebar." },
+    ],
+  },
+
+]
+
+/* ════════════════════════════════════════════════════════════════
+   PYTHON — ADVANCED TRACK (11 modules + 3 mini projects + capstone)
+   Builds toward one capstone: a small, tested, packaged data-cleaning
+   library called "brightkit," reusing the BrightMart sales theme from
+   the intermediate track throughout for continuity.
+   ════════════════════════════════════════════════════════════════ */
+const PYTHON_ADVANCED = [
+  {
+    id: 'py-a-1',
+    title: 'Object-oriented Python: classes and objects',
+    duration: '35 min',
+    sections: [
+      { type: 'heading', content: 'Why bother with classes at all' },
+      { type: 'paragraph', content: 'Every beginner and intermediate module so far has used functions and dictionaries to represent data and behaviour separately — a customer was a dictionary, and a function operated on it. A class lets you bundle data and the behaviour that belongs with it into a single, reusable blueprint. Once you have used a class well, going back to scattered dictionaries-and-functions for the same problem feels like a step backward.' },
+
+      { type: 'heading', content: 'Your first class' },
+      { type: 'code', language: 'python', content: `class Customer:
+    def __init__(self, name, city, total_spent):
+        self.name = name
+        self.city = city
+        self.total_spent = total_spent
+
+aditi = Customer("Aditi Rao", "Mumbai", 79200)
+print(aditi.name)
+print(aditi.total_spent)` },
+      { type: 'paragraph', content: '__init__ runs automatically every time you create a new Customer — it is the "setup" step, filling in self.name, self.city, and self.total_spent for this specific object. self refers to "this particular customer," the same way a printed form has blanks that get filled in differently for every person who fills one out.' },
+
+      { type: 'heading', content: 'Adding behaviour: methods' },
+      { type: 'paragraph', content: 'A method is just a function that lives inside a class and automatically has access to that object\'s own data through self.' },
+      { type: 'code', language: 'python', content: `class Customer:
+    def __init__(self, name, city, total_spent):
+        self.name = name
+        self.city = city
+        self.total_spent = total_spent
+
+    def is_high_value(self):
+        return self.total_spent > 50000
+
+    def apply_discount(self, percent):
+        discount_amount = self.total_spent * (percent / 100)
+        self.total_spent -= discount_amount
+
+aditi = Customer("Aditi Rao", "Mumbai", 79200)
+print(aditi.is_high_value())   # True
+
+aditi.apply_discount(10)
+print(aditi.total_spent)       # 71280.0 -- the object's own state changed` },
+      { type: 'paragraph', content: 'Notice apply_discount changed aditi.total_spent permanently — this is the key difference from a plain function. The object remembers its own state between method calls, the same way a real bank account remembers its balance between transactions.' },
+
+      { type: 'heading', content: 'Class vs instance: the blueprint vs the actual object' },
+      { type: 'paragraph', content: 'Customer is the class — the blueprint, written once. aditi is an instance — one actual object built from that blueprint, with its own specific values. You can build as many instances as you want from one class definition, exactly like a cookie cutter (the class) producing many individual cookies (the instances), each one separate.' },
+      { type: 'code', language: 'python', content: `rohan = Customer("Rohan Kumar", "Bengaluru", 22000)
+priya = Customer("Priya Sharma", "Delhi", 10700)
+
+customers = [aditi, rohan, priya]
+for c in customers:
+    print(f"{c.name}: high value = {c.is_high_value()}")` },
+
+      { type: 'heading', content: 'Real-life feel: from "a dictionary and three functions" to one class' },
+      { type: 'paragraph', content: "In the intermediate track, checking if a customer was high-value meant writing a separate function and remembering to pass the right dictionary into it every time. With a class, is_high_value() travels with the object itself — anyone using a Customer object already has every relevant behaviour available as c.is_high_value(), without needing to know which separate function to import or call." },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Build a Restaurant class with name, city, and rating, plus a method is_top_rated() that returns True if rating is 4.5 or higher.' },
+      { type: 'playground', language: 'python', starter: `class Restaurant:
+    def __init__(self, name, city, rating):
+        self.name = name
+        self.city = city
+        self.rating = rating
+
+    # TODO: write an is_top_rated() method
+
+spice_route = Restaurant("Spice Route", "Mumbai", 4.8)
+pasta_palace = Restaurant("Pasta Palace", "Delhi", 3.0)
+
+# TODO: print whether each restaurant is top rated
+` },
+      { type: 'callout', kind: 'tip', content: 'Next module: classes rarely exist in total isolation — building a new class on top of an existing one, reusing what already works, is where object-oriented Python starts paying off in earnest.' },
+    ],
+  },
+
+  {
+    id: 'py-a-2',
+    title: 'Inheritance and composition',
+    duration: '35 min',
+    sections: [
+      { type: 'heading', content: 'Two ways to build on existing code' },
+      { type: 'paragraph', content: 'Once you have one working class, real programs almost always need something slightly different but related. Inheritance lets a new class automatically receive everything an existing class already does, then add or change specific parts. Composition takes a different approach: building a class out of other objects, rather than extending one.' },
+
+      { type: 'heading', content: 'Inheritance: "is a" relationships' },
+      { type: 'paragraph', content: 'A PremiumCustomer is a Customer, just with something extra. Inheritance lets you say that directly in code.' },
+      { type: 'code', language: 'python', content: `class Customer:
+    def __init__(self, name, city, total_spent):
+        self.name = name
+        self.city = city
+        self.total_spent = total_spent
+
+    def is_high_value(self):
+        return self.total_spent > 50000
+
+class PremiumCustomer(Customer):
+    def __init__(self, name, city, total_spent, membership_tier):
+        super().__init__(name, city, total_spent)
+        self.membership_tier = membership_tier
+
+    def discount_rate(self):
+        return 0.15 if self.membership_tier == "Gold" else 0.10
+
+aditi = PremiumCustomer("Aditi Rao", "Mumbai", 79200, "Gold")
+print(aditi.is_high_value())     # True -- inherited directly from Customer
+print(aditi.discount_rate())     # 0.15 -- defined only on PremiumCustomer` },
+      { type: 'paragraph', content: 'class PremiumCustomer(Customer): means "PremiumCustomer inherits from Customer." super().__init__(...) calls the parent class\'s own setup code, so you do not have to retype self.name = name and the rest — you only write the new part (membership_tier) that PremiumCustomer adds on top.' },
+
+      { type: 'heading', content: 'Overriding a method' },
+      { type: 'paragraph', content: 'A subclass can also replace a parent method entirely, when the inherited behaviour is not quite right.' },
+      { type: 'code', language: 'python', content: `class PremiumCustomer(Customer):
+    def __init__(self, name, city, total_spent, membership_tier):
+        super().__init__(name, city, total_spent)
+        self.membership_tier = membership_tier
+
+    def is_high_value(self):
+        # Premium customers count as high-value at a lower threshold
+        return self.total_spent > 20000
+
+rohan = PremiumCustomer("Rohan Kumar", "Bengaluru", 22000, "Silver")
+print(rohan.is_high_value())   # True -- uses PremiumCustomer's own version, not Customer's` },
+
+      { type: 'heading', content: 'Composition: "has a" relationships' },
+      { type: 'paragraph', content: 'Not every relationship is "is a." A Restaurant has a list of MenuItem objects — a restaurant is not itself a kind of menu item. Composition builds a class out of other objects as attributes, instead of inheriting from them.' },
+      { type: 'code', language: 'python', content: `class MenuItem:
+    def __init__(self, name, price):
+        self.name = name
+        self.price = price
+
+class Restaurant:
+    def __init__(self, name):
+        self.name = name
+        self.menu = []   # a Restaurant HAS a list of MenuItem objects
+
+    def add_item(self, item):
+        self.menu.append(item)
+
+    def total_menu_value(self):
+        return sum(item.price for item in self.menu)
+
+spice_route = Restaurant("Spice Route")
+spice_route.add_item(MenuItem("Butter Chicken", 350))
+spice_route.add_item(MenuItem("Garlic Naan", 60))
+print(spice_route.total_menu_value())   # 410` },
+
+      { type: 'heading', content: 'Choosing between them' },
+      { type: 'paragraph', content: 'A common, genuinely useful rule of thumb: prefer composition unless inheritance clearly models a real "is a" relationship. Overusing inheritance for convenience (rather than a genuine type relationship) is one of the most common sources of confusing, hard-to-change object-oriented code in real projects — "favour composition over inheritance" is a famous piece of advice in software design for exactly this reason.' },
+
+      { type: 'heading', content: 'Real-life feel: modelling a business accurately, not just conveniently' },
+      { type: 'paragraph', content: 'A real customer loyalty system genuinely has regular customers and premium customers who share most behaviour but differ in specific, well-defined ways — that is exactly what inheritance is for. A restaurant genuinely contains a changeable list of menu items — that is exactly what composition is for. Picking the one that matches the real relationship keeps the code understandable months later, not just today.' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Build a Rider class with name and city, then a PartTimeRider subclass that adds a max_hours_per_week attribute and overrides a method.' },
+      { type: 'playground', language: 'python', starter: `class Rider:
+    def __init__(self, name, city):
+        self.name = name
+        self.city = city
+
+    def employment_type(self):
+        return "Full-time"
+
+# TODO: create PartTimeRider(Rider) with an extra max_hours_per_week attribute
+# TODO: override employment_type() to return "Part-time"
+
+karan = Rider("Karan Mehta", "Mumbai")
+# TODO: create a PartTimeRider instance and print both riders' employment_type()
+` },
+      { type: 'callout', kind: 'tip', content: "Next module: making your own classes print nicely, compare correctly, and work with Python's built-in functions like len() and +, instead of behaving like a black box." },
+    ],
+  },
+
+  {
+    id: 'py-a-3',
+    title: "Dunder methods: making your classes feel native",
+    duration: '30 min',
+    sections: [
+      { type: 'heading', content: 'The problem with the default printout' },
+      { type: 'code', language: 'python', content: `class Customer:
+    def __init__(self, name, total_spent):
+        self.name = name
+        self.total_spent = total_spent
+
+aditi = Customer("Aditi Rao", 79200)
+print(aditi)
+# <__main__.Customer object at 0x7f3b1c0a4d90> -- not remotely useful` },
+      { type: 'paragraph', content: 'By default, printing an object just shows its memory address — completely useless for debugging or display. Dunder methods (short for "double underscore," like __init__) let you define exactly how your class behaves with built-in Python operations like print(), ==, len(), and more.' },
+
+      { type: 'heading', content: '__repr__ and __str__: controlling how an object prints' },
+      { type: 'code', language: 'python', content: `class Customer:
+    def __init__(self, name, total_spent):
+        self.name = name
+        self.total_spent = total_spent
+
+    def __repr__(self):
+        return f"Customer(name={self.name!r}, total_spent={self.total_spent})"
+
+aditi = Customer("Aditi Rao", 79200)
+print(aditi)   # Customer(name='Aditi Rao', total_spent=79200)` },
+      { type: 'paragraph', content: '__repr__ is what print() and the playground\'s output fall back to when there is no separate __str__ defined. The {self.name!r} format (note the !r) shows the value the way Python itself would display it, quotes included — a small, conventional touch that makes debugging output instantly readable.' },
+
+      { type: 'heading', content: '__eq__: defining what "equal" means for your class' },
+      { type: 'code', language: 'python', content: `class Customer:
+    def __init__(self, name, total_spent):
+        self.name = name
+        self.total_spent = total_spent
+
+    def __eq__(self, other):
+        return self.name == other.name and self.total_spent == other.total_spent
+
+a = Customer("Aditi Rao", 79200)
+b = Customer("Aditi Rao", 79200)
+print(a == b)   # True -- without __eq__, this would be False (different objects in memory)` },
+      { type: 'paragraph', content: 'Without __eq__, Python compares objects by identity (are they literally the same object in memory), not by their actual data — two separately-created Customer objects with identical data would otherwise count as "not equal," which rarely matches what you actually mean by "the same customer."' },
+
+      { type: 'heading', content: '__len__: making len() work on your own class' },
+      { type: 'code', language: 'python', content: `class Restaurant:
+    def __init__(self, name, menu):
+        self.name = name
+        self.menu = menu
+
+    def __len__(self):
+        return len(self.menu)
+
+spice_route = Restaurant("Spice Route", ["Butter Chicken", "Naan", "Lassi"])
+print(len(spice_route))   # 3 -- len() now works directly on a Restaurant object` },
+
+      { type: 'heading', content: 'A shortcut for simple data-holding classes: @dataclass' },
+      { type: 'paragraph', content: 'If a class is mostly just holding data (like Customer above), Python\'s @dataclass decorator writes __init__, __repr__, and __eq__ for you automatically, based only on the attributes you list.' },
+      { type: 'code', language: 'python', content: `from dataclasses import dataclass
+
+@dataclass
+class Customer:
+    name: str
+    total_spent: float
+
+a = Customer("Aditi Rao", 79200)
+b = Customer("Aditi Rao", 79200)
+print(a)        # Customer(name='Aditi Rao', total_spent=79200) -- __repr__ for free
+print(a == b)   # True -- __eq__ for free` },
+      { type: 'paragraph', content: "@dataclass does not replace everything from this module — you still write your own methods like is_high_value() normally — it just removes the repetitive boilerplate (__init__, __repr__, __eq__) for the common case of a class that is mostly a labelled bundle of values." },
+
+      { type: 'heading', content: 'Real-life feel: why this matters for debugging' },
+      { type: 'paragraph', content: 'The very first thing you do when something goes wrong is usually print(some_object) to see its current state. A class with no __repr__ gives you a useless memory address right when you need information the most — a few lines of dunder methods (or one @dataclass decorator) is the difference between a debugging session that takes 30 seconds and one that takes 10 minutes.' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Add a __repr__ and __eq__ to the MenuItem class below, then confirm two separately-created items with the same name and price compare equal.' },
+      { type: 'playground', language: 'python', starter: `class MenuItem:
+    def __init__(self, name, price):
+        self.name = name
+        self.price = price
+
+    # TODO: add __repr__ returning something like MenuItem(name='Naan', price=60)
+    # TODO: add __eq__ comparing name and price
+
+a = MenuItem("Garlic Naan", 60)
+b = MenuItem("Garlic Naan", 60)
+print(a)
+print(a == b)
+` },
+      { type: 'callout', kind: 'tip', content: 'Next module: a completely different way to modify a function\'s behaviour without rewriting it — decorators.' },
+    ],
+  },
+
+  {
+    id: 'py-a-4',
+    title: 'Decorators: wrapping functions cleanly',
+    duration: '35 min',
+    sections: [
+      { type: 'heading', content: 'The problem decorators solve' },
+      { type: 'paragraph', content: 'Imagine you want to print how long every single data-processing function takes to run. You could add timing code inside every function — but that means editing every function, repeating the same four lines everywhere, and remembering to do it again for every new function you write. A decorator lets you write that timing logic exactly once, then attach it to any function with a single line.' },
+
+      { type: 'heading', content: 'Functions are values too' },
+      { type: 'paragraph', content: "Before decorators make sense, one fact has to click: in Python, a function is just a value, like a number or a string. You can pass it into another function, or have a function return another function." },
+      { type: 'code', language: 'python', content: `def greet():
+    return "Hello!"
+
+say_hi = greet   # no parentheses -- this stores the FUNCTION ITSELF, not its result
+print(say_hi())  # "Hello!" -- calling it through the new name works identically` },
+
+      { type: 'heading', content: 'Your first decorator' },
+      { type: 'code', language: 'python', content: `import time
+
+def time_it(func):
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        end = time.time()
+        print(f"{func.__name__} took {end - start:.4f} seconds")
+        return result
+    return wrapper
+
+@time_it
+def slow_total(numbers):
+    total = 0
+    for n in numbers:
+        total += n
+    return total
+
+print(slow_total(range(1000000)))` },
+      { type: 'paragraph', content: '@time_it above slow_total is exactly equivalent to writing slow_total = time_it(slow_total). The decorator takes your original function in, builds a new wrapper function around it (that adds timing before and after), and hands that wrapper back — your function gains the new behaviour without a single line of its own code changing.' },
+
+      { type: 'heading', content: 'The *args, **kwargs piece' },
+      { type: 'paragraph', content: 'A decorator usually has no idea what arguments the function it wraps will need. *args and **kwargs let wrapper accept absolutely any combination of positional and keyword arguments, and pass them straight through to the real function untouched.' },
+
+      { type: 'heading', content: 'A genuinely useful second example: caching results' },
+      { type: 'code', language: 'python', content: `def cache(func):
+    stored_results = {}
+    def wrapper(n):
+        if n not in stored_results:
+            print(f"Calculating for {n}...")
+            stored_results[n] = func(n)
+        else:
+            print(f"Using cached result for {n}")
+        return stored_results[n]
+    return wrapper
+
+@cache
+def slow_square(n):
+    time.sleep(0.5)   # pretend this is expensive
+    return n * n
+
+print(slow_square(5))   # Calculating for 5... -> 25
+print(slow_square(5))   # Using cached result for 5 -> 25 (instant)` },
+      { type: 'paragraph', content: 'This pattern — remembering results you have already calculated so you never redo the same expensive work twice — is called memoization, and it is exactly what Python\'s built-in functools.lru_cache decorator does for you automatically, without writing the dictionary yourself.' },
+      { type: 'code', language: 'python', content: `from functools import lru_cache
+
+@lru_cache
+def slow_square(n):
+    time.sleep(0.5)
+    return n * n
+
+print(slow_square(5))   # slow the first time
+print(slow_square(5))   # instant -- lru_cache remembered it` },
+
+      { type: 'heading', content: 'Real-life feel: logging, timing, and access control, applied everywhere at once' },
+      { type: 'paragraph', content: 'Production systems use decorators constantly for cross-cutting concerns — things that apply to many functions at once: @login_required on a web route, @retry on a flaky network call, @log_errors on anything that might fail. Writing this logic once as a decorator, instead of copy-pasting it into every function that needs it, is the entire value proposition.' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Write a decorator called log_call that prints the function\'s name before it runs, then apply it to a simple function.' },
+      { type: 'playground', language: 'python', starter: `def log_call(func):
+    def wrapper(*args, **kwargs):
+        # TODO: print something like "Calling: <function name>"
+        # TODO: actually call func and return its result
+        pass
+    return wrapper
+
+@log_call
+def add(a, b):
+    return a + b
+
+print(add(2, 3))
+` },
+      { type: 'callout', kind: 'tip', content: 'A quick mini project next puts classes, inheritance, dunder methods, and decorators together, before the track moves into memory-efficient data processing with generators.' },
+    ],
+  },
+
+  {
+    id: 'py-mp-a-1',
+    title: 'Mini Project: A Small Customer Loyalty System',
+    duration: '30 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'Quick practice before moving on' },
+      { type: 'paragraph', content: 'This project builds a small but complete object-oriented customer loyalty system for BrightMart, combining everything from the last four modules into one connected piece of code.' },
+      { type: 'list', items: [
+        'Concepts used: classes, inheritance, dunder methods, decorators',
+      ]},
+
+      { type: 'heading', content: 'Task 1: A Customer base class' },
+      { type: 'paragraph', content: 'Build a Customer class with name, city, and total_spent, plus a __repr__ and an is_high_value() method (over 50000).' },
+      { type: 'playground', language: 'python', starter: `class Customer:
+    def __init__(self, name, city, total_spent):
+        self.name = name
+        self.city = city
+        self.total_spent = total_spent
+
+    # TODO: add __repr__
+    # TODO: add is_high_value()
+
+aditi = Customer("Aditi Rao", "Mumbai", 79200)
+print(aditi)
+print(aditi.is_high_value())
+` },
+      { type: 'code', language: 'python', content: `# Sample solution
+class Customer:
+    def __init__(self, name, city, total_spent):
+        self.name = name
+        self.city = city
+        self.total_spent = total_spent
+
+    def __repr__(self):
+        return f"Customer(name={self.name!r}, city={self.city!r}, total_spent={self.total_spent})"
+
+    def is_high_value(self):
+        return self.total_spent > 50000
+
+aditi = Customer("Aditi Rao", "Mumbai", 79200)
+print(aditi)
+print(aditi.is_high_value())` },
+
+      { type: 'heading', content: 'Task 2: A PremiumCustomer subclass' },
+      { type: 'paragraph', content: 'Build a PremiumCustomer subclass adding a membership_tier, and a discount_rate() method (0.15 for "Gold", otherwise 0.10).' },
+      { type: 'playground', language: 'python', starter: `class Customer:
+    def __init__(self, name, city, total_spent):
+        self.name = name
+        self.city = city
+        self.total_spent = total_spent
+
+    def is_high_value(self):
+        return self.total_spent > 50000
+
+# TODO: create PremiumCustomer(Customer) with membership_tier and discount_rate()
+
+rohan = PremiumCustomer("Rohan Kumar", "Bengaluru", 22000, "Gold")
+print(rohan.is_high_value())
+print(rohan.discount_rate())
+` },
+      { type: 'code', language: 'python', content: `# Sample solution
+class Customer:
+    def __init__(self, name, city, total_spent):
+        self.name = name
+        self.city = city
+        self.total_spent = total_spent
+
+    def is_high_value(self):
+        return self.total_spent > 50000
+
+class PremiumCustomer(Customer):
+    def __init__(self, name, city, total_spent, membership_tier):
+        super().__init__(name, city, total_spent)
+        self.membership_tier = membership_tier
+
+    def discount_rate(self):
+        return 0.15 if self.membership_tier == "Gold" else 0.10
+
+rohan = PremiumCustomer("Rohan Kumar", "Bengaluru", 22000, "Gold")
+print(rohan.is_high_value())
+print(rohan.discount_rate())` },
+
+      { type: 'heading', content: 'Task 3: A logging decorator for every discount applied' },
+      { type: 'paragraph', content: 'Write a decorator called log_discount that prints a message every time a function calculating a discount is called, then apply it to a calculate_discount function.' },
+      { type: 'playground', language: 'python', starter: `# TODO: write log_discount(func) that prints "Calculating discount..." before calling func
+
+@log_discount
+def calculate_discount(total, rate):
+    return total * rate
+
+print(calculate_discount(79200, 0.15))
+` },
+      { type: 'code', language: 'python', content: `# Sample solution
+def log_discount(func):
+    def wrapper(*args, **kwargs):
+        print("Calculating discount...")
+        return func(*args, **kwargs)
+    return wrapper
+
+@log_discount
+def calculate_discount(total, rate):
+    return total * rate
+
+print(calculate_discount(79200, 0.15))` },
+    ],
+  },
+
+  {
+    id: 'py-a-5',
+    title: 'Generators and iterators: memory-efficient data processing',
+    duration: '35 min',
+    sections: [
+      { type: 'heading', content: 'The problem with building a giant list' },
+      { type: 'paragraph', content: 'Imagine processing a year of BrightMart transactions — millions of rows. If a function builds the entire result as a list before returning it, every single row sits in memory at once, even if you only ever look at one row at a time. A generator produces values one at a time, on demand, without ever holding the full collection in memory simultaneously.' },
+
+      { type: 'heading', content: 'A function that returns a list' },
+      { type: 'code', language: 'python', content: `def get_squares(n):
+    result = []
+    for i in range(n):
+        result.append(i * i)
+    return result
+
+squares = get_squares(5)
+print(squares)   # [0, 1, 4, 9, 16] -- the entire list exists in memory at once` },
+
+      { type: 'heading', content: 'The same thing as a generator' },
+      { type: 'code', language: 'python', content: `def get_squares(n):
+    for i in range(n):
+        yield i * i
+
+squares = get_squares(5)
+print(squares)          # <generator object get_squares at 0x...>
+print(list(squares))    # [0, 1, 4, 9, 16] -- values are produced one at a time, on demand
+
+for sq in get_squares(5):
+    print(sq)            # 0 1 4 9 16, printed one at a time as each is generated` },
+      { type: 'paragraph', content: 'yield is the only difference from a normal function. The moment Python sees yield anywhere in a function, that function becomes a generator — calling it does not run the code immediately; it returns a generator object that produces one value every time something asks it for the next one (like a for loop, or list()).' },
+
+      { type: 'heading', content: 'Why this actually matters: memory' },
+      { type: 'code', language: 'python', content: `import sys
+
+def squares_list(n):
+    return [i * i for i in range(n)]
+
+def squares_gen(n):
+    for i in range(n):
+        yield i * i
+
+list_version = squares_list(1000000)
+gen_version = squares_gen(1000000)
+
+print(sys.getsizeof(list_version), "bytes")   # a large number -- a million numbers, all in memory
+print(sys.getsizeof(gen_version), "bytes")    # under 200 bytes -- just the generator's bookkeeping` },
+      { type: 'paragraph', content: 'The generator version takes essentially the same tiny amount of memory whether n is 5 or 5 million, because it never builds the full collection — it only ever holds "where am I up to, and how do I produce the next one" in memory at any given moment.' },
+
+      { type: 'heading', content: 'Generator expressions: the comprehension-style shortcut' },
+      { type: 'code', language: 'python', content: `squares_list_comp = [i * i for i in range(10)]    # a list comprehension -- builds it all now
+squares_gen_exp = (i * i for i in range(10))      # a generator expression -- builds nothing yet
+
+print(sum(squares_gen_exp))   # 285 -- sum() pulls values one at a time, never needing the full list` },
+      { type: 'paragraph', content: 'Swapping square brackets for round brackets turns a list comprehension into a generator expression — useful any time you are about to immediately consume the values (with sum(), a for loop, or similar) and never actually need the full list sitting in memory.' },
+
+      { type: 'heading', content: "Real-life feel: processing a file too big to fit in memory" },
+      { type: 'paragraph', content: 'A genuinely common real scenario: a CSV export with 50 million rows, larger than your computer\'s available memory. Reading it line by line with a generator (rather than loading the whole file into a list first) is often the only way the processing can run at all, regardless of how fast your computer is.' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Write a generator function called high_value_orders that yields only the order totals above 2000 from a list, one at a time.' },
+      { type: 'playground', language: 'python', starter: `order_totals = [1598, 450, 3000, 899, 2500, 60, 4495]
+
+def high_value_orders(totals):
+    # TODO: use yield to produce only the values above 2000, one at a time
+    pass
+
+for total in high_value_orders(order_totals):
+    print(total)
+` },
+      { type: 'callout', kind: 'tip', content: 'Next module: a pattern you have already used dozens of times without naming it — the with statement — and how to build your own version of it for any "set up, then guaranteed clean up" situation.' },
+    ],
+  },
+
+  {
+    id: 'py-a-6',
+    title: 'Context managers: the with statement',
+    duration: '25 min',
+    sections: [
+      { type: 'heading', content: 'A pattern you already know' },
+      { type: 'paragraph', content: 'Back in the beginner track, you learned with open("file.txt") as f: — and were told it automatically closes the file afterward, even if an error happens partway through. That guarantee is called a context manager, and this module shows you exactly how it works under the hood, so you can build your own for any similar "set up, then guaranteed clean up" situation.' },
+
+      { type: 'heading', content: 'Building a context manager with a class' },
+      { type: 'code', language: 'python', content: `class Timer:
+    def __enter__(self):
+        import time
+        self.start = time.time()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        import time
+        elapsed = time.time() - self.start
+        print(f"Elapsed: {elapsed:.4f} seconds")
+
+with Timer():
+    total = sum(range(1000000))
+    print(total)
+# Elapsed: 0.0123 seconds  (printed automatically when the "with" block ends)` },
+      { type: 'paragraph', content: '__enter__ runs at the start of the with block (the "set up" step) and __exit__ runs automatically at the end — even if the code inside the block crashes with an exception. This is exactly the same guarantee open() gives you for files, now built by hand for timing instead.' },
+
+      { type: 'heading', content: 'The simpler way: @contextmanager' },
+      { type: 'paragraph', content: 'Writing a full class with __enter__ and __exit__ is more ceremony than most simple cases need. The contextlib module\'s @contextmanager decorator lets you write the same thing as a single function with a yield in the middle.' },
+      { type: 'code', language: 'python', content: `from contextlib import contextmanager
+import time
+
+@contextmanager
+def timer():
+    start = time.time()
+    yield
+    elapsed = time.time() - start
+    print(f"Elapsed: {elapsed:.4f} seconds")
+
+with timer():
+    total = sum(range(1000000))
+    print(total)` },
+      { type: 'paragraph', content: 'Everything before yield runs at the start of the with block (like __enter__); everything after yield runs at the end (like __exit__) — even if the code inside raises an error, the after-yield part still runs, exactly like a file always getting closed.' },
+
+      { type: 'heading', content: 'Real-life feel: database connections, locks, and temporary settings' },
+      { type: 'paragraph', content: 'Beyond files, context managers show up constantly for: database connections (open it, guarantee it closes even on error), locks in concurrent code (acquire it, guarantee it releases), and temporarily changing a setting (switch it, guarantee it switches back afterward, no matter what happens in between).' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Using @contextmanager, write a context manager called suppress_errors that catches and prints any exception raised inside the with block, instead of letting it crash the program.' },
+      { type: 'playground', language: 'python', starter: `from contextlib import contextmanager
+
+@contextmanager
+def suppress_errors():
+    try:
+        yield
+    except Exception as e:
+        # TODO: print a friendly message including str(e)
+        pass
+
+with suppress_errors():
+    result = 10 / 0   # this would normally crash the program
+
+print("Program kept running after the error!")
+` },
+      { type: 'callout', kind: 'tip', content: 'Next module: handling several slow operations — like multiple API calls — at the same time instead of one after another. Async programming.' },
+    ],
+  },
+
+  {
+    id: 'py-a-7',
+    title: 'Async programming: async and await',
+    duration: '40 min',
+    sections: [
+      { type: 'heading', content: 'The problem async solves' },
+      { type: 'paragraph', content: "In the intermediate track's API module, every pyfetch call waited for one response before moving to the next line. If you need data from 5 different restaurants' APIs, fetching them one at a time means waiting for all 5 round-trips back to back. Async programming lets you start all 5 requests at once and wait for whichever finishes, instead of queuing them up one after another." },
+
+      { type: 'heading', content: 'async def and await: the vocabulary' },
+      { type: 'code', language: 'python', content: `import asyncio
+
+async def fetch_restaurant_data(name, delay):
+    print(f"Starting fetch for {name}...")
+    await asyncio.sleep(delay)   # standing in for a real network request
+    print(f"Finished fetch for {name}")
+    return f"{name} data"
+
+asyncio.run(fetch_restaurant_data("Spice Route", 1))` },
+      { type: 'paragraph', content: 'async def marks a function as a coroutine — a function that can pause partway through and let other code run, instead of blocking everything until it finishes. await is where it actually pauses: "wait for this to finish, but let other things happen while waiting."' },
+
+      { type: 'heading', content: 'The actual payoff: running things concurrently' },
+      { type: 'code', language: 'python', content: `import asyncio
+import time
+
+async def fetch_restaurant_data(name, delay):
+    await asyncio.sleep(delay)
+    return f"{name} data ready"
+
+async def main():
+    start = time.time()
+    results = await asyncio.gather(
+        fetch_restaurant_data("Spice Route", 1),
+        fetch_restaurant_data("Tokyo Bites", 1),
+        fetch_restaurant_data("Curry House", 1),
+    )
+    print(results)
+    print(f"Total time: {time.time() - start:.2f} seconds")
+
+await main()` },
+      { type: 'paragraph', content: 'Three fetches, each taking 1 second. Run one after another, that is 3 seconds total. asyncio.gather() runs all three concurrently — while one is "waiting" (during its asyncio.sleep), the other two get to make progress too — so the whole thing finishes in roughly 1 second, not 3.' },
+      { type: 'callout', kind: 'tip', content: "Notice this lesson's examples call await main() directly, without asyncio.run() wrapping it, in some places. That is specific to this in-browser playground, which already runs inside its own event loop — in a normal Python script on your own computer, asyncio.run(main()) is the standard way to start the whole async program from regular, non-async code." },
+
+      { type: 'heading', content: 'When async actually helps, and when it does not' },
+      { type: 'paragraph', content: "Async helps with I/O-bound work — waiting on a network response, a file, or a database — because the waiting itself doesn't need your CPU; it can do other useful work during that wait. Async does not speed up CPU-bound work — heavy number-crunching with no waiting involved gets zero benefit from async, since there is no idle waiting time to fill with other work in the first place. That kind of speed-up is what the next module's profiling, and tools like NumPy's vectorisation from the intermediate track, are actually for." },
+
+      { type: 'heading', content: 'Real-life feel: a dashboard pulling from 3 services at once' },
+      { type: 'paragraph', content: 'A real operations dashboard showing "current orders," "rider locations," and "today\'s revenue" pulls all three from different APIs. Fetching them one after another means the page loads as slowly as the sum of all three. Fetching them concurrently with asyncio.gather() means the page loads about as fast as the single slowest one — a real, user-visible difference.' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Write an async function that simulates fetching data for 3 riders concurrently, each taking a different delay, and print the total time taken.' },
+      { type: 'playground', language: 'python', starter: `import asyncio
+import time
+
+async def fetch_rider_status(name, delay):
+    await asyncio.sleep(delay)
+    return f"{name}: available"
+
+async def main():
+    start = time.time()
+    # TODO: use asyncio.gather to fetch 3 riders concurrently with different delays
+    # TODO: print the results and the total elapsed time
+    pass
+
+await main()
+` },
+      { type: 'callout', kind: 'tip', content: 'A quick mini project next puts generators, context managers, and async together, before the track turns to measuring and improving performance directly.' },
+    ],
+  },
+
+  {
+    id: 'py-mp-a-2',
+    title: 'Mini Project: A Resilient Data Fetcher',
+    duration: '30 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'Quick practice before moving on' },
+      { type: 'paragraph', content: 'This project combines memory-efficient processing, guaranteed cleanup, and concurrency into one small but realistic data-fetching tool.' },
+      { type: 'list', items: [
+        'Concepts used: generators, context managers, asyncio.gather',
+      ]},
+
+      { type: 'heading', content: 'Task 1: A generator for filtering large data' },
+      { type: 'paragraph', content: 'Write a generator function delivered_only that yields only orders with status "delivered" from a list of order dictionaries, one at a time.' },
+      { type: 'playground', language: 'python', starter: `orders = [
+    {"id": 1, "status": "delivered", "total": 500},
+    {"id": 2, "status": "cancelled", "total": 300},
+    {"id": 3, "status": "delivered", "total": 750},
+]
+
+def delivered_only(order_list):
+    # TODO: yield only orders where status == "delivered"
+    pass
+
+for order in delivered_only(orders):
+    print(order)
+` },
+      { type: 'code', language: 'python', content: `# Sample solution
+def delivered_only(order_list):
+    for order in order_list:
+        if order["status"] == "delivered":
+            yield order
+
+for order in delivered_only(orders):
+    print(order)` },
+
+      { type: 'heading', content: 'Task 2: A context manager that always logs completion' },
+      { type: 'paragraph', content: 'Using @contextmanager, write a logging context manager called task_log that prints "Starting..." on entry and "Done." on exit, even if an error occurs inside.' },
+      { type: 'playground', language: 'python', starter: `from contextlib import contextmanager
+
+@contextmanager
+def task_log():
+    # TODO: print "Starting..." before yield
+    # TODO: print "Done." after yield (this must run even if an error happens)
+    yield
+
+with task_log():
+    print("Doing some work")
+` },
+      { type: 'code', language: 'python', content: `# Sample solution
+from contextlib import contextmanager
+
+@contextmanager
+def task_log():
+    print("Starting...")
+    try:
+        yield
+    finally:
+        print("Done.")
+
+with task_log():
+    print("Doing some work")` },
+
+      { type: 'heading', content: 'Task 3: Fetching multiple riders concurrently' },
+      { type: 'paragraph', content: 'Using asyncio.gather, fetch the status of 4 riders concurrently, each with a different simulated delay, and print how long the whole batch took.' },
+      { type: 'playground', language: 'python', starter: `import asyncio
+import time
+
+async def fetch_status(name, delay):
+    await asyncio.sleep(delay)
+    return f"{name}: ready"
+
+async def main():
+    start = time.time()
+    # TODO: gather 4 fetch_status calls with delays of your choice
+    # TODO: print the results and total elapsed time
+    pass
+
+await main()
+` },
+      { type: 'code', language: 'python', content: `# Sample solution
+async def main():
+    start = time.time()
+    results = await asyncio.gather(
+        fetch_status("Karan", 0.5),
+        fetch_status("Anita", 0.3),
+        fetch_status("Ravi", 0.4),
+        fetch_status("Sneha", 0.2),
+    )
+    print(results)
+    print(f"Total time: {time.time() - start:.2f} seconds")
+
+await main()` },
+    ],
+  },
+
+  {
+    id: 'py-a-8',
+    title: 'Performance and profiling',
+    duration: '35 min',
+    sections: [
+      { type: 'heading', content: "Don't guess — measure" },
+      { type: 'paragraph', content: 'Every experienced developer has been wrong, at least once, about which part of their own code was "obviously" the slow part. Profiling tools measure exactly where time actually goes, instead of relying on intuition — the same discipline the SQL track\'s EXPLAIN QUERY PLAN taught for queries, now applied to Python code itself.' },
+
+      { type: 'heading', content: 'Quick timing checks with timeit' },
+      { type: 'paragraph', content: 'timeit is the right tool for "which of these two small snippets is faster?" — it runs code repeatedly and accounts for the noise of a single run being unreliable.' },
+      { type: 'code', language: 'python', content: `import timeit
+
+# Building a list with a loop vs a list comprehension
+loop_time = timeit.timeit(
+    "result = []\\nfor i in range(100):\\n    result.append(i * i)",
+    number=10000
+)
+comprehension_time = timeit.timeit(
+    "result = [i * i for i in range(100)]",
+    number=10000
+)
+
+print(f"Loop: {loop_time:.4f} seconds")
+print(f"Comprehension: {comprehension_time:.4f} seconds")` },
+      { type: 'paragraph', content: 'number=10000 runs each snippet ten thousand times and reports the total — a single run of fast code is too quick to measure reliably, so timeit repeats it enough times for the difference to become clearly visible.' },
+
+      { type: 'heading', content: 'Finding the real bottleneck with cProfile' },
+      { type: 'paragraph', content: 'timeit is great for comparing two small snippets. cProfile answers a bigger question: inside this entire function, which specific part is actually eating the time?' },
+      { type: 'code', language: 'python', content: `import cProfile
+
+def clean_name(name):
+    return name.strip().title()
+
+def process_orders(names):
+    return [clean_name(n) for n in names]
+
+names = ["  aditi rao  ", "ROHAN KUMAR", "priya sharma"] * 10000
+
+profiler = cProfile.Profile()
+profiler.enable()
+process_orders(names)
+profiler.disable()
+profiler.print_stats()` },
+      { type: 'paragraph', content: 'The output lists every function called, how many times, and how much total time was spent inside each one — turning "I think clean_name is slow" into an actual measured fact, confirmed or refuted by real numbers instead of a guess.' },
+
+      { type: 'heading', content: 'A practical workflow: profile first, optimise second' },
+      { type: 'list', items: [
+        'Get the code working correctly first — a fast, wrong answer is worthless',
+        'Profile it on realistic data, not a tiny toy example that hides the real bottleneck',
+        'Fix only the part the profiler actually points to — optimising code that was never the bottleneck wastes effort and adds risk for zero benefit',
+        'Re-profile after the fix to confirm it actually helped',
+      ]},
+      { type: 'callout', kind: 'tip', content: '"Premature optimisation" — spending effort making something faster before confirming it actually needs to be — is one of the most common time-wasters in real software projects. The discipline in this module exists specifically to replace that instinct with evidence.' },
+
+      { type: 'heading', content: 'Real-life feel: the report that takes 10 minutes to generate' },
+      { type: 'paragraph', content: 'A genuinely common real scenario: a weekly report script that used to take 30 seconds now takes 10 minutes after the underlying data grew. Profiling it usually reveals the actual cause is one specific, fixable thing — a function being called far more often than expected, or a slow operation buried inside a loop — rather than "everything is slow," which is rarely the real story.' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Profile a function that calculates the total of a large list of order amounts, using cProfile.' },
+      { type: 'playground', language: 'python', starter: `import cProfile
+
+def calculate_total(amounts):
+    total = 0
+    for amount in amounts:
+        total += amount
+    return total
+
+amounts = [799, 1499, 350, 899] * 50000
+
+# TODO: create a cProfile.Profile(), enable it, call calculate_total(amounts),
+#       disable it, then print_stats()
+` },
+      { type: 'callout', kind: 'tip', content: 'Next module: making your code self-documenting and catching a whole category of bugs before you even run it, using type hints.' },
+    ],
+  },
+
+  {
+    id: 'py-a-9',
+    title: 'Type hints and modern Python',
+    duration: '30 min',
+    sections: [
+      { type: 'heading', content: 'A function signature that explains itself' },
+      { type: 'paragraph', content: 'def calculate_discount(price, rate): tells you nothing about what price and rate actually are, or what the function gives back. Type hints let you write that information directly into the function definition, where anyone reading the code sees it immediately.' },
+
+      { type: 'heading', content: 'Basic type hints' },
+      { type: 'code', language: 'python', content: `def calculate_discount(price: float, rate: float) -> float:
+    return price * (1 - rate)
+
+print(calculate_discount(1000.0, 0.1))   # 900.0` },
+      { type: 'paragraph', content: 'price: float says "this parameter is expected to be a float." -> float (after the parentheses) says "this function returns a float." Crucially, Python does not actually enforce these at runtime — calculate_discount("a", "b") would still run and fail elsewhere, not because of the hints. Type hints are documentation with structure, checked by separate tools (see the callout below), not a built-in runtime safety net by themselves.' },
+
+      { type: 'heading', content: 'Hinting more complex types' },
+      { type: 'code', language: 'python', content: `from typing import List, Dict, Optional
+
+def total_revenue(orders: List[Dict[str, float]]) -> float:
+    return sum(order["total"] for order in orders)
+
+def find_customer(name: str, customers: List[Dict]) -> Optional[Dict]:
+    for c in customers:
+        if c["name"] == name:
+            return c
+    return None   # Optional[Dict] means "a Dict, or possibly None"` },
+      { type: 'paragraph', content: 'List[Dict[str, float]] reads as "a list of dictionaries, where each dictionary has text keys and float values" — precise enough that someone reading just the function signature already understands the expected shape of the data, without reading the function body at all. Optional[Dict] is shorthand for "either a Dict, or None" — flagging upfront that callers need to handle the "nothing found" case.' },
+
+      { type: 'heading', content: 'A modern shortcut: built-in generic syntax' },
+      { type: 'paragraph', content: 'Recent Python versions let you write list[dict] and dict[str, float] directly, without importing from typing at all — the same meaning, less ceremony.' },
+      { type: 'code', language: 'python', content: `def total_revenue(orders: list[dict[str, float]]) -> float:
+    return sum(order["total"] for order in orders)` },
+
+      { type: 'heading', content: 'How type hints actually get checked' },
+      { type: 'paragraph', content: 'Type hints by themselves are just metadata — Python still runs your code even if the types do not match. The real enforcement comes from a separate static type checker, most commonly mypy, run as a command-line tool against your codebase before you ever run the program.' },
+      { type: 'code', language: 'text', content: `pip install mypy
+mypy my_script.py
+
+# mypy reads your type hints and reports mismatches WITHOUT running your code:
+# my_script.py:5: error: Argument 1 to "calculate_discount" has incompatible type "str"; expected "float"` },
+      { type: 'callout', kind: 'tip', content: "This platform's playground cannot run mypy directly, since it is a separate static-analysis tool, not something that executes as part of your script. The type hints themselves run perfectly fine here (Python just ignores them at runtime) — it is the checking step that needs mypy installed in a real local project." },
+
+      { type: 'heading', content: 'Real-life feel: catching a bug before it ever runs' },
+      { type: 'paragraph', content: "Imagine accidentally passing a list of customer names where a list of customer dictionaries was expected, three function calls deep into a real pipeline. Without type hints, this might only surface as a confusing crash, possibly hours later, far from the actual mistake. With type hints and mypy run before deployment, that exact mistake gets caught and reported with a clear message, before the code ever runs against real data." },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Add type hints to the function below: it takes a list of dictionaries and a minimum amount, and returns a list of dictionaries.' },
+      { type: 'playground', language: 'python', starter: `# TODO: add type hints to this function's parameters and return type
+def filter_high_value(orders, minimum):
+    return [o for o in orders if o["total"] >= minimum]
+
+orders = [{"id": 1, "total": 500}, {"id": 2, "total": 1500}]
+print(filter_high_value(orders, 1000))
+print(filter_high_value.__annotations__)
+` },
+      { type: 'callout', kind: 'tip', content: 'Next module: how do you actually know your code is correct, beyond "I ran it once and it looked fine"? Automated testing with pytest.' },
+    ],
+  },
+
+  {
+    id: 'py-a-10',
+    title: 'Testing with pytest',
+    duration: '35 min',
+    sections: [
+      { type: 'heading', content: '"I ran it once and it looked right" is not confidence' },
+      { type: 'paragraph', content: 'Every function in this entire course has been checked by eye — run it, look at the printed output, decide if it seems correct. That works for learning, but it does not scale, and it does not protect you when you change the code six months later and accidentally break something that used to work. Automated tests check correctness for you, instantly, every single time, forever.' },
+
+      { type: 'heading', content: 'The simplest possible test: assert' },
+      { type: 'code', language: 'python', content: `def add(a, b):
+    return a + b
+
+assert add(2, 3) == 5
+print("Test passed!")
+
+assert add(2, 2) == 5   # this one is wrong on purpose
+print("This line never prints -- the assert above stops the program")` },
+      { type: 'paragraph', content: 'assert checks a condition and crashes the program immediately with an AssertionError if it is False. This is the absolute foundation every testing tool, including pytest, is built on top of.' },
+
+      { type: 'heading', content: 'Writing real pytest test functions' },
+      { type: 'paragraph', content: 'pytest looks for functions whose names start with test_, runs each one, and reports which passed and which failed — instead of your whole program stopping at the first failure like a bare assert does.' },
+      { type: 'code', language: 'python', content: `import pytest
+
+# In a real project, this would be written to its own file, like test_orders.py,
+# and pytest would be run from the command line: pytest test_orders.py
+with open("test_orders.py", "w") as f:
+    f.write("""
+def calculate_total(quantity, price):
+    return quantity * price
+
+def test_calculate_total_basic():
+    assert calculate_total(2, 100) == 200
+
+def test_calculate_total_zero_quantity():
+    assert calculate_total(0, 100) == 0
+
+def test_calculate_total_negative_price_is_wrong():
+    assert calculate_total(2, 100) == 999   # deliberately wrong, to see a real failure
+""")
+
+pytest.main(["-v", "test_orders.py"])` },
+      { type: 'paragraph', content: 'Run this and read the real output carefully — pytest shows exactly which tests passed, which failed, and for the failure, the precise values involved (assert 200 == 999). This is genuinely the same output format you would see running pytest in a real terminal on a real project.' },
+
+      { type: 'heading', content: 'Why several small, specific tests beat one big one' },
+      { type: 'paragraph', content: "test_calculate_total_basic and test_calculate_total_zero_quantity each check one specific thing. If only the zero-quantity case ever breaks (a common kind of bug — an \"edge case\"), a single combined test would just say \"something failed,\" while these separate, named tests immediately tell you exactly which behaviour broke." },
+
+      { type: 'heading', content: 'Testing that something fails correctly' },
+      { type: 'paragraph', content: 'Sometimes correct behaviour IS raising an error — like rejecting a negative quantity. pytest.raises checks that the right exception actually happens.' },
+      { type: 'code', language: 'python', content: `import pytest
+
+with open("test_validation.py", "w") as f:
+    f.write("""
+import pytest
+
+def calculate_total(quantity, price):
+    if quantity < 0:
+        raise ValueError("Quantity cannot be negative")
+    return quantity * price
+
+def test_negative_quantity_raises_error():
+    with pytest.raises(ValueError):
+        calculate_total(-1, 100)
+""")
+
+pytest.main(["-v", "test_validation.py"])` },
+
+      { type: 'heading', content: 'Real-life feel: refactoring without fear' },
+      { type: 'paragraph', content: 'The real payoff of a solid test suite is not catching the first bug — it is everything afterward. Once calculate_total has tests, you can rewrite it completely (for performance, for clarity, for any reason) and know within seconds whether you broke anything, instead of manually re-checking every case by hand, or worse, finding out from a customer.' },
+
+      { type: 'heading', content: 'Try it yourself' },
+      { type: 'paragraph', content: 'Write a test file for a clean_name function (strip + title case), with at least two test cases, then run it with pytest.' },
+      { type: 'playground', language: 'python', starter: `import pytest
+
+def clean_name(name):
+    return name.strip().title()
+
+with open("test_clean_name.py", "w") as f:
+    f.write("""
+def clean_name(name):
+    return name.strip().title()
+
+# TODO: write test_clean_name_strips_whitespace()
+# TODO: write test_clean_name_fixes_casing()
+""")
+
+pytest.main(["-v", "test_clean_name.py"])
+` },
+      { type: 'callout', kind: 'tip', content: 'A quick mini project next puts profiling, type hints, and testing together on one small module, before the track\'s final lesson on packaging code so someone else can actually install and reuse it.' },
+    ],
+  },
+
+  {
+    id: 'py-mp-a-3',
+    title: 'Mini Project: A Profiled, Typed, Tested Utility',
+    duration: '30 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'Quick practice before moving on' },
+      { type: 'paragraph', content: 'This project takes one small piece of business logic through the full quality pipeline: add type hints, profile it, and write real tests for it.' },
+      { type: 'list', items: [
+        'Concepts used: type hints, cProfile, pytest',
+      ]},
+
+      { type: 'heading', content: 'Task 1: Add type hints' },
+      { type: 'paragraph', content: 'Add type hints to this function: it takes a list of dictionaries and a city name (str), and returns a float.' },
+      { type: 'playground', language: 'python', starter: `def total_revenue_for_city(orders, city):
+    return sum(o["total"] for o in orders if o["city"] == city)
+
+orders = [
+    {"city": "Mumbai", "total": 500},
+    {"city": "Delhi", "total": 300},
+    {"city": "Mumbai", "total": 750},
+]
+print(total_revenue_for_city(orders, "Mumbai"))
+` },
+      { type: 'code', language: 'python', content: `# Sample solution
+def total_revenue_for_city(orders: list[dict], city: str) -> float:
+    return sum(o["total"] for o in orders if o["city"] == city)` },
+
+      { type: 'heading', content: 'Task 2: Profile it on a larger dataset' },
+      { type: 'paragraph', content: 'Profile total_revenue_for_city on a list of 50,000 orders using cProfile.' },
+      { type: 'playground', language: 'python', starter: `import cProfile
+
+def total_revenue_for_city(orders, city):
+    return sum(o["total"] for o in orders if o["city"] == city)
+
+orders = [{"city": "Mumbai" if i % 2 == 0 else "Delhi", "total": 500} for i in range(50000)]
+
+# TODO: profile the call total_revenue_for_city(orders, "Mumbai")
+` },
+      { type: 'code', language: 'python', content: `# Sample solution
+profiler = cProfile.Profile()
+profiler.enable()
+total_revenue_for_city(orders, "Mumbai")
+profiler.disable()
+profiler.print_stats()` },
+
+      { type: 'heading', content: 'Task 3: Write real tests for it' },
+      { type: 'paragraph', content: 'Write a pytest test file with at least 2 test cases for total_revenue_for_city: one with matching city data, one where the city does not appear at all (should return 0).' },
+      { type: 'playground', language: 'python', starter: `import pytest
+
+with open("test_revenue.py", "w") as f:
+    f.write("""
+def total_revenue_for_city(orders, city):
+    return sum(o['total'] for o in orders if o['city'] == city)
+
+# TODO: write test_revenue_basic_match()
+# TODO: write test_revenue_no_match_returns_zero()
+""")
+
+pytest.main(["-v", "test_revenue.py"])
+` },
+      { type: 'code', language: 'python', content: `# Sample solution
+with open("test_revenue.py", "w") as f:
+    f.write("""
+def total_revenue_for_city(orders, city):
+    return sum(o['total'] for o in orders if o['city'] == city)
+
+def test_revenue_basic_match():
+    orders = [{"city": "Mumbai", "total": 500}, {"city": "Delhi", "total": 300}]
+    assert total_revenue_for_city(orders, "Mumbai") == 500
+
+def test_revenue_no_match_returns_zero():
+    orders = [{"city": "Delhi", "total": 300}]
+    assert total_revenue_for_city(orders, "Mumbai") == 0
+""")
+
+pytest.main(["-v", "test_revenue.py"])` },
+    ],
+  },
+
+  {
+    id: 'py-a-11',
+    title: 'Packaging your code',
+    duration: '30 min',
+    sections: [
+      { type: 'heading', content: 'From "a script that works" to "something someone else can install"' },
+      { type: 'paragraph', content: 'Every function and class across this entire course has lived inside one file or one playground. Real, reusable code gets organised into a package — a proper folder structure that someone else (or future you, on a different project) can install with pip and import, exactly like pandas or numpy.' },
+      { type: 'callout', kind: 'tip', content: "This module is about file and folder structure on your own computer — the same reason the beginner track's Jupyter and virtual environment modules had no live playground. Read through the structure and commands; try them in a real local Python setup when you are ready to package your own project." },
+
+      { type: 'heading', content: 'The minimal folder structure' },
+      { type: 'code', language: 'text', content: `brightkit/
+├── pyproject.toml
+├── README.md
+├── brightkit/
+│   ├── __init__.py
+│   ├── cleaning.py
+│   └── analysis.py
+└── tests/
+    ├── test_cleaning.py
+    └── test_analysis.py` },
+      { type: 'paragraph', content: 'The inner brightkit/ folder (with __init__.py inside it) is the actual importable package. The outer files (pyproject.toml, README.md) describe the package to the outside world — what it is called, what it needs, how to install it.' },
+
+      { type: 'heading', content: '__init__.py: what makes a folder a package' },
+      { type: 'paragraph', content: 'An __init__.py file (even an empty one) is what tells Python "treat this folder as an importable package," and it controls exactly what becomes available when someone writes import brightkit.' },
+      { type: 'code', language: 'python', content: `# brightkit/__init__.py
+from .cleaning import clean_name
+from .analysis import total_revenue_for_city
+
+# Now someone can write:
+#   from brightkit import clean_name, total_revenue_for_city
+# instead of the longer:
+#   from brightkit.cleaning import clean_name` },
+
+      { type: 'heading', content: 'pyproject.toml: describing your package' },
+      { type: 'code', language: 'text', content: `[project]
+name = "brightkit"
+version = "0.1.0"
+description = "Cleaning and analysis utilities for BrightMart sales data"
+requires-python = ">=3.9"
+dependencies = [
+    "pandas>=2.0",
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"` },
+      { type: 'paragraph', content: 'This is the modern standard configuration file (replacing the older setup.py) — name and version identify your package, dependencies lists what it needs (pip installs those automatically alongside your package), and build-system tells installation tools how to actually build it.' },
+
+      { type: 'heading', content: 'Installing your own package locally' },
+      { type: 'code', language: 'text', content: `# From inside the brightkit/ folder (the one containing pyproject.toml):
+pip install -e .
+
+# -e means "editable" -- changes to your source files take effect immediately,
+# without needing to reinstall every time. Standard for active development.` },
+
+      { type: 'heading', content: 'Publishing it for real (the path beyond this course)' },
+      { type: 'paragraph', content: 'Once a package is genuinely ready to share, it gets uploaded to PyPI (the Python Package Index) using a tool called twine, after which anyone in the world can run pip install brightkit and get it — the exact same mechanism that makes pip install pandas work. That last step is beyond what this course covers, but it is the natural endpoint of everything in this module.' },
+
+      { type: 'heading', content: 'Real-life feel: the difference between a script and a tool' },
+      { type: 'paragraph', content: "A script you wrote for one task, that lives in one folder, helps exactly one project. A properly packaged version of the same logic — with tests, type hints, and a clear structure — can be installed in every project you ever work on, shared with teammates, and trusted, because it has tests proving it actually works. That transformation, script to package, is the practical destination this entire advanced track has been building toward." },
+    ],
+  },
+
+  {
+    id: 'py-a-capstone',
+    title: 'Capstone: Build and Test the brightkit Package',
+    duration: '60 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'Practice time — no new concepts here' },
+      { type: 'paragraph', content: "You've finished every lesson in this track. This capstone is meant to be done after the rest of the course: design and build a small, genuinely complete data utility — classes, a decorator, a generator, type hints, and real tests — covering everything except packaging's file structure, which you would apply locally on your own machine using the previous module's pattern. Nothing here is new; it's all about combining what you already know into one coherent piece of work." },
+      { type: 'callout', kind: 'tip', content: 'Try every task yourself before checking the sample solution underneath it.' },
+
+      { type: 'heading', content: 'Project 1 (Easy)' },
+      { type: 'paragraph', content: "The scenario: BrightMart wants a small internal toolkit for working with customer data, built properly enough that other engineers can trust and reuse it." },
+
+      { type: 'heading', content: 'Task 1: A Customer class with dunder methods' },
+      { type: 'paragraph', content: 'Build a Customer class with name, city, and total_spent, a __repr__, and an __eq__ comparing all three fields.' },
+      { type: 'playground', language: 'python', starter: `class Customer:
+    def __init__(self, name, city, total_spent):
+        self.name = name
+        self.city = city
+        self.total_spent = total_spent
+
+    # TODO: add __repr__ and __eq__
+
+a = Customer("Aditi Rao", "Mumbai", 79200)
+b = Customer("Aditi Rao", "Mumbai", 79200)
+print(a)
+print(a == b)
+` },
+      { type: 'code', language: 'python', content: `# Sample solution
+class Customer:
+    def __init__(self, name, city, total_spent):
+        self.name = name
+        self.city = city
+        self.total_spent = total_spent
+
+    def __repr__(self):
+        return f"Customer(name={self.name!r}, city={self.city!r}, total_spent={self.total_spent})"
+
+    def __eq__(self, other):
+        return (self.name, self.city, self.total_spent) == (other.name, other.city, other.total_spent)
+
+a = Customer("Aditi Rao", "Mumbai", 79200)
+b = Customer("Aditi Rao", "Mumbai", 79200)
+print(a)
+print(a == b)` },
+
+      { type: 'heading', content: 'Task 2: A type-hinted, tested cleaning function' },
+      { type: 'paragraph', content: 'Write a fully type-hinted clean_city function (strip + title case), then write 2 pytest test cases for it.' },
+      { type: 'playground', language: 'python', starter: `import pytest
+
+# TODO: add type hints to this function
+def clean_city(city):
+    return city.strip().title()
+
+with open("test_clean_city.py", "w") as f:
+    f.write("""
+def clean_city(city):
+    return city.strip().title()
+
+# TODO: write test_clean_city_strips_whitespace()
+# TODO: write test_clean_city_fixes_casing()
+""")
+
+pytest.main(["-v", "test_clean_city.py"])
+` },
+      { type: 'code', language: 'python', content: `# Sample solution
+def clean_city(city: str) -> str:
+    return city.strip().title()
+
+with open("test_clean_city.py", "w") as f:
+    f.write("""
+def clean_city(city):
+    return city.strip().title()
+
+def test_clean_city_strips_whitespace():
+    assert clean_city("  mumbai  ") == "Mumbai"
+
+def test_clean_city_fixes_casing():
+    assert clean_city("DELHI") == "Delhi"
+""")
+
+pytest.main(["-v", "test_clean_city.py"])` },
+
+      { type: 'heading', content: 'Project 2 (Hard)' },
+      { type: 'paragraph', content: "The scenario: the toolkit now needs to handle a large customer list efficiently, fetch data from multiple sources concurrently, and prove its performance with real measurements." },
+
+      { type: 'heading', content: 'Task 3: A generator-based filter with a decorator' },
+      { type: 'paragraph', content: 'Write a decorator count_calls that counts how many times a function has been called, and apply it to a generator function that yields only high-value customers (total_spent > 50000).' },
+      { type: 'playground', language: 'python', starter: `customers = [
+    {"name": "Aditi Rao", "total_spent": 79200},
+    {"name": "Rohan Kumar", "total_spent": 22000},
+    {"name": "Priya Sharma", "total_spent": 65000},
+]
+
+def count_calls(func):
+    # TODO: track and print how many times the wrapped function has been called
+    pass
+
+@count_calls
+def high_value_customers(customer_list):
+    for c in customer_list:
+        if c["total_spent"] > 50000:
+            yield c
+
+for c in high_value_customers(customers):
+    print(c)
+` },
+      { type: 'code', language: 'python', content: `# Sample solution
+def count_calls(func):
+    call_count = 0
+    def wrapper(*args, **kwargs):
+        nonlocal call_count
+        call_count += 1
+        print(f"{func.__name__} called {call_count} time(s)")
+        return func(*args, **kwargs)
+    return wrapper
+
+@count_calls
+def high_value_customers(customer_list):
+    for c in customer_list:
+        if c["total_spent"] > 50000:
+            yield c
+
+for c in high_value_customers(customers):
+    print(c)` },
+
+      { type: 'heading', content: 'Task 4: Concurrent fetching with a measured comparison' },
+      { type: 'paragraph', content: 'Simulate fetching data for 4 customers both sequentially (one at a time) and concurrently (asyncio.gather), and print the time taken for each approach.' },
+      { type: 'playground', language: 'python', starter: `import asyncio
+import time
+
+async def fetch_customer(name, delay):
+    await asyncio.sleep(delay)
+    return f"{name}: fetched"
+
+async def main():
+    names_and_delays = [("Aditi", 0.3), ("Rohan", 0.3), ("Priya", 0.3), ("Marcus", 0.3)]
+
+    # TODO: time fetching them one at a time (a loop with await on each)
+    # TODO: time fetching them concurrently with asyncio.gather
+    # TODO: print both durations to compare
+    pass
+
+await main()
+` },
+      { type: 'code', language: 'python', content: `# Sample solution
+async def main():
+    names_and_delays = [("Aditi", 0.3), ("Rohan", 0.3), ("Priya", 0.3), ("Marcus", 0.3)]
+
+    start = time.time()
+    for name, delay in names_and_delays:
+        await fetch_customer(name, delay)
+    sequential_time = time.time() - start
+
+    start = time.time()
+    await asyncio.gather(*(fetch_customer(name, delay) for name, delay in names_and_delays))
+    concurrent_time = time.time() - start
+
+    print(f"Sequential: {sequential_time:.2f}s")
+    print(f"Concurrent: {concurrent_time:.2f}s")
+
+await main()` },
+
+      { type: 'heading', content: 'Task 5: Profile the slowest version' },
+      { type: 'paragraph', content: 'Use cProfile to profile a function that builds a cleaned customer list (strip + title case on 50,000 names).' },
+      { type: 'playground', language: 'python', starter: `import cProfile
+
+def clean_names(names):
+    return [n.strip().title() for n in names]
+
+names = ["  aditi rao  ", "ROHAN KUMAR", "priya sharma"] * 20000
+
+# TODO: profile the call clean_names(names)
+` },
+      { type: 'code', language: 'python', content: `# Sample solution
+profiler = cProfile.Profile()
+profiler.enable()
+clean_names(names)
+profiler.disable()
+profiler.print_stats()` },
+
+      { type: 'heading', content: "You're done with the Python Advanced track" },
+      { type: 'paragraph', content: "Across all three tracks, you have gone from your very first print() statement to writing classes with inheritance, decorators, generators, concurrent async code, measured performance, type-checked function signatures, and real automated tests. That is the complete, genuine range of what separates someone who can write a working script from someone who can write code other people can trust, reuse, and build on. The only step this course intentionally leaves at the doorstep is publishing a package to PyPI for the world — everything needed to get there is already in your hands." },
     ],
   },
 
@@ -5425,6 +6755,943 @@ On the Summary sheet, count of Delivered orders:
 ]
 
 /* ════════════════════════════════════════════════════════════════
+   EXCEL — INTERMEDIATE (full real track)
+   ════════════════════════════════════════════════════════════════ */
+const EXCEL_INTERMEDIATE = [
+  {
+    id: 'ex-i-1',
+    title: 'VLOOKUP and INDEX/MATCH',
+    duration: '30 min',
+    sections: [
+      { type: 'heading', content: 'The problem: data spread across two tables' },
+      { type: 'paragraph', content: 'Imagine you have an Orders sheet with a Product ID in every row, and a separate Products sheet that lists each Product ID alongside its name and price. You need the order sheet to show the product name and price too — without manually typing it in for every single row. This is exactly what JOINs do in SQL, and what lookups do in Excel.' },
+
+      { type: 'heading', content: 'VLOOKUP: the workhorse function' },
+      { type: 'paragraph', content: 'VLOOKUP looks down the first column of a table for a value, and returns something from a column to the right of it in the same row.' },
+      { type: 'code', language: 'excel', content: `=VLOOKUP(lookup_value, table_range, column_number, exact_match)
+
+Example: Orders sheet, cell C2 has Product ID "P104"
+Products sheet: column A = Product ID, column B = Name, column C = Price
+
+=VLOOKUP(C2, Products!A:C, 2, FALSE)   → returns the product name
+=VLOOKUP(C2, Products!A:C, 3, FALSE)   → returns the product price` },
+      { type: 'paragraph', content: 'Breaking down the four parts: C2 is what you are searching for. Products!A:C is the full table to search inside. 2 (or 3) is which column to pull the answer from, counting from the left of that table starting at 1. FALSE means "only return an exact match" — almost always what you want.' },
+      { type: 'callout', kind: 'warning', content: 'Almost every VLOOKUP mistake comes from forgetting the FALSE at the end. Without it, Excel defaults to an approximate match, which silently returns wrong answers instead of an error — far more dangerous than a visible mistake.' },
+
+      { type: 'heading', content: "VLOOKUP's real limitation: it can only look right" },
+      { type: 'paragraph', content: 'VLOOKUP always searches the first column of your range and pulls data from columns to the right of it. If the Product ID were in column C and the Name you needed were in column A (to its left), VLOOKUP simply cannot do it — no matter how you adjust the column number.' },
+      { type: 'paragraph', content: 'Real-life example: a finance team exports data from their accounting software where Employee Name is in column A and Employee ID is in column D. If you need to look up a name FROM an ID, VLOOKUP is stuck — the ID is to the right of the name, not the left.' },
+
+      { type: 'heading', content: 'INDEX/MATCH: the flexible alternative' },
+      { type: 'paragraph', content: 'INDEX/MATCH does the same job as VLOOKUP but can look in any direction, because it is really two functions working together: MATCH finds the position of a value, and INDEX returns whatever is at that position.' },
+      { type: 'code', language: 'excel', content: `=MATCH(lookup_value, lookup_range, 0)
+   -- finds the POSITION (a number like 1, 2, 3...) of a value in a range
+   -- the 0 means exact match, same idea as FALSE in VLOOKUP
+
+=INDEX(return_range, position)
+   -- returns whatever is at that position in a different range
+
+Combined — find an Employee ID in column D, return the Name from column A:
+=INDEX(A:A, MATCH(D2, D:D, 0))
+   -- MATCH finds WHERE the ID is; INDEX returns the Name at that same row` },
+      { type: 'paragraph', content: 'Notice the lookup column (D) can be anywhere relative to the column you are returning (A) — left, right, it does not matter. This is the entire reason INDEX/MATCH exists.' },
+
+      { type: 'heading', content: 'A second advantage: INDEX/MATCH survives column changes' },
+      { type: 'paragraph', content: "With VLOOKUP, the column number (the '2' or '3' in the formula) is a fixed number you typed. If someone inserts a new column into the table you are searching, every column number shifts — and your VLOOKUP quietly starts pulling the wrong column. INDEX/MATCH has no hardcoded column number, so it keeps working correctly even after columns are inserted or reordered." },
+
+      { type: 'heading', content: 'XLOOKUP: the modern replacement (if available)' },
+      { type: 'paragraph', content: 'If you have Excel 365 or Excel 2021+, a newer function called XLOOKUP combines the simplicity of VLOOKUP with the flexibility of INDEX/MATCH, and is worth using if it is available to you.' },
+      { type: 'code', language: 'excel', content: `=XLOOKUP(lookup_value, lookup_range, return_range)
+
+Example: same Employee ID → Name lookup as above
+=XLOOKUP(D2, D:D, A:A)
+   -- no column counting, no exact-match flag needed, works in any direction` },
+      { type: 'callout', kind: 'tip', content: "If your version of Excel has XLOOKUP (check the Formulas tab — if it autocompletes when you type =XLO, you have it), it is the best default choice. If not (older Excel, or some shared/work versions), INDEX/MATCH is the reliable fallback that works everywhere." },
+
+      { type: 'heading', content: 'Common lookup errors' },
+      { type: 'list', items: [
+        '#N/A — the value you searched for genuinely does not exist in the lookup range. Check for typos or extra spaces (TRIM helps here).',
+        'A VLOOKUP that returns the wrong value for every row — almost always a missing FALSE, or a forgotten absolute reference ($) on the table range when copying the formula down.',
+        '#REF! — usually means a column inside your lookup table was deleted, breaking a VLOOKUP\'s column number.',
+      ]},
+
+      { type: 'heading', content: 'Try it' },
+      { type: 'paragraph', content: 'Build two sheets. "Products": Product ID, Name, Price (5 rows). "Orders": Order ID, Product ID, Quantity (5 rows, using Product IDs from the Products sheet). On the Orders sheet, add a Name column using VLOOKUP, and a Price column using INDEX/MATCH — practising both approaches on the same data.' },
+
+      { type: 'heading', content: "What's next" },
+      { type: 'paragraph', content: "Lookups answer questions about individual rows. The next module covers Pivot Tables — Excel's tool for summarising thousands of rows into a handful of meaningful numbers in seconds, without writing a single formula." },
+    ],
+  },
+
+  {
+    id: 'ex-i-2',
+    title: 'Pivot tables: the most powerful feature',
+    duration: '35 min',
+    sections: [
+      { type: 'heading', content: 'The single most useful button in Excel' },
+      { type: 'paragraph', content: 'Imagine 5,000 rows of raw sales data — date, customer, city, product, quantity, price. Your manager asks: "What was our total revenue by city, broken down by month?" Doing this by hand with SUMIFS would take an hour and several formulas. A Pivot Table answers it in under a minute, with zero formulas.' },
+
+      { type: 'heading', content: 'What a Pivot Table actually does' },
+      { type: 'paragraph', content: 'A Pivot Table takes your raw, row-by-row data and lets you drag-and-drop fields into four boxes to instantly group, summarise, and reshape it: Rows, Columns, Values, and Filters.' },
+      { type: 'list', items: [
+        'Rows — what you want to group by, going down the page (e.g., City)',
+        'Columns — a second way to group, going across the page (e.g., Month)',
+        'Values — the number you want to summarise (e.g., Revenue, usually summed)',
+        'Filters — a dropdown that lets you narrow the whole table to one category (e.g., only show "Delivered" orders)',
+      ]},
+
+      { type: 'heading', content: 'Building your first Pivot Table' },
+      { type: 'paragraph', content: 'Click anywhere inside your raw data table, then Insert → PivotTable. Excel guesses your data range automatically — confirm it, and choose "New Worksheet." A blank pivot canvas appears on the right with a field list and the four boxes.' },
+      { type: 'code', language: 'excel', content: `Raw data columns: Date | City | Product | Quantity | Price | Revenue
+
+To answer "total revenue by city":
+  Drag City        → Rows
+  Drag Revenue      → Values   (Excel defaults to "Sum of Revenue")
+
+Result: a tiny 3-row table showing total revenue for each city —
+instead of scrolling through 5,000 individual transactions` },
+      { type: 'paragraph', content: 'To add the month breakdown your manager asked for, drag Date into Columns as well. Excel automatically groups daily dates into months when you right-click a date in the pivot and choose "Group" — turning 365 daily columns into 12 readable monthly ones.' },
+
+      { type: 'heading', content: 'Changing how Values are summarised' },
+      { type: 'paragraph', content: 'By default, numbers dropped into Values are Summed, but you can change this — click the small dropdown next to the field in the Values box, choose "Value Field Settings," and pick Count, Average, Max, Min, or several others.' },
+      { type: 'list', items: [
+        'Sum of Revenue — total revenue (the default for numbers)',
+        'Count of Order ID — how many orders, regardless of revenue (useful for "how many orders did each city have")',
+        'Average of Quantity — typical order size per city',
+      ]},
+      { type: 'callout', kind: 'tip', content: 'A common mistake: dragging a text column (like Customer Name) into Values. Excel automatically switches to "Count" since text cannot be summed — that is usually exactly what you want for "how many orders per customer," but it confuses people expecting a Sum.' },
+
+      { type: 'heading', content: 'Filtering and slicing' },
+      { type: 'paragraph', content: 'Drag Status into the Filters box, then use the dropdown that appears above the pivot table to show only "Delivered" orders, instantly recalculating every number in the table. For a more visual filter that updates with one click instead of a dropdown menu, use Insert → Slicer instead — popular for building simple, clickable dashboards.' },
+
+      { type: 'heading', content: 'Refreshing when your source data changes' },
+      { type: 'paragraph', content: 'A Pivot Table is a snapshot, not a live formula — if you add 50 new rows to your source data, the pivot does not update automatically. Right-click anywhere inside the pivot and choose "Refresh" (or press Alt+F5) any time your underlying data changes.' },
+      { type: 'callout', kind: 'warning', content: "This is the most common pivot table mistake in real jobs: someone updates the raw data, forwards the dashboard, and the numbers are stale because nobody refreshed. If you are building a Pivot Table that others rely on regularly, get in the habit of refreshing before every share." },
+
+      { type: 'heading', content: 'Pivot charts' },
+      { type: 'paragraph', content: 'Click inside your pivot table, then Insert → PivotChart, to get a chart that summarises the same grouped data and updates automatically whenever the pivot table refreshes — far less manual work than rebuilding a regular chart every time the data changes.' },
+
+      { type: 'heading', content: 'Try it' },
+      { type: 'paragraph', content: "Build a raw data table with at least 15 rows: Date, City (3-4 cities), Product (4-5 products), Quantity, Price. Add a Revenue column (Quantity × Price). Then build a Pivot Table showing total revenue by city in Rows and product in Columns, with a Filter on a Status column you add (Delivered/Pending)." },
+
+      { type: 'heading', content: "What's next" },
+      { type: 'paragraph', content: "A quick mini project next combines lookups and Pivot Tables on one realistic dataset, then the next lesson covers Conditional Formatting — making numbers visually jump out at you directly inside your raw data, before you even build a summary." },
+    ],
+  },
+
+  {
+    id: 'ex-mp-5',
+    title: 'Mini Project: Order Lookup & Revenue Dashboard',
+    duration: '20 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'Quick practice before moving on' },
+      { type: 'paragraph', content: 'Most real reporting work follows this exact two-step pattern: first enrich raw transaction data with lookups (pulling in names and prices from a separate table), then summarise the enriched data with a Pivot Table. This project does both, on data that intentionally mirrors a real e-commerce export.' },
+      { type: 'list', items: [
+        'Concepts used: VLOOKUP / INDEX-MATCH, Pivot Tables, grouping',
+      ]},
+
+      { type: 'heading', content: 'The task' },
+      { type: 'paragraph', content: 'Create a sheet called "Products" with this table:' },
+      { type: 'list', items: [
+        'Product ID | Name | Price',
+        'P101 | Wireless Mouse | 799',
+        'P102 | Laptop Stand | 1499',
+        'P103 | Table Lamp | 1299',
+        'P104 | Cotton T-Shirt | 599',
+        'P105 | Running Shoes | 3499',
+      ]},
+      { type: 'paragraph', content: 'Create a second sheet called "Orders" with this table (note that Product IDs repeat, and cities repeat — this is realistic):' },
+      { type: 'list', items: [
+        'Order ID | Date | City | Product ID | Quantity',
+        'O1 | 01-Jun-2024 | Mumbai | P101 | 3',
+        'O2 | 02-Jun-2024 | Bengaluru | P102 | 2',
+        'O3 | 03-Jun-2024 | Delhi | P103 | 1',
+        'O4 | 04-Jun-2024 | Mumbai | P104 | 5',
+        'O5 | 05-Jun-2024 | Delhi | P105 | 1',
+        'O6 | 06-Jun-2024 | Mumbai | P104 | 4',
+        'O7 | 07-Jun-2024 | Bengaluru | P101 | 2',
+        'O8 | 08-Jun-2024 | Delhi | P103 | 2',
+      ]},
+      { type: 'heading', content: 'Build these on the Orders sheet' },
+      { type: 'list', items: [
+        'A Name column that looks up the product name from the Products sheet using the Product ID',
+        'A Price column that looks up the unit price the same way (try VLOOKUP for one of these two columns and INDEX/MATCH for the other, to practise both)',
+        'A Revenue column = Quantity × Price',
+      ]},
+      { type: 'code', language: 'excel', content: `Name (row 2 example, using VLOOKUP):
+=VLOOKUP(D2, Products!A:C, 2, FALSE)
+
+Price (row 2 example, using INDEX/MATCH):
+=INDEX(Products!C:C, MATCH(D2, Products!A:A, 0))
+
+Revenue (row 2 example):
+=E2*Price_column_here` },
+      { type: 'heading', content: 'Then build a Pivot Table' },
+      { type: 'paragraph', content: 'From the enriched Orders data, build a Pivot Table with City in Rows and Revenue in Values, to answer "which city generates the most revenue?" Then add Product Name into Columns as well, to see the city/product breakdown in one table.' },
+      { type: 'callout', kind: 'tip', content: 'If your Pivot Table values look wrong, check the Revenue column on the Orders sheet first — a single lookup error there (e.g., a missing FALSE in VLOOKUP) will silently distort every total the pivot calculates from it.' },
+    ],
+  },
+
+  {
+    id: 'ex-i-3',
+    title: 'Conditional formatting',
+    duration: '25 min',
+    sections: [
+      { type: 'heading', content: 'Making important numbers visible without reading every row' },
+      { type: 'paragraph', content: 'Imagine a spreadsheet of 200 invoices with due dates. Scanning every row to manually spot which ones are overdue is slow and error-prone. Conditional Formatting tells Excel "automatically colour any cell that meets this rule" — overdue invoices turn red the moment they qualify, with zero manual checking.' },
+
+      { type: 'heading', content: 'Built-in rules: highlighting cells' },
+      { type: 'paragraph', content: "Select your range, go to Home → Conditional Formatting → Highlight Cells Rules. Common built-in options:" },
+      { type: 'list', items: [
+        'Greater Than / Less Than — highlight values above or below a number you type in',
+        'Between — highlight values inside a range, e.g., scores between 60 and 75',
+        'Equal To — highlight an exact match, e.g., Status equal to "Cancelled"',
+        'Duplicate Values — instantly spot repeated entries, e.g., the same Order ID appearing twice by mistake',
+      ]},
+      { type: 'paragraph', content: 'Real-life example: select a Quantity column, apply "Less Than" with the value 5, and choose red fill — any product with fewer than 5 units left turns red automatically, even as quantities change throughout the day.' },
+
+      { type: 'heading', content: 'Data Bars, Color Scales, and Icon Sets' },
+      { type: 'paragraph', content: 'Beyond simple highlighting, Excel can turn an entire column into a tiny visual chart without you building one.' },
+      { type: 'list', items: [
+        'Data Bars — draws a small bar inside each cell, proportional to its value (longer bar = bigger number). Great for comparing magnitudes at a glance, like monthly sales per product.',
+        'Color Scales — shades cells on a gradient (e.g., red for low values fading to green for high). Great for spotting patterns across a whole table at once, like exam scores across a class.',
+        'Icon Sets — adds a small symbol (traffic-light circles, arrows, stars) based on value thresholds. Popular for status columns, like a green/yellow/red light for project health.',
+      ]},
+      { type: 'code', language: 'excel', content: `Home → Conditional Formatting → Color Scales → pick a 3-colour scale
+(e.g., red - yellow - green)
+
+Applied to a "Score" column of exam marks (0-100):
+  Scores near 0   → shaded red
+  Scores near 50   → shaded yellow
+  Scores near 100  → shaded green
+-- you can scan the whole class's performance in one glance, no reading required` },
+
+      { type: 'heading', content: 'Formula-based rules: the real power' },
+      { type: 'paragraph', content: 'The built-in rules only check one cell at a time. To compare a cell against another cell, or apply more complex logic, use "New Rule" → "Use a formula to determine which cells to format." This formula must evaluate to TRUE or FALSE — TRUE means "apply this formatting."' },
+      { type: 'code', language: 'excel', content: `Highlight a Due Date in red if it has already passed today:
+=A2<TODAY()
+
+Highlight an entire row red if Status equals "Cancelled"
+(select the whole data range first, then apply this rule):
+=$F2="Cancelled"
+-- the $ before F locks the column so every cell in the row checks
+   column F specifically, but the row number still adjusts per row` },
+      { type: 'callout', kind: 'tip', content: 'To highlight a whole row based on one column\'s value (like the Cancelled example), select the entire data range BEFORE creating the rule, and lock only the column with $ (like $F2, not $F$2). This lets the row number adjust for each row while the column stays fixed on Status.' },
+
+      { type: 'heading', content: 'Managing and removing rules' },
+      { type: 'paragraph', content: 'Conditional formatting rules pile up invisibly — Home → Conditional Formatting → Manage Rules shows every rule currently applied to the sheet, in what order they run, and lets you edit, delete, or reorder them. If formatting looks wrong or contradictory, this is the first place to check.' },
+      { type: 'callout', kind: 'warning', content: 'Multiple rules can apply to the same cell, and they are evaluated top to bottom in the Manage Rules list — the first matching rule (unless "Stop If True" is unchecked) wins. If a cell is not formatting the way you expect, check Manage Rules for a conflicting rule sitting above it.' },
+
+      { type: 'heading', content: 'Try it' },
+      { type: 'paragraph', content: 'Build a small task tracker: Task, Due Date, Status (Open/Done). Apply a formula rule that highlights the Due Date column red whenever the date has passed AND the Status is "Open" (hint: combine your formula with AND, like =AND(A2<TODAY(), $C2="Open")).' },
+
+      { type: 'heading', content: "What's next" },
+      { type: 'paragraph', content: 'So far, every spreadsheet has accepted any typed input, even mistakes. The next module covers Named Ranges (making formulas more readable) and Data Validation (preventing bad data — like a typo\'d city name or an impossible date — from ever being entered in the first place).' },
+    ],
+  },
+
+  {
+    id: 'ex-i-4',
+    title: 'Named ranges and data validation',
+    duration: '25 min',
+    sections: [
+      { type: 'heading', content: 'Named ranges: giving cells a readable name' },
+      { type: 'paragraph', content: 'You have already used absolute references like $F$1 to lock a tax rate cell. A Named Range does the same locking job but gives that cell a plain-English name instead of a coordinate, making formulas far easier to read and far less likely to break.' },
+      { type: 'code', language: 'excel', content: `Without a named range:
+=B2*$F$1          -- what is in F1? you have to go check
+
+With a named range called TaxRate (pointing at F1):
+=B2*TaxRate       -- immediately clear what this formula means` },
+      { type: 'paragraph', content: 'To create one: select the cell (F1), then either type a name directly into the Name Box (top-left, where cell addresses normally appear) and press Enter, or go to Formulas → Define Name for more options. From then on, that name can be used in any formula on any sheet in the workbook, exactly like a cell reference.' },
+
+      { type: 'heading', content: 'Why named ranges matter beyond readability' },
+      { type: 'list', items: [
+        'A named range automatically behaves like an absolute reference — no need to remember $ signs at all.',
+        'If you ever move the named cell to a different location, every formula using its name still works correctly — Excel tracks the name, not the original coordinates.',
+        'Named ranges can cover a whole table too, not just one cell — e.g., naming A2:A50 as "ProductList" so a formula can say =SUM(ProductList) instead of =SUM(A2:A50).',
+      ]},
+      { type: 'callout', kind: 'tip', content: 'Use Formulas → Name Manager to see every named range in your workbook, edit what they point to, or delete ones you no longer need. This is the most common place people look when a formula error mentions a name they do not recognise.' },
+
+      { type: 'heading', content: 'Data validation: stopping bad data before it happens' },
+      { type: 'paragraph', content: 'Conditional formatting reacts to bad data after it has already been typed in. Data Validation prevents it from being entered at all — far better, especially on a sheet other people will fill in.' },
+      { type: 'paragraph', content: 'Select the cells you want to restrict, then Data → Data Validation. The most common and useful option is a dropdown list, which removes typos entirely by only allowing pre-approved choices.' },
+      { type: 'code', language: 'excel', content: `Data → Data Validation → Allow: List → Source:
+Delivered, Pending, Cancelled
+
+Result: clicking that cell shows a dropdown arrow with exactly
+those three options — typing "delivered" (lowercase) or
+"Delivered " (trailing space) is no longer possible by mistake` },
+      { type: 'paragraph', content: 'Real-life example: a form where people enter a department name freely will inevitably end up with "Sales", "sales", "SALES", and "Sales Dept" all meaning the same thing — breaking any COUNTIF or Pivot Table that groups by department. A dropdown list eliminates that problem at the source.' },
+
+      { type: 'heading', content: 'Validating numbers and dates' },
+      { type: 'paragraph', content: 'Beyond dropdown lists, Data Validation can restrict whole number ranges, decimal ranges, dates, and text length — useful for catching obviously impossible entries.' },
+      { type: 'list', items: [
+        'Whole number between 0 and 100 — for a percentage or score field, rejecting anything outside that range',
+        'Date — between today and one year from now, e.g., for a delivery date that cannot be in the past',
+        'Text length — maximum 10 characters, e.g., for a product code field with a fixed format',
+      ]},
+
+      { type: 'heading', content: 'Custom validation with a formula' },
+      { type: 'paragraph', content: 'Like conditional formatting, Data Validation also supports "Custom" with your own formula that must evaluate to TRUE for the entry to be accepted.' },
+      { type: 'code', language: 'excel', content: `Allow: Custom → Formula:
+=AND(B2>0, B2<=C2)
+
+Example use: a Quantity Sold (B2) cell that must be greater than 0
+and cannot exceed the Quantity In Stock (C2) — blocking an
+impossible sale before it is ever entered into the sheet` },
+      { type: 'callout', kind: 'warning', content: 'Data Validation only stops NEW typed entries — it does not retroactively flag data that was already in the cells before the rule was applied, or data pasted in via copy-paste in some Excel versions. Always set up validation before a sheet is shared for others to fill in, not after.' },
+
+      { type: 'heading', content: 'Adding a helpful input message and error alert' },
+      { type: 'paragraph', content: 'On the same Data Validation dialog, the "Input Message" tab shows a small tooltip when the cell is selected (e.g., "Enter a number between 1 and 100"), and the "Error Alert" tab controls what happens on an invalid entry — a Stop (blocks it entirely), Warning (lets the user override), or Information (just a note).' },
+
+      { type: 'heading', content: 'Try it' },
+      { type: 'paragraph', content: 'Build a small order form: Product (dropdown list of 5 products you choose), Quantity (whole number, 1 to 50 only), Status (dropdown: Pending/Shipped/Delivered). Name the cell holding a discount percentage "DiscountRate" and use it by name in a formula elsewhere on the sheet.' },
+
+      { type: 'heading', content: "What's next" },
+      { type: 'paragraph', content: "A quick mini project next combines named ranges, validation, and conditional formatting on one tracker. Then the final lesson covers Power Query — the tool for importing genuinely messy real-world data (inconsistent formats, extra columns, data spread across multiple files) and transforming it into a clean table automatically, with the cleanup steps remembered for next time." },
+    ],
+  },
+
+  {
+    id: 'ex-mp-6',
+    title: 'Mini Project: Task Tracker with Smart Highlighting',
+    duration: '20 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'Quick practice before moving on' },
+      { type: 'paragraph', content: 'A genuinely useful task tracker needs all three skills from the last two lessons working together: a dropdown that stops anyone from typing an invalid status, a named range so the "today" reference reads clearly in formulas, and conditional formatting that makes overdue items impossible to miss.' },
+      { type: 'list', items: [
+        'Concepts used: Data Validation dropdowns, Named Ranges, formula-based Conditional Formatting',
+      ]},
+
+      { type: 'heading', content: 'The task' },
+      { type: 'paragraph', content: 'Build a sheet with this table:' },
+      { type: 'list', items: [
+        'Task | Owner | Due Date | Status',
+        'Finalise budget | Aditi | 10-Jun-2024 | Open',
+        'Vendor contract | Rohan | 05-Jun-2024 | Open',
+        'Send invoices | Priya | 20-Jun-2024 | Done',
+        'Update website | Sarah | 08-Jun-2024 | Open',
+        'Quarterly report | James | 25-Jun-2024 | Open',
+      ]},
+      { type: 'heading', content: 'Build these' },
+      { type: 'list', items: [
+        'Data Validation on the Status column: a dropdown restricted to exactly Open, In Progress, Done',
+        'A cell somewhere off to the side holding a reference date — name it ReferenceDate using the Name Box (you can set it to a fixed date like 15-Jun-2024 so the example is reproducible, instead of TODAY())',
+        'A formula-based Conditional Formatting rule that highlights the whole row red whenever the Due Date is before ReferenceDate AND the Status is not "Done"',
+      ]},
+      { type: 'code', language: 'excel', content: `Conditional formatting formula (select the whole data range first):
+=AND($C2<ReferenceDate, $D2<>"Done")
+
+-- $C2 locks the Due Date column, $D2 locks the Status column,
+   while the row number (2) still adjusts for every row in the selection
+-- using the named range ReferenceDate instead of a raw cell reference
+   like $F$1 makes this formula self-explanatory at a glance` },
+      { type: 'callout', kind: 'warning', content: "If every row highlights red (even ones that are not overdue), double-check that you selected the full data range BEFORE creating the rule, and that you locked the column with $ correctly — exactly the same mistake pattern as the row-highlighting example from the lesson." },
+    ],
+  },
+
+  {
+    id: 'ex-i-5',
+    title: 'Power Query: cleaning messy data',
+    duration: '35 min',
+    sections: [
+      { type: 'heading', content: 'The problem Power Query solves' },
+      { type: 'paragraph', content: 'Real exported data is rarely clean. A typical export from a billing system might have a "Full Name" column that needs splitting into first and last name, a date stored as text instead of a real date, duplicate rows from a system glitch, and a "Notes" column nobody needs. Doing all of this by hand with formulas works once — but if this same messy export arrives every single week, retyping the same cleanup steps is a waste of time.' },
+      { type: 'paragraph', content: 'Power Query (found under Data → Get & Transform Data) lets you record a sequence of cleanup steps once, and then simply click "Refresh" on every future version of that same messy file — Excel replays every step automatically.' },
+
+      { type: 'heading', content: 'Loading data into Power Query' },
+      { type: 'paragraph', content: 'Data → Get Data → From File → From Workbook (or From Text/CSV) opens the source file, shows a preview, and loads it into the Power Query Editor — a separate window where every transformation happens before the data ever touches your actual worksheet.' },
+      { type: 'callout', kind: 'tip', content: "The Power Query Editor is a safe sandbox: nothing you do there changes your original source file. You are building a repeatable recipe of steps, not editing the raw data directly." },
+
+      { type: 'heading', content: 'Common cleanup transformations' },
+      { type: 'list', items: [
+        'Remove Columns — right-click a column header (like "Notes") → Remove, to drop columns you do not need',
+        'Remove Duplicates — select a column (like Order ID) → Remove Duplicates, to eliminate accidental repeat rows',
+        'Split Column — select "Full Name" → Split Column → By Delimiter → Space, to turn one column into First Name and Last Name',
+        'Change Type — click the data-type icon in a column header to fix a date or number that was imported as plain text',
+        'Filter Rows — use the dropdown on any column header, exactly like Excel\'s normal filter, but the filter becomes a remembered step',
+        'Trim / Clean — Transform → Format → Trim, to strip extra spaces from every cell in a column in one click instead of writing a TRIM formula',
+      ]},
+
+      { type: 'heading', content: 'The Applied Steps list: your recorded recipe' },
+      { type: 'paragraph', content: 'Every action you take in the Power Query Editor appears as a named step in the "Applied Steps" panel on the right — "Removed Columns," "Split Column by Delimiter," "Changed Type," in the exact order you performed them. Click any step to see the data exactly as it looked at that point, and click the small gear icon next to a step to edit its settings without starting over.' },
+      { type: 'code', language: 'excel', content: `Applied Steps (example, top to bottom):
+1. Source                          (the raw file as imported)
+2. Removed Columns                 (dropped "Notes")
+3. Split Column by Delimiter        (Full Name → First Name, Last Name)
+4. Changed Type                    (Order Date: Text → Date)
+5. Removed Duplicates              (based on Order ID)
+6. Filtered Rows                   (kept only Status = "Delivered")
+
+-- this entire numbered list re-runs automatically on every refresh,
+   against whatever new data is in the source file` },
+
+      { type: 'heading', content: 'Loading the cleaned data back into Excel' },
+      { type: 'paragraph', content: 'Once your steps look right, click "Close & Load" (top-left of the Power Query Editor). The cleaned table appears as a normal Excel table in your worksheet — but it remembers where it came from and every step that produced it.' },
+
+      { type: 'heading', content: 'The real payoff: Refresh' },
+      { type: 'paragraph', content: "Next week, the same messy export arrives again — different rows, same structure. Instead of redoing every cleanup step by hand, replace the source file (or update it in the same location) and click Data → Refresh All. Every single step you recorded — removing the same columns, splitting the same way, removing new duplicates — replays automatically against the new data in seconds." },
+      { type: 'callout', kind: 'warning', content: "Refresh assumes the NEW file has the same column structure as the one you originally built the steps against. If a column gets renamed or its position changes in the new export, a step may fail or grab the wrong column — always spot-check the refreshed result before relying on it." },
+
+      { type: 'heading', content: 'Merging two queries (a Power Query JOIN)' },
+      { type: 'paragraph', content: 'Power Query can also combine two separate tables based on a matching column — conceptually identical to the VLOOKUP/INDEX-MATCH lookups from earlier, but done once as a repeatable step instead of a formula in every row. In the Power Query Editor: Home → Merge Queries, pick the second table, and choose the matching column in both (e.g., Product ID). Choose a join type — "Left Outer" (keep everything from the first table, matching what you can from the second) is the most common choice, equivalent to a SQL LEFT JOIN.' },
+
+      { type: 'heading', content: 'Try it' },
+      { type: 'paragraph', content: 'Build a small messy table directly in Excel: a "Full Name" column with inconsistent spacing (some names with extra leading/trailing spaces), a "Notes" column you do not need, and a couple of accidentally duplicated rows. Load it into Power Query, trim the names, split Full Name into First and Last, remove the Notes column and the duplicates, then Close & Load. Add one more duplicate row to your original data and practise hitting Refresh All to confirm the cleanup re-runs correctly.' },
+
+      { type: 'heading', content: "What's next" },
+      { type: 'paragraph', content: 'The capstone project combines everything from this track — lookups, Pivot Tables, conditional formatting, validation, and Power Query — into a single realistic workbook, cleaning a messy export from scratch all the way to a finished summary dashboard.' },
+    ],
+  },
+
+  {
+    id: 'ex-i-capstone',
+    title: 'Capstone: End-to-end sales cleanup and reporting workbook',
+    duration: '60 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'Practice time — no new features here' },
+      { type: 'paragraph', content: "This capstone is meant to be done in actual Excel (or Google Sheets), not just read on screen. It combines every Intermediate skill — Power Query cleanup, lookups, a Pivot Table summary, conditional formatting, and data validation — into one realistic workflow: turning a genuinely messy sales export into a clean reporting workbook someone else could open and immediately trust." },
+      { type: 'callout', kind: 'tip', content: 'Type the data in exactly as given, including the messy spacing and inconsistent casing — that mess is the point of the exercise.' },
+
+      { type: 'heading', content: 'The scenario' },
+      { type: 'paragraph', content: 'You run a small online store. Your billing system exported this raw sales data into a sheet called "RawSales" — duplicated rows, inconsistent city casing, and all:' },
+      { type: 'list', items: [
+        'Order ID | Customer | City | Product ID | Quantity | Order Date',
+        'O1001 | aditi rao | mumbai | P101 | 3 | 01-Jun-2024',
+        'O1002 | ROHAN KUMAR |  bengaluru | P102 | 2 | 02-Jun-2024',
+        'O1003 | Priya Sharma | Delhi  | P103 | 1 | 03-Jun-2024',
+        'O1003 | Priya Sharma | Delhi  | P103 | 1 | 03-Jun-2024',
+        'O1004 | sarah chen | Mumbai | P104 | 5 | 04-Jun-2024',
+        'O1005 | Marcus Johnson |  delhi | P105 | 1 | 05-Jun-2024',
+        'O1006 | aditi rao | Mumbai | P104 | 4 | 06-Jun-2024',
+        'O1007 | James Okonkwo | bengaluru | P101 | 2 | 07-Jun-2024',
+      ]},
+      { type: 'paragraph', content: 'Note row O1003 appears twice — a genuine duplicate from the export glitch. Create a "Products" sheet too, reusing the Product ID, Name, Price table from the earlier mini project (P101–P105).' },
+
+      { type: 'heading', content: 'Step 1 — Clean it with Power Query' },
+      { type: 'list', items: [
+        'Load the RawSales table into Power Query',
+        'Trim the Customer and City columns to remove extra spaces',
+        'Use a "Capitalize Each Word" / PROPER-style transform on City so "mumbai", "Mumbai", and " mumbai " all become "Mumbai"',
+        'Remove duplicate rows (based on Order ID)',
+        'Change the Order Date type to a proper Date if it was not detected automatically',
+        'Close & Load the result as a clean table called "Sales"',
+      ]},
+
+      { type: 'heading', content: 'Step 2 — Enrich it with lookups' },
+      { type: 'paragraph', content: 'On the cleaned Sales sheet, add a Product Name and Price column using VLOOKUP or INDEX/MATCH against the Products sheet, and a Revenue column (Quantity × Price).' },
+      { type: 'code', language: 'excel', content: `Product Name (example):
+=VLOOKUP(D2, Products!A:C, 2, FALSE)
+
+Price (example):
+=INDEX(Products!C:C, MATCH(D2, Products!A:A, 0))
+
+Revenue (example):
+=E2*Price_column_here` },
+
+      { type: 'heading', content: 'Step 3 — Summarise it with a Pivot Table' },
+      { type: 'paragraph', content: 'Build a Pivot Table from the enriched Sales data: City in Rows, Product Name in Columns, Revenue in Values. Add a Filter for Order Date so the dashboard can be narrowed to a specific period later.' },
+
+      { type: 'heading', content: 'Step 4 — Highlight what matters' },
+      { type: 'paragraph', content: 'Back on the Sales sheet, add formula-based Conditional Formatting that highlights any row green if Revenue is above 3000 (a "big order" worth noting), using the same locked-column pattern from the formatting lesson.' },
+      { type: 'code', language: 'excel', content: `Conditional formatting formula (select the data range first):
+=$H2>3000
+-- adjust H to whichever column your Revenue ended up in` },
+
+      { type: 'heading', content: 'Step 5 — Protect future data entry' },
+      { type: 'paragraph', content: 'Add a few new blank rows at the bottom of the Sales sheet for future manual entries, and apply Data Validation to the City column on those new rows: a dropdown restricted to Mumbai, Delhi, Bengaluru — so the inconsistent-casing problem you just cleaned up cannot happen again going forward.' },
+
+      { type: 'heading', content: 'Step 6 — Make it refreshable' },
+      { type: 'paragraph', content: 'Add one more row to the original RawSales data (a new order, with deliberately messy casing like " CHENNAI "), then run Refresh All. Confirm the Power Query cleanup re-applies automatically, the lookups pick up the new row, and the Pivot Table total changes after you refresh it too.' },
+      { type: 'callout', kind: 'warning', content: "Remember: Power Query and Pivot Tables refresh independently. Refreshing the Power Query step does not automatically refresh the Pivot Table built on top of it — you may need Data → Refresh All to update everything in one go." },
+
+      { type: 'heading', content: "You've finished the Excel Intermediate track" },
+      { type: 'paragraph', content: "If you built this end-to-end — cleaning a genuinely messy export, enriching it with lookups, summarising it with a Pivot Table, highlighting what matters, and locking down future entries — you can do real, job-ready Excel reporting work. That combination — clean, lookup, summarise, format, validate — covers the vast majority of real spreadsheet work in any job." },
+      { type: 'paragraph', content: "The Advanced track goes one level deeper: Power Pivot and the Data Model (connecting multiple tables like a mini-database inside Excel, without VLOOKUP), DAX measures (the formula language behind Power Pivot and Power BI), array formulas, and a first look at automating repetitive tasks with simple Macros. When ready, switch to Advanced from the sidebar." },
+    ],
+  },
+]
+
+/* ════════════════════════════════════════════════════════════════
+   EXCEL — ADVANCED (full real track)
+   One running dataset throughout: a small electronics & home-goods
+   store with three real tables — Sales, Products, Customers —
+   used across the Data Model, DAX, array formulas, a macro, and
+   the final dashboard, so every lesson builds on the last.
+   ════════════════════════════════════════════════════════════════ */
+const EXCEL_ADVANCED = [
+  {
+    id: 'ex-a-1',
+    title: 'Power Pivot and the Data Model',
+    duration: '35 min',
+    sections: [
+      { type: 'heading', content: 'The limit of VLOOKUP at scale' },
+      { type: 'paragraph', content: 'VLOOKUP and INDEX/MATCH work fine for a few thousand rows and a couple of lookup tables. But imagine a real retail business: a Sales table with 200,000 transaction rows, a Products table, a Customers table, and a Stores table. Writing VLOOKUP formulas down 200,000 rows for three different lookups each is slow to calculate, bloats the file size enormously, and breaks the moment someone inserts a column. Power Pivot solves this by connecting tables the way a real database does — through relationships, not formulas copied down every row.' },
+
+      { type: 'heading', content: 'The running dataset for this whole track' },
+      { type: 'paragraph', content: 'Three tables, used in every lesson from here on. Type them into three separate sheets.' },
+      { type: 'paragraph', content: '"Sales" — one row per transaction:' },
+      { type: 'list', items: [
+        'Sale ID | Date | Customer ID | Product ID | Quantity',
+        'S1 | 01-Jan-2024 | C1 | P1 | 2',
+        'S2 | 03-Jan-2024 | C2 | P2 | 1',
+        'S3 | 15-Feb-2024 | C1 | P3 | 1',
+        'S4 | 02-Mar-2024 | C3 | P1 | 3',
+        'S5 | 20-Mar-2024 | C2 | P4 | 2',
+        'S6 | 05-Apr-2024 | C1 | P2 | 1',
+        'S7 | 18-Apr-2024 | C4 | P3 | 2',
+        'S8 | 02-May-2024 | C3 | P4 | 1',
+        '(in your own sheet, extend this to 30-40 rows spanning Jan-Jun 2024, reusing these Customer and Product IDs so the relationships have real volume to summarise)',
+      ]},
+      { type: 'paragraph', content: '"Products" — one row per product:' },
+      { type: 'list', items: [
+        'Product ID | Name | Category | Price',
+        'P1 | Wireless Mouse | Electronics | 799',
+        'P2 | Table Lamp | Home Goods | 1299',
+        'P3 | Cotton T-Shirt | Apparel | 599',
+        'P4 | Running Shoes | Apparel | 3499',
+      ]},
+      { type: 'paragraph', content: '"Customers" — one row per customer:' },
+      { type: 'list', items: [
+        'Customer ID | Name | City',
+        'C1 | Aditi Rao | Mumbai',
+        'C2 | Rohan Kumar | Bengaluru',
+        'C3 | Priya Sharma | Delhi',
+        'C4 | Sarah Chen | Mumbai',
+      ]},
+      { type: 'paragraph', content: 'Notice the Sales table is intentionally "thin" — it only has IDs, quantities, and dates. The Product names, prices, and customer cities live in their own tables. This shape (one central "facts" table referencing several small "lookup" tables) is exactly how real databases and BI tools structure data, and is called a star schema.' },
+
+      { type: 'heading', content: 'Enabling Power Pivot' },
+      { type: 'paragraph', content: 'In Excel for Windows, Power Pivot is a built-in add-in that may need enabling once: File → Options → Add-ins → Manage: COM Add-ins → Go → check "Microsoft Power Pivot for Excel." A new "Power Pivot" tab then appears in the ribbon.' },
+
+      { type: 'heading', content: 'Adding tables to the Data Model' },
+      { type: 'paragraph', content: 'Select any cell inside the Sales table, then Power Pivot → Add to Data Model (or Insert → PivotTable → check "Add this data to the Data Model" when building a pivot). Repeat for Products and Customers. All three tables now exist inside one combined Data Model, separate from the worksheet cells themselves.' },
+
+      { type: 'heading', content: 'Creating relationships' },
+      { type: 'paragraph', content: 'In the Power Pivot window, go to Diagram View. You will see all three tables as boxes with their columns listed. Drag from Sales[Product ID] to Products[Product ID] to draw a relationship line — this tells Excel "these columns mean the same thing, use this to connect the tables." Repeat by dragging from Sales[Customer ID] to Customers[Customer ID].' },
+      { type: 'code', language: 'excel', content: `Relationships created (visualised as lines in Diagram View):
+
+Sales[Product ID]   ──────  Products[Product ID]
+Sales[Customer ID]  ──────  Customers[Customer ID]
+
+-- Sales is the "many" side (many sales can share one product),
+   Products and Customers are the "one" side — this is a classic
+   one-to-many relationship, identical in concept to a SQL foreign key` },
+      { type: 'callout', kind: 'warning', content: 'A relationship can only be built between columns of the same data type, and the "one" side (Products[Product ID], Customers[Customer ID]) must have no duplicate values — if Product ID repeats within the Products table itself, Excel will refuse to create the relationship until that is fixed.' },
+
+      { type: 'heading', content: "Why this beats VLOOKUP for this kind of reporting" },
+      { type: 'paragraph', content: 'Once the relationship exists, a Pivot Table built from the Data Model can drag Category (from Products) and City (from Customers) directly alongside Quantity (from Sales) — Excel automatically uses the relationships to match everything correctly, with zero VLOOKUP formulas, zero extra "Name" or "Price" columns copied into the Sales sheet, and a much smaller file even at hundreds of thousands of rows.' },
+      { type: 'paragraph', content: 'Build a quick Pivot Table now: Insert → PivotTable → "From Data Model." Drag Products[Category] into Rows and Sales[Quantity] into Values. Even though Category lives in a completely different table from Quantity, the relationship lets them combine correctly.' },
+
+      { type: 'heading', content: "What's next" },
+      { type: 'paragraph', content: 'A Pivot Table from the Data Model can already Sum and Count. The next module introduces DAX — the formula language for writing your own custom calculations on top of this same Data Model, like "average revenue per customer" or "this month vs last month," which plain Sum/Count cannot do alone.' },
+    ],
+  },
+
+  {
+    id: 'ex-a-2',
+    title: 'DAX measures',
+    duration: '40 min',
+    sections: [
+      { type: 'heading', content: 'What DAX is, in one sentence' },
+      { type: 'paragraph', content: 'DAX (Data Analysis Expressions) is the formula language for the Data Model you just built — it looks a little like Excel formulas, but every DAX formula is aware of the relationships between tables, and of whatever filter context a Pivot Table or slicer is currently applying. It is the same language used inside Power BI, so everything here transfers directly.' },
+
+      { type: 'heading', content: 'Your first measure: Total Revenue' },
+      { type: 'paragraph', content: 'The Sales table only has Quantity — Price lives in Products. In plain Excel you would need a lookup column; in DAX, a measure can reach across the relationship directly.' },
+      { type: 'paragraph', content: 'In the Power Pivot window, click an empty cell in the Calculation Area below the Sales table, and type:' },
+      { type: 'code', language: 'excel', content: `Total Revenue := SUMX(Sales, Sales[Quantity] * RELATED(Products[Price]))
+
+-- SUMX iterates row by row over the Sales table
+-- for each row, RELATED(Products[Price]) reaches across the
+   relationship to fetch that row's matching product price
+-- the result: quantity × price, summed across every sale —
+   exactly the Revenue column you used to build with a formula,
+   except this single measure now works correctly inside ANY
+   pivot table, automatically respecting whatever filters are applied` },
+      { type: 'callout', kind: 'tip', content: 'RELATED only works when there IS a relationship to follow, and you are on the "many" side looking up to the "one" side — exactly the Sales → Products direction set up in the previous lesson. Trying to use RELATED from Products to look up something in Sales (the reverse direction) does not work the same way; that needs a different function (RELATEDTABLE), which is a more advanced topic than this measure needs.' },
+
+      { type: 'heading', content: 'Why a measure is different from a calculated column' },
+      { type: 'paragraph', content: 'A calculated column (added per-row, inside a table) computes once and stores a static value per row, like a regular Excel formula. A measure computes on demand, fresh, every time it is dropped into a Pivot Table — automatically recalculating for whatever Rows, Columns, and Filters that specific pivot currently has selected. Total Revenue, as a measure, will show a different correct total depending on whether you slice by City, by Month, or by nothing at all — without you writing separate formulas for each view.' },
+
+      { type: 'heading', content: 'CALCULATE: the most important function in DAX' },
+      { type: 'paragraph', content: 'CALCULATE takes a measure and recomputes it under a modified filter — the basis of almost every "compared to X" business question.' },
+      { type: 'code', language: 'excel', content: `Mumbai Revenue := CALCULATE([Total Revenue], Customers[City] = "Mumbai")
+
+-- takes the Total Revenue measure you already built, and forces
+   the calculation to only consider rows where the customer's city
+   (reached via the Sales → Customers relationship) is Mumbai —
+   regardless of what filters a pivot table itself might also apply` },
+      { type: 'paragraph', content: 'Real-life use: a sales manager wants one column showing total revenue, and a second column next to it showing "Mumbai-only revenue," for comparison, on the very same Pivot Table broken down by month. CALCULATE makes that possible with one extra measure.' },
+
+      { type: 'heading', content: 'Common aggregation measures' },
+      { type: 'code', language: 'excel', content: `Total Quantity := SUM(Sales[Quantity])
+
+Number of Sales := COUNTROWS(Sales)
+
+Average Order Size := AVERAGE(Sales[Quantity])
+
+Average Revenue per Sale := DIVIDE([Total Revenue], [Number of Sales])
+-- DIVIDE is the safe way to divide in DAX: it returns blank
+   instead of a #DIV/0! error if the denominator is ever zero` },
+      { type: 'callout', kind: 'warning', content: "Always use DIVIDE(a, b) instead of writing a/b directly in DAX. A plain a/b will produce an error the moment a filtered view has zero matching rows (e.g., a month with no sales) — DIVIDE handles that gracefully and returns blank instead of breaking the whole visual." },
+
+      { type: 'heading', content: 'A first taste of time intelligence' },
+      { type: 'paragraph', content: "DAX has built-in functions for common date-based comparisons, as long as your Sales[Date] column is marked as a proper Date table (Power Pivot → Mark as Date Table — do this on the Sales table, or better, build a small separate Calendar table; for this lesson, marking Sales[Date] directly is enough to make the example work)." },
+      { type: 'code', language: 'excel', content: `Revenue Year to Date := TOTALYTD([Total Revenue], Sales[Date])
+
+-- in a Pivot Table broken down by month, this measure shows
+   the running cumulative total from the start of the year up
+   to and including that month — a classic finance/sales report
+   pattern that would otherwise need a running-total formula trick` },
+
+      { type: 'heading', content: 'Try it' },
+      { type: 'paragraph', content: 'Build Total Revenue, Number of Sales, and Average Revenue per Sale as measures on your Sales table. Build a Pivot Table with Products[Category] in Rows and all three measures in Values. Then add a CALCULATE measure that shows revenue for only the "Apparel" category, and confirm it matches what you would get by simply filtering the pivot to Apparel manually.' },
+
+      { type: 'heading', content: "What's next" },
+      { type: 'paragraph', content: "A quick mini project next combines this Data Model and these DAX measures into one mini-report. Then the next lesson moves away from Power Pivot entirely, into array formulas — a way to make a single regular Excel formula (no Data Model needed) operate across an entire range of cells at once." },
+    ],
+  },
+
+  {
+    id: 'ex-mp-7',
+    title: 'Mini Project: Sales Performance Mini-Report',
+    duration: '25 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'Quick practice before moving on' },
+      { type: 'paragraph', content: 'This project uses the exact Sales / Products / Customers Data Model and DAX measures from the last two lessons to answer four real business questions a sales manager would actually ask — the kind of mini-report that gets built and rebuilt every month in a real job.' },
+      { type: 'list', items: [
+        'Concepts used: Data Model relationships, SUMX, RELATED, CALCULATE, DIVIDE',
+      ]},
+
+      { type: 'heading', content: 'The task' },
+      { type: 'paragraph', content: 'Using the same Sales, Products, and Customers tables and Data Model relationships from the Power Pivot lesson (extend Sales to at least 25-30 rows if you have not already), build these four measures:' },
+      { type: 'list', items: [
+        'Total Revenue — using SUMX and RELATED, as in the lesson',
+        'Number of Customers — a distinct count of customers who have at least one sale (hint: DISTINCTCOUNT(Sales[Customer ID]))',
+        'Average Revenue per Customer — Total Revenue divided by Number of Customers, using DIVIDE',
+        'Apparel Revenue — Total Revenue filtered to only the Apparel category, using CALCULATE',
+      ]},
+      { type: 'code', language: 'excel', content: `Total Revenue := SUMX(Sales, Sales[Quantity] * RELATED(Products[Price]))
+
+Number of Customers := DISTINCTCOUNT(Sales[Customer ID])
+
+Average Revenue per Customer := DIVIDE([Total Revenue], [Number of Customers])
+
+Apparel Revenue := CALCULATE([Total Revenue], Products[Category] = "Apparel")` },
+      { type: 'heading', content: 'Build the report' },
+      { type: 'paragraph', content: 'Build one Pivot Table with Customers[City] in Rows, and all four measures in Values. This single table now answers: how much revenue per city, how many distinct customers per city, the average spend per customer in each city, and how much of that was Apparel — four real business questions, zero VLOOKUP formulas, all driven by the relationships and measures.' },
+      { type: 'callout', kind: 'tip', content: 'If Average Revenue per Customer looks identical across every city, double-check that Number of Customers is actually changing per row in the pivot — a common mistake is forgetting DISTINCTCOUNT and using COUNTROWS instead, which counts sales transactions, not unique customers.' },
+    ],
+  },
+
+  {
+    id: 'ex-a-3',
+    title: 'Advanced array formulas',
+    duration: '35 min',
+    sections: [
+      { type: 'heading', content: 'A formula that returns more than one value' },
+      { type: 'paragraph', content: 'Every formula so far has produced one answer in one cell. An array formula can process — and sometimes return — many values at once from a single formula. Modern Excel (365 / 2021+) made this dramatically easier with Dynamic Arrays; older Excel needed a special entry method. Both are covered here, since real workplaces often have a mix of Excel versions.' },
+
+      { type: 'heading', content: 'SUMPRODUCT: the classic, works-everywhere array formula' },
+      { type: 'paragraph', content: 'SUMPRODUCT multiplies corresponding items in two or more ranges together, then sums the results — and it works in every version of Excel ever made, no special entry required.' },
+      { type: 'code', language: 'excel', content: `Using the Sales-style data: Quantity in column B, Price in column C (B2:B30, C2:C30)
+
+=SUMPRODUCT(B2:B30, C2:C30)
+-- multiplies B2*C2, B3*C3, B4*C4... and sums all of those products
+-- equivalent to adding a helper "Revenue" column and then SUM-ing it,
+   but done in one single formula with no extra column needed
+
+A conditional version — total revenue for Mumbai customers only
+(City in column D):
+=SUMPRODUCT((D2:D30="Mumbai") * B2:B30 * C2:C30)
+-- (D2:D30="Mumbai") produces an array of TRUE/FALSE for each row,
+   which Excel treats as 1/0 when multiplied — rows that are not
+   Mumbai contribute zero to the total automatically` },
+      { type: 'callout', kind: 'tip', content: "This conditional SUMPRODUCT pattern — a TRUE/FALSE condition multiplied into the calculation — is one of the most useful tricks in advanced Excel. It lets you build a SUMIFS-style calculation with extra arithmetic (like quantity × price) that SUMIFS alone cannot do, since SUMIFS can only sum one existing column, not a multiplication of two." },
+
+      { type: 'heading', content: 'Legacy array formulas: Ctrl+Shift+Enter' },
+      { type: 'paragraph', content: 'Before Dynamic Arrays existed, some formulas needed to be confirmed with Ctrl+Shift+Enter instead of just Enter, to tell older Excel "treat this as an array calculation." Excel would show the formula wrapped in curly braces {} in the formula bar (which you never type yourself — Excel adds them).' },
+      { type: 'code', language: 'excel', content: `{=SUM(IF(D2:D30="Mumbai", B2:B30*C2:C30))}
+-- entered with Ctrl+Shift+Enter in older Excel, achieving the
+   same Mumbai-only revenue total as the SUMPRODUCT example above
+-- the curly braces appear automatically; you only press
+   Ctrl+Shift+Enter instead of Enter when finishing the formula` },
+      { type: 'callout', kind: 'warning', content: 'If you are on Excel 365 or 2021+, you almost never need Ctrl+Shift+Enter anymore — modern Excel treats array calculations as native behaviour. It is still worth recognising, though, since older workbooks (and older colleagues\' habits) are full of curly-brace formulas, and editing one incorrectly without re-confirming with Ctrl+Shift+Enter can silently turn it into a single-cell, wrong-answer formula.' },
+
+      { type: 'heading', content: 'Dynamic Arrays: modern Excel\'s big upgrade' },
+      { type: 'paragraph', content: 'In Excel 365 / 2021+, several newer functions return an array of results that automatically "spills" into as many cells as needed below and to the right — no Ctrl+Shift+Enter, no manually sizing a range first.' },
+      { type: 'code', language: 'excel', content: `=UNIQUE(D2:D30)
+-- spills a list of every distinct city that appears in the data,
+   with no duplicates — instantly, no Remove Duplicates button needed
+
+=SORT(UNIQUE(D2:D30))
+-- the same unique list, alphabetically sorted
+
+=FILTER(A2:E30, D2:D30="Mumbai")
+-- spills every full row where the City column equals "Mumbai" —
+   like an AutoFilter, but as a live formula that updates
+   automatically as the source data changes
+
+=SEQUENCE(12)
+-- spills the numbers 1 through 12 down a column — handy for
+   quickly generating a list of month numbers for a template` },
+      { type: 'paragraph', content: 'Real-life example: instead of manually building a dropdown list of cities for Data Validation, =SORT(UNIQUE(Customers[City])) generates that list automatically and keeps it current as new cities are added to the Customers table — no maintenance required.' },
+
+      { type: 'heading', content: 'Combining dynamic arrays with XLOOKUP' },
+      { type: 'paragraph', content: 'XLOOKUP (from the Intermediate track) can return an array too, making it spill multiple columns at once.' },
+      { type: 'code', language: 'excel', content: `=XLOOKUP(A2, Products!A:A, Products!B:D)
+-- if Products columns B:D are Name, Category, Price, this single
+   formula spills all three values across three cells — one
+   XLOOKUP instead of three separate ones, each with its own
+   column number to manage` },
+
+      { type: 'heading', content: '#SPILL! — the one new error dynamic arrays introduce' },
+      { type: 'paragraph', content: 'If a dynamic array formula needs to spill into cells that already contain something else, Excel shows #SPILL! instead of overwriting your existing data. Clear the cells in the way, and the formula spills correctly.' },
+
+      { type: 'heading', content: 'Try it' },
+      { type: 'paragraph', content: 'Using your Sales-style data, build: a SUMPRODUCT formula for total revenue filtered to one specific product; a =SORT(UNIQUE(...)) formula listing every distinct customer city; and a =FILTER(...) formula showing only the rows where Quantity is greater than 1.' },
+
+      { type: 'heading', content: "What's next" },
+      { type: 'paragraph', content: 'Array formulas remove repetitive formula-writing. The next module removes repetitive clicking and menu navigation instead — Macros and VBA, for automating multi-step tasks (formatting, copying, cleaning) you find yourself doing the same way over and over.' },
+    ],
+  },
+
+  {
+    id: 'ex-a-4',
+    title: 'Macros and VBA basics',
+    duration: '40 min',
+    sections: [
+      { type: 'heading', content: 'What a macro actually is' },
+      { type: 'paragraph', content: 'A macro is a recorded (or written) sequence of steps that Excel can replay automatically, with one click or keyboard shortcut, instead of you performing them by hand every time. If you ever find yourself doing the exact same five clicks every Monday morning on a fresh export — formatting headers, deleting a column, applying a filter — that is a macro waiting to be recorded.' },
+
+      { type: 'heading', content: 'Recording your first macro' },
+      { type: 'paragraph', content: 'View → Macros → Record Macro (or enable the Developer tab: File → Options → Customize Ribbon → check "Developer," then Developer → Record Macro). Give it a name with no spaces (like FormatHeaders), then perform the actions you want recorded — for example, selecting row 1, making it bold, and applying a background colour. Click Stop Recording when done.' },
+      { type: 'callout', kind: 'tip', content: 'Save the workbook as a Macro-Enabled Workbook (.xlsm), not a regular .xlsx — a normal Excel file silently strips out any macros when you save, with no warning, which is the single most common reason a "vanished macro" surprises people the next day.' },
+
+      { type: 'heading', content: 'Looking at the recorded code' },
+      { type: 'paragraph', content: 'Developer → Visual Basic (or Alt+F11) opens the VBA Editor, where your recorded macro appears as actual code you can read and edit. A simple recorded "format headers" macro might look like this:' },
+      { type: 'code', language: 'excel', content: `Sub FormatHeaders()
+    Rows("1:1").Select
+    Selection.Font.Bold = True
+    Selection.Interior.Color = RGB(220, 230, 241)
+End Sub
+
+-- Sub ... End Sub wraps every macro
+-- each line is one recorded action, translated into VBA code
+-- you can edit these lines directly instead of re-recording
+   from scratch if you want to tweak the colour or range` },
+
+      { type: 'heading', content: 'Writing simple VBA by hand' },
+      { type: 'paragraph', content: 'Recording is great for simple, linear tasks, but real automation usually needs logic — loops, conditions — which recording cannot capture. A small amount of hand-written VBA covers most of what is missing.' },
+      { type: 'code', language: 'excel', content: `Sub HighlightBigOrders()
+    Dim i As Long
+    Dim lastRow As Long
+    lastRow = Cells(Rows.Count, "B").End(xlUp).Row
+    -- finds the last row with data in column B, so this works
+       no matter how many rows the Sales sheet currently has
+
+    For i = 2 To lastRow
+        If Cells(i, "E").Value > 3000 Then
+            Cells(i, "E").Interior.Color = RGB(198, 239, 206)
+        End If
+    Next i
+
+    MsgBox "Done! Highlighted all rows with Revenue over 3000."
+End Sub
+
+-- this single macro does, in one click, what would otherwise be
+   a manual conditional formatting rule — and additionally
+   shows a confirmation popup when finished` },
+      { type: 'paragraph', content: 'Breaking it down: Dim declares a variable (i for the loop counter, lastRow for how far down the data goes). Cells(Rows.Count, "B").End(xlUp).Row is the standard VBA trick for finding the last used row in a column, regardless of how the data grows or shrinks. The For...Next loop walks down every row, checking column E and colouring it if the condition is met. MsgBox shows a popup when the macro finishes.' },
+
+      { type: 'heading', content: 'Running a macro' },
+      { type: 'list', items: [
+        'From the VBA Editor itself: press F5 with the cursor inside the Sub',
+        'Developer → Macros (or Alt+F8) → select the macro by name → Run',
+        'Assign it to a button: Insert a Shape or Form Control button on the sheet, right-click → Assign Macro',
+        'Assign a keyboard shortcut: Developer → Macros → Options → type a letter for Ctrl+Shift+<letter>',
+      ]},
+
+      { type: 'heading', content: 'A macro that loops through a real range' },
+      { type: 'paragraph', content: 'Real automation often means doing something to every row of a table — exactly the kind of repetitive task macros exist for.' },
+      { type: 'code', language: 'excel', content: `Sub AddTenPercentBonusColumn()
+    Dim i As Long
+    Dim lastRow As Long
+    lastRow = Cells(Rows.Count, "A").End(xlUp).Row
+
+    Cells(1, "F").Value = "Bonus (10%)"
+    For i = 2 To lastRow
+        Cells(i, "F").Value = Cells(i, "E").Value * 0.1
+    Next i
+End Sub
+
+-- adds a header, then loops down every row writing a calculated
+   value into column F — equivalent to writing a formula and
+   dragging the fill handle down, but reusable as one click on
+   any sheet shaped the same way` },
+
+      { type: 'heading', content: 'Security: why macros show a warning' },
+      { type: 'paragraph', content: 'When you open a .xlsm file from someone else, Excel shows a yellow "Security Warning — Macros have been disabled" bar by default. This exists because macros can run essentially any action on your computer, and malicious macros are a real, common way to spread malware through email attachments.' },
+      { type: 'callout', kind: 'warning', content: 'Only click "Enable Content" on a macro-enabled workbook if you trust where it came from and ideally have looked at the VBA code (Alt+F11) yourself. Never enable macros on an unexpected file from an unknown sender, even if the filename looks like an "Invoice" or "Urgent Report."' },
+
+      { type: 'heading', content: 'Try it' },
+      { type: 'paragraph', content: 'Record a simple macro that bolds and colours your Sales sheet header row. Then open the VBA Editor, find the recorded code, and hand-modify it to also set the row height to 20. Finally, write a small hand-typed macro (using the HighlightBigOrders pattern) that highlights any Sales row where Quantity is greater than 2.' },
+
+      { type: 'heading', content: "What's next" },
+      { type: 'paragraph', content: "A second mini project next combines dynamic arrays and a macro into a one-click refresh tool. Then the final lesson puts everything from this entire track together — Pivot Tables, slicers, conditional formatting, and dynamic arrays — into a single, polished, interactive dashboard." },
+    ],
+  },
+
+  {
+    id: 'ex-mp-8',
+    title: 'Mini Project: One-Click Top Cities Report',
+    duration: '25 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'Quick practice before moving on' },
+      { type: 'paragraph', content: 'This project combines a dynamic array formula with a small macro — a very common real combination, where formulas do the calculation and a macro does the one-click formatting and refreshing around it.' },
+      { type: 'list', items: [
+        'Concepts used: SORT/UNIQUE/FILTER dynamic arrays, SUMPRODUCT, VBA loops, MsgBox',
+      ]},
+
+      { type: 'heading', content: 'The task' },
+      { type: 'paragraph', content: 'Using your Sales-style data (Date, Customer ID, Product ID, Quantity, plus a City column you can pull in with XLOOKUP from Customers, and a Revenue column from SUMPRODUCT-style logic or a plain Price lookup), build a small "Top Cities" report area on a new sheet:' },
+      { type: 'list', items: [
+        'A dynamic array formula listing every distinct city: =SORT(UNIQUE(...))',
+        "Next to each city, a SUMPRODUCT formula calculating that city's total revenue (quantity × price, filtered to that city)",
+        'A macro called HighlightTopCity that finds the row with the highest revenue in this report and colours it gold',
+      ]},
+      { type: 'code', language: 'excel', content: `City list (assume it spills into A2:A5):
+=SORT(UNIQUE(Sales_City_Range))
+
+Revenue per city (row 2 example, City in A2):
+=SUMPRODUCT((Sales_City_Range=A2) * Sales_Quantity_Range * Sales_Price_Range)
+
+VBA macro:
+Sub HighlightTopCity()
+    Dim i As Long, lastRow As Long, maxRow As Long, maxVal As Double
+    lastRow = Cells(Rows.Count, "A").End(xlUp).Row
+    maxVal = 0
+
+    For i = 2 To lastRow
+        If Cells(i, "B").Value > maxVal Then
+            maxVal = Cells(i, "B").Value
+            maxRow = i
+        End If
+    Next i
+
+    Cells(maxRow, "A").Interior.Color = RGB(255, 215, 0)
+    Cells(maxRow, "B").Interior.Color = RGB(255, 215, 0)
+    MsgBox "Top city: " & Cells(maxRow, "A").Value
+End Sub` },
+      { type: 'callout', kind: 'tip', content: 'This loop pattern — tracking a running maxVal and the row it was found on (maxRow) as you scan down — is one of the most reusable small building blocks in VBA. The same shape works for "find the cheapest," "find the most recent," or "find the longest," just by changing the comparison and the column.' },
+    ],
+  },
+
+  {
+    id: 'ex-a-5',
+    title: 'Building interactive dashboards',
+    duration: '40 min',
+    sections: [
+      { type: 'heading', content: 'A dashboard is a destination, not a new feature' },
+      { type: 'paragraph', content: 'Everything in this lesson is a combination of tools already covered — Pivot Tables and Pivot Charts, Slicers, Conditional Formatting, named ranges — arranged deliberately on one screen so a non-technical person can answer their own questions by clicking, without ever touching a formula.' },
+
+      { type: 'heading', content: 'Designing before building' },
+      { type: 'paragraph', content: 'The biggest mistake in dashboard-building is opening Excel and immediately dragging charts around. Decide first: who is this for, and what are the 3-5 questions they actually need answered? For our running dataset, a sales manager likely needs: total revenue this period, revenue by city, revenue by category, and a way to drill into any specific month.' },
+      { type: 'list', items: [
+        'KPI cards — a handful of single big numbers (Total Revenue, Number of Sales, Average Order Value) for an instant read at the top',
+        'One or two charts answering "by what" questions (revenue by city, revenue by category)',
+        'A way to filter the whole dashboard at once (slicers), so the same layout serves "this month" or "all of last quarter" without rebuilding anything',
+      ]},
+
+      { type: 'heading', content: 'Building KPI cards' },
+      { type: 'paragraph', content: 'A KPI card is just a cell (or a few merged cells) showing one big number, usually pulling from a DAX measure or a Pivot Table\'s GETPIVOTDATA result, styled with a large font and a short label underneath.' },
+      { type: 'code', language: 'excel', content: `=GETPIVOTDATA("Total Revenue", PivotTable_Anchor_Cell)
+-- pulls a single specific number OUT of an existing Pivot Table,
+   so you can display it as a standalone "card" anywhere on the
+   dashboard sheet, styled however you like, instead of being
+   stuck inside the pivot's own grid layout` },
+      { type: 'callout', kind: 'tip', content: 'If GETPIVOTDATA results look fragile or break when the pivot is rearranged, you can disable Excel\'s automatic GETPIVOTDATA-on-click behaviour (File → Options → Formulas → uncheck "Use GetPivotData functions for PivotTable references") and just type plain cell references into the pivot grid instead — simpler for a dashboard you control the layout of yourself.' },
+
+      { type: 'heading', content: 'One pivot table, multiple charts, one slicer' },
+      { type: 'paragraph', content: 'Build a single Pivot Table from your Data Model with City and Category both available as fields. Insert two separate Pivot Charts from it — one showing revenue by City, one showing revenue by Category. Then Insert → Slicer, choose a Date field, and connect that slicer to BOTH pivot charts: right-click the slicer → Report Connections → check both Pivot Tables. Now one click on the slicer filters every chart on the dashboard simultaneously.' },
+
+      { type: 'heading', content: 'Arranging the dashboard sheet' },
+      { type: 'list', items: [
+        'Hide gridlines on the dashboard sheet (View → uncheck Gridlines) for a cleaner, less "spreadsheet-y" look',
+        'Move the underlying Pivot Tables themselves to a separate hidden helper sheet, keeping the dashboard sheet showing only charts, slicers, and KPI cards',
+        'Group related visuals close together, and leave consistent spacing — a dashboard that looks intentional is read faster and trusted more than one that looks like leftover working area',
+        'Freeze the slicer and KPI row at the top if the dashboard sheet ever needs scrolling, so filters stay visible',
+      ]},
+
+      { type: 'heading', content: 'Conditional formatting as a dashboard element' },
+      { type: 'paragraph', content: 'A small formula-based conditional formatting rule on a KPI card — turning the Average Order Value cell green if it is above a target, red if below — turns a plain number into an instant signal, without needing a chart at all.' },
+
+      { type: 'heading', content: 'Refreshing the whole dashboard at once' },
+      { type: 'paragraph', content: 'Data → Refresh All updates every Pivot Table, Pivot Chart, Power Query step, and Data Model calculation on the entire workbook in one click — the single button a dashboard\'s actual daily user needs to know about, without understanding anything about how it was built.' },
+
+      { type: 'heading', content: 'Try it' },
+      { type: 'paragraph', content: 'Build a one-sheet dashboard from your running Sales/Products/Customers dataset: 3 KPI cards (Total Revenue, Number of Sales, Average Order Value), two Pivot Charts (revenue by City, revenue by Category), and one Date slicer connected to both charts. Hide gridlines, and confirm that clicking the slicer updates both charts together.' },
+
+      { type: 'heading', content: "What's next" },
+      { type: 'paragraph', content: "The capstone project rebuilds this entire track end-to-end on a single, larger dataset: a Data Model with real DAX measures, a dynamic-array helper report, a one-click macro, and a finished interactive dashboard — the complete advanced Excel workflow in one project." },
+    ],
+  },
+
+  {
+    id: 'ex-a-capstone',
+    title: 'Capstone: Interactive sales analytics workbook',
+    duration: '75 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'Practice time — no new features here' },
+      { type: 'paragraph', content: 'This capstone combines every Advanced skill into one realistic deliverable: the kind of self-service analytics workbook a data analyst hands to a sales director, who can then explore it themselves without ever asking for a new report.' },
+      { type: 'callout', kind: 'tip', content: 'Build this in actual Excel, not just by reading. Extend the running Sales/Products/Customers tables to at least 40-50 sales rows spanning several months, so the time-based slicer and charts have something real to show.' },
+
+      { type: 'heading', content: 'Step 1 — Build the Data Model' },
+      { type: 'paragraph', content: 'Using the Sales, Products, and Customers tables from this track, add all three to the Data Model and create the two relationships: Sales[Product ID] → Products[Product ID], and Sales[Customer ID] → Customers[Customer ID].' },
+
+      { type: 'heading', content: 'Step 2 — Write the DAX measures' },
+      { type: 'code', language: 'excel', content: `Total Revenue := SUMX(Sales, Sales[Quantity] * RELATED(Products[Price]))
+Number of Sales := COUNTROWS(Sales)
+Number of Customers := DISTINCTCOUNT(Sales[Customer ID])
+Average Order Value := DIVIDE([Total Revenue], [Number of Sales])
+Apparel Revenue := CALCULATE([Total Revenue], Products[Category] = "Apparel")` },
+
+      { type: 'heading', content: 'Step 3 — Build a dynamic-array helper report' },
+      { type: 'paragraph', content: 'On a separate "Helpers" sheet, build a =SORT(UNIQUE(...)) list of every distinct city, with a SUMPRODUCT-based revenue total next to each — a lightweight cross-check that does not rely on the Data Model at all, useful for spot-checking the Pivot Table numbers are correct.' },
+
+      { type: 'heading', content: 'Step 4 — Build the dashboard' },
+      { type: 'list', items: [
+        'A Pivot Table from the Data Model with City and Category available as fields',
+        'Two Pivot Charts: revenue by City, revenue by Category',
+        '3-4 KPI cards pulling from your DAX measures: Total Revenue, Number of Sales, Number of Customers, Average Order Value',
+        'A Date slicer connected to both Pivot Charts via Report Connections',
+        'Conditional formatting on the Average Order Value KPI card: green if above 1500, red if below',
+      ]},
+
+      { type: 'heading', content: 'Step 5 — Automate the finishing touch' },
+      { type: 'paragraph', content: 'Write a macro called RefreshDashboard that refreshes the whole workbook (ActiveWorkbook.RefreshAll) and then shows a MsgBox confirming "Dashboard refreshed as of " followed by today\'s date (hint: use VBA\'s Format(Date, "dd-mmm-yyyy") to format it). Assign this macro to a button placed at the top of the dashboard sheet.' },
+      { type: 'code', language: 'excel', content: `Sub RefreshDashboard()
+    ActiveWorkbook.RefreshAll
+    MsgBox "Dashboard refreshed as of " & Format(Date, "dd-mmm-yyyy")
+End Sub` },
+      { type: 'callout', kind: 'warning', content: 'ActiveWorkbook.RefreshAll is asynchronous for some data sources, meaning the MsgBox can occasionally appear before a slow refresh has actually finished. For a workbook built entirely from local Data Model tables (as this capstone is), this is not a practical concern — it becomes one only with external data sources like databases or web queries, which is outside the scope of this capstone.' },
+
+      { type: 'heading', content: 'Step 6 — Save it correctly' },
+      { type: 'paragraph', content: 'Save the file as .xlsm (Macro-Enabled Workbook) — saving as a regular .xlsx will silently delete the macro you just built, with no warning shown.' },
+
+      { type: 'heading', content: "You've finished the Excel Advanced track" },
+      { type: 'paragraph', content: "You can now connect multiple tables through a real Data Model instead of fragile lookup formulas, write DAX measures that recalculate correctly under any filter, write array formulas and dynamic arrays that replace entire helper columns with one formula, automate repetitive multi-step tasks with VBA macros, and assemble all of it into a single interactive dashboard a non-technical person can actually use. This is the same skill set that underlies Power BI report-building, which is exactly where the natural next step from here leads." },
+    ],
+  },
+]
+
+/* ════════════════════════════════════════════════════════════════
    POWER BI — BEGINNER (real intro)
    ════════════════════════════════════════════════════════════════ */
 const POWERBI_BEGINNER = [
@@ -5580,32 +7847,12 @@ export const COURSE_CONTENT = {
   python: {
     beginner: PYTHON_BEGINNER,
     intermediate: PYTHON_INTERMEDIATE,
-    advanced: productionList([
-      'Object-oriented Python',
-      'Decorators and generators',
-      'Async programming',
-      'Performance and profiling',
-      'Testing with pytest',
-      'Type hints and modern Python',
-      'Packaging your code',
-    ], 5),
+    advanced: PYTHON_ADVANCED,
   },
   excel: {
     beginner: EXCEL_BEGINNER,
-    intermediate: productionList([
-      'VLOOKUP and INDEX/MATCH',
-      'Pivot tables: the most powerful feature',
-      'Conditional formatting',
-      'Named ranges and data validation',
-      'Power Query: cleaning messy data',
-    ], 3),
-    advanced: productionList([
-      'Power Pivot and the data model',
-      'DAX measures',
-      'Advanced array formulas',
-      'Macros and VBA basics',
-      'Building interactive dashboards',
-    ], 5),
+    intermediate: EXCEL_INTERMEDIATE,
+    advanced: EXCEL_ADVANCED,
   },
   powerbi: {
     beginner: [

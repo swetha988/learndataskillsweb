@@ -1979,6 +1979,459 @@ const QUIZ_BANK = {
     ]
   },
 
+  // Python Advanced
+  'py-a-1': {
+    title: 'Check your understanding: Classes and objects',
+    intro: 'Test your knowledge of object-oriented Python basics.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What does __init__ do in a class?',
+        options: ['It deletes the object when no longer needed', 'It runs automatically every time a new object is created, setting up its initial attributes', 'It is called manually every time you want to use the object', 'It only runs once, no matter how many objects you create'],
+        answerIndex: 1,
+        explanation: '__init__ is the setup step that runs automatically for every new instance, filling in attributes like self.name based on what was passed in.'
+      },
+      {
+        id: 'q2',
+        prompt: 'What does self refer to inside a method?',
+        options: ['The class itself, shared by every object', 'This particular object — the specific instance the method was called on', 'A reserved keyword with no real meaning', 'The first argument passed to the function, regardless of what it represents'],
+        answerIndex: 1,
+        explanation: 'self lets a method access and modify the data that belongs to the specific object it was called on, the same way a filled-in form\'s blanks differ per person.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What is the difference between a class and an instance?',
+        options: ['There is no real difference', 'A class is the blueprint, written once; an instance is one actual object built from that blueprint, with its own specific values', 'An instance is shared across the whole program; a class is private to one object', 'A class can only ever produce exactly one instance'],
+        answerIndex: 1,
+        explanation: 'One class definition can produce as many separate instances as needed, each with independent attribute values.'
+      },
+      {
+        id: 'q4',
+        prompt: 'After calling a method that changes self.total_spent, what happens to that value the next time you access it on the same object?',
+        options: ['It resets back to its original value', 'The object remembers the change — its state persists between method calls', 'The change only applies inside that one method call', 'A new object is created automatically'],
+        answerIndex: 1,
+        explanation: 'Unlike a plain function, an object keeps its own state in memory between calls, which is exactly what makes objects useful for representing something that changes over time.'
+      },
+      {
+        id: 'q5',
+        prompt: 'What is the main advantage of bundling data and behaviour into one class, compared to a dictionary plus separate functions?',
+        options: ['Classes always run faster', 'Every relevant behaviour travels with the object itself, so anyone using it does not need to know which separate function to call', 'Dictionaries cannot store numbers', 'Classes use less memory in every case'],
+        answerIndex: 1,
+        explanation: 'With a class, c.is_high_value() is always available directly on the object — no separate lookup for "which function handles this dictionary" required.'
+      }
+    ]
+  },
+  'py-a-2': {
+    title: 'Check your understanding: Inheritance and composition',
+    intro: 'Test your knowledge of building classes on top of other classes.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What does class PremiumCustomer(Customer): mean?',
+        options: ['PremiumCustomer and Customer are unrelated', 'PremiumCustomer inherits from Customer, automatically receiving everything Customer already has', 'Customer inherits from PremiumCustomer', 'This creates two separate, identical classes'],
+        answerIndex: 1,
+        explanation: 'Writing the parent class name in parentheses after the new class name sets up inheritance — the new class gets everything the parent already defined.'
+      },
+      {
+        id: 'q2',
+        prompt: 'What does super().__init__(...) do inside a subclass\'s __init__?',
+        options: ['It deletes the parent class', 'It calls the parent class\'s own setup code, so you do not have to retype the attributes it already handles', 'It is optional and has no real effect', 'It creates a brand new, unrelated object'],
+        answerIndex: 1,
+        explanation: 'super().__init__(...) reuses the parent\'s setup logic, so the subclass only needs to write the code for what it adds on top.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What does it mean for a subclass to "override" a method?',
+        options: ['The subclass deletes the method entirely from the parent', 'The subclass defines its own version of a method with the same name, replacing the inherited behaviour when called on that subclass', 'Overriding is not possible in Python', 'The parent class\'s method runs first, then the subclass\'s version runs afterward automatically'],
+        answerIndex: 1,
+        explanation: 'When a subclass defines a method with the same name as one in its parent, calling that method on a subclass instance uses the subclass\'s version instead.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What is the difference between an "is a" relationship and a "has a" relationship?',
+        options: ['They mean the same thing', '"Is a" (inheritance) means a subclass is a more specific version of the parent; "has a" (composition) means a class contains other objects as attributes, without being a kind of them', 'Composition is just another name for inheritance', '"Has a" relationships are not possible in Python'],
+        answerIndex: 1,
+        explanation: 'A PremiumCustomer is a kind of Customer ("is a", inheritance). A Restaurant has a list of MenuItem objects, without itself being a kind of menu item ("has a", composition).'
+      },
+      {
+        id: 'q5',
+        prompt: 'What is the general rule of thumb for choosing between inheritance and composition?',
+        options: ['Always use inheritance, since it is more powerful', 'Prefer composition unless inheritance clearly models a genuine "is a" relationship — overusing inheritance for convenience is a common source of confusing code', 'Always use composition, inheritance should never be used', 'The choice has no real consequences either way'],
+        answerIndex: 1,
+        explanation: '"Favour composition over inheritance" is well-known advice precisely because inheritance used where it does not genuinely fit tends to produce code that is hard to understand and change later.'
+      }
+    ]
+  },
+  'py-a-3': {
+    title: 'Check your understanding: Dunder methods',
+    intro: 'Test your knowledge of customizing how your classes behave with built-in operations.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What does printing an object show by default, without a custom __repr__?',
+        options: ['A readable summary of its attributes', 'Just its memory address, like <__main__.Customer object at 0x...> — not useful for debugging', 'An error', 'Nothing at all is printed'],
+        answerIndex: 1,
+        explanation: 'Without a custom __repr__, Python falls back to a generic, unhelpful representation showing only the object\'s memory address.'
+      },
+      {
+        id: 'q2',
+        prompt: 'Why might two separately-created objects with identical attribute values compare as not equal using ==, without a custom __eq__?',
+        options: ['This never actually happens', 'By default, Python compares objects by identity (are they the literal same object in memory), not by their actual data', 'Python cannot compare custom objects at all', '== always returns True for any two objects of the same class'],
+        answerIndex: 1,
+        explanation: 'Without __eq__, == checks whether two variables point to the exact same object in memory, which rarely matches what "equal" actually means for data-holding objects.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What does defining __len__ on a class let you do?',
+        options: ['Nothing changes — __len__ has no effect', 'Call Python\'s built-in len() function directly on instances of that class', 'Automatically print the object', 'Compare two objects for equality'],
+        answerIndex: 1,
+        explanation: 'Defining __len__ lets len(my_object) work directly, the same way it works on lists and strings.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What does the @dataclass decorator automatically generate for a class?',
+        options: ['Nothing — it is purely cosmetic', '__init__, __repr__, and __eq__, based on the attributes you list, removing repetitive boilerplate for data-holding classes', 'A complete test suite for the class', 'A pip-installable package'],
+        answerIndex: 1,
+        explanation: '@dataclass writes the common boilerplate methods automatically, based only on the type-hinted attribute list, while you still write any custom methods normally.'
+      },
+      {
+        id: 'q5',
+        prompt: 'Why does !r appear inside an f-string like f"name={self.name!r}" in a __repr__ method?',
+        options: ['It is a typo with no effect', 'It shows the value the way Python itself would display it (with quotes around strings), a conventional touch that makes debugging output clearer', 'It rounds numeric values', 'It reverses the string'],
+        answerIndex: 1,
+        explanation: '!r calls repr() on the value before inserting it, so a string shows with its quotes — making the overall __repr__ output look like valid, readable Python.'
+      }
+    ]
+  },
+  'py-a-4': {
+    title: 'Check your understanding: Decorators',
+    intro: 'Test your knowledge of wrapping functions with decorators.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What does @time_it above a function definition actually do?',
+        options: ['It is just a comment with no effect', 'It is equivalent to writing my_function = time_it(my_function) — the decorator wraps the original function and replaces it with the wrapped version', 'It deletes the function after one use', 'It only works on functions with zero arguments'],
+        answerIndex: 1,
+        explanation: 'The @decorator syntax is shorthand for passing the function into the decorator and reassigning the name to whatever the decorator returns.'
+      },
+      {
+        id: 'q2',
+        prompt: 'Why does a decorator\'s wrapper function typically accept *args, **kwargs?',
+        options: ['These are required keywords with no real purpose', 'So the wrapper can accept any combination of positional and keyword arguments and pass them through to the original function, regardless of its specific signature', 'They limit the wrapped function to exactly two arguments', '*args and **kwargs only work with decorators, nowhere else'],
+        answerIndex: 1,
+        explanation: 'A decorator usually does not know in advance what arguments the wrapped function needs, so *args/**kwargs let it forward anything through untouched.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What is "memoization"?',
+        options: ['A way to permanently delete old function results', 'Remembering results you have already calculated, so the same expensive work is never repeated for the same input', 'A type of error handling', 'A way to make a function run before the program starts'],
+        answerIndex: 1,
+        explanation: 'Memoization caches a function\'s results keyed by its input, so a second call with the same input returns instantly instead of recomputing.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What does functools.lru_cache do?',
+        options: ['It deletes a function\'s cache after every call', 'It automatically memoizes a function, remembering past results without you writing your own caching dictionary', 'It only works on classes, not functions', 'It permanently disables a function'],
+        answerIndex: 1,
+        explanation: '@lru_cache provides ready-made memoization, doing automatically what the chapter\'s hand-written cache() decorator did manually.'
+      },
+      {
+        id: 'q5',
+        prompt: 'What kind of real-world logic is commonly implemented as a decorator?',
+        options: ['Logic that only ever needs to run in exactly one specific function, never reused', 'Cross-cutting concerns that apply to many different functions at once, like logging, timing, retrying, or access control', 'Only mathematical calculations', 'Decorators cannot be used for anything practical'],
+        answerIndex: 1,
+        explanation: 'Decorators are the standard tool for applying the same behaviour (logging, timing, @login_required, @retry) across many functions without copy-pasting the logic into each one.'
+      }
+    ]
+  },
+  'py-a-5': {
+    title: 'Check your understanding: Generators and iterators',
+    intro: 'Test your knowledge of memory-efficient data processing with yield.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What turns a normal function into a generator function?',
+        options: ['Adding a return statement', 'Using yield anywhere inside the function body', 'Naming the function starting with gen_', 'Adding type hints'],
+        answerIndex: 1,
+        explanation: 'The presence of yield anywhere in a function automatically makes it a generator function — calling it returns a generator object rather than running the code immediately.'
+      },
+      {
+        id: 'q2',
+        prompt: 'Why does a generator typically use far less memory than building a full list, for the same data?',
+        options: ['Generators store data more efficiently in the same way lists do', 'A generator produces one value at a time, on demand, never holding the entire collection in memory simultaneously', 'Generators can only hold numbers, which take less space', 'There is no real memory difference'],
+        answerIndex: 1,
+        explanation: 'A generator only needs to remember "where it is up to" — not the full set of results — which is why its memory footprint barely grows even for huge ranges.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What is the difference between [i*i for i in range(10)] and (i*i for i in range(10))?',
+        options: ['They are identical in every way', 'The square brackets build a full list immediately; the round brackets create a generator expression that produces values one at a time, on demand', 'The round-bracket version is invalid syntax', 'The square-bracket version cannot be used in a for loop'],
+        answerIndex: 1,
+        explanation: 'Swapping brackets changes a list comprehension (built immediately, fully in memory) into a generator expression (built lazily, one value at a time).'
+      },
+      {
+        id: 'q4',
+        prompt: 'In what kind of real scenario does a generator provide a genuinely necessary advantage, not just a nice-to-have?',
+        options: ['Processing a tiny list of 3 items', 'Processing a file or dataset larger than what could fit in available memory all at once', 'Sorting a small list', 'Printing a single value'],
+        answerIndex: 1,
+        explanation: 'Generators become essential, not just convenient, once a full in-memory collection genuinely will not fit — a common situation with very large real-world datasets.'
+      },
+      {
+        id: 'q5',
+        prompt: 'What does list(my_generator) do?',
+        options: ['It causes an error, since generators cannot be converted', 'It pulls every value out of the generator one at a time and collects them into an actual list', 'It deletes the generator', 'It only returns the first value'],
+        answerIndex: 1,
+        explanation: 'Wrapping a generator in list() forces it to produce every remaining value and collects them, which is useful when you do eventually need the full collection.'
+      }
+    ]
+  },
+  'py-a-6': {
+    title: 'Check your understanding: Context managers',
+    intro: 'Test your knowledge of the with statement and building your own context managers.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What guarantee does with open("file.txt") as f: give you, that a plain f = open("file.txt") does not?',
+        options: ['It opens the file faster', 'It guarantees the file gets closed automatically when the block ends, even if an error happens partway through', 'It prevents the file from ever being edited', 'There is no real difference between the two'],
+        answerIndex: 1,
+        explanation: 'A context manager\'s cleanup step runs no matter how the block ends — including via an exception — which a plain open() call without "with" does not guarantee.'
+      },
+      {
+        id: 'q2',
+        prompt: 'In a class-based context manager, when do __enter__ and __exit__ run?',
+        options: ['__enter__ runs at the end, __exit__ runs at the start', '__enter__ runs at the start of the with block (setup); __exit__ runs at the end (cleanup), even if an exception occurred', 'Both run only once per program, regardless of how many with blocks use them', 'Neither runs automatically — you must call them manually'],
+        answerIndex: 1,
+        explanation: '__enter__ handles setup when the with block begins; __exit__ handles guaranteed cleanup when it ends, by design, including on errors.'
+      },
+      {
+        id: 'q3',
+        prompt: 'In a @contextmanager-decorated generator function, what does the code before yield correspond to?',
+        options: ['Nothing — it never runs', 'The setup step, equivalent to __enter__', 'The cleanup step, equivalent to __exit__', 'It runs only if an error occurs'],
+        answerIndex: 1,
+        explanation: 'Code before yield runs when the with block starts; code after yield runs when it ends — mirroring __enter__ and __exit__ in a much shorter form.'
+      },
+      {
+        id: 'q4',
+        prompt: 'Why does the code after yield in a @contextmanager function still run even if the code inside the with block raises an error?',
+        options: ['It does not — this is a common misconception', 'Because the contextmanager machinery (typically combined with try/finally) ensures the cleanup step still executes, the same guarantee __exit__ provides', 'Only because of a special exception type', 'It only works for file-related context managers'],
+        answerIndex: 1,
+        explanation: 'This guaranteed-cleanup behaviour is the entire point of a context manager — wrapping the yield in try/finally is exactly how that guarantee gets implemented.'
+      },
+      {
+        id: 'q5',
+        prompt: 'Besides files, which of these is a realistic use case for a custom context manager?',
+        options: ['Printing a single string once', 'Acquiring a lock in concurrent code, guaranteeing it gets released even if the code inside fails', 'Declaring a variable', 'Adding two numbers together'],
+        answerIndex: 1,
+        explanation: 'Locks, database connections, and temporary setting changes are classic real-world context manager use cases — anything needing a guaranteed "undo" step.'
+      }
+    ]
+  },
+  'py-a-7': {
+    title: 'Check your understanding: Async programming',
+    intro: 'Test your knowledge of async/await and concurrent execution.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What does the await keyword actually do inside an async function?',
+        options: ['It permanently stops the program', 'It pauses at that point and lets other code run while waiting, instead of blocking everything until the awaited operation finishes', 'It has no real effect and is purely decorative', 'It only works inside a for loop'],
+        answerIndex: 1,
+        explanation: 'await is where a coroutine can pause without blocking the whole program, allowing other pending work to make progress during the wait.'
+      },
+      {
+        id: 'q2',
+        prompt: 'If you fetch 3 things one after another (each taking 1 second), roughly how long does asyncio.gather() take to fetch all 3 concurrently instead?',
+        options: ['Still 3 seconds, async makes no difference', 'Roughly 1 second — close to the time of the single slowest one, since they overlap instead of queuing', 'Roughly 9 seconds', 'It depends only on which one finishes last, doubled'],
+        answerIndex: 1,
+        explanation: 'Running tasks concurrently means their waiting time overlaps — the total time is close to the longest single task, not the sum of all of them.'
+      },
+      {
+        id: 'q3',
+        prompt: 'For what kind of work does async programming actually provide a speed benefit?',
+        options: ['Heavy CPU-bound number-crunching with no waiting involved', 'I/O-bound work — waiting on a network response, a file, or a database — where the waiting itself does not need the CPU', 'Any code at all, with zero exceptions', 'Only code that prints text to the screen'],
+        answerIndex: 1,
+        explanation: 'Async helps fill idle waiting time with other useful work. Pure CPU-bound work has no idle waiting time to fill, so async provides no benefit there.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What is the difference between async def fetch(): ... and a normal def fetch(): ...?',
+        options: ['No real difference, async def is just a style preference', 'async def marks the function as a coroutine that can be paused with await and run concurrently with other coroutines', 'async def functions cannot return any value', 'async def is only valid inside a class'],
+        answerIndex: 1,
+        explanation: 'async def creates a coroutine function — calling it does not run the code immediately, it produces a coroutine object that needs to be awaited or scheduled to actually run.'
+      },
+      {
+        id: 'q5',
+        prompt: 'In a real-world dashboard pulling data from 3 different APIs, why would asyncio.gather generally be preferred over fetching them one at a time?',
+        options: ['It uses less code only, with no performance difference', 'The page loads roughly as fast as the single slowest API call, instead of as slow as the sum of all three calls combined', 'It is required by every API provider', 'It avoids needing any error handling at all'],
+        answerIndex: 1,
+        explanation: 'Concurrent fetching turns "wait for A, then B, then C" into "wait for whichever is slowest," a real, user-visible performance improvement.'
+      }
+    ]
+  },
+  'py-a-8': {
+    title: 'Check your understanding: Performance and profiling',
+    intro: 'Test your knowledge of timeit, cProfile, and measuring before optimising.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What is timeit best suited for?',
+        options: ['Finding which specific function inside a large program is slow', 'Comparing the speed of two small code snippets directly against each other, run many times to smooth out noise', 'Writing automated tests', 'Adding type hints to a function'],
+        answerIndex: 1,
+        explanation: 'timeit repeats a snippet many times (via the number= argument) to get a reliable timing comparison, ideal for "which of these two approaches is faster?" questions.'
+      },
+      {
+        id: 'q2',
+        prompt: 'What does cProfile tell you that timeit does not?',
+        options: ['Nothing — they do the exact same job', 'Inside an entire function (or program), which specific function calls are actually consuming the most time, not just an overall before/after comparison', 'Whether your code has any syntax errors', 'How to fix the slow code automatically'],
+        answerIndex: 1,
+        explanation: 'cProfile breaks down time spent across every function call within a larger piece of code, helping pinpoint the actual bottleneck rather than just timing the whole thing.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What is "premature optimisation"?',
+        options: ['Fixing a bug before writing any tests', 'Spending effort making something faster before confirming, with real measurement, that it actually needs to be', 'Writing code too quickly without thinking', 'Optimising code that is already proven to be the bottleneck'],
+        answerIndex: 1,
+        explanation: 'Premature optimisation wastes effort (and adds risk) on code that was never actually slow, instead of focusing on what profiling shows is the real bottleneck.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What is the correct order of the profiling workflow this module recommends?',
+        options: ['Optimise everything you can think of, then check if it still works', 'Get the code correct first, profile it on realistic data, fix only what the profiler points to, then re-profile to confirm the fix helped', 'Profile the code before writing it', 'Skip profiling and rely on intuition about what feels slow'],
+        answerIndex: 1,
+        explanation: 'Correctness first, then evidence-based measurement, then a targeted fix, then re-measurement to confirm — guessing at any step risks wasted effort.'
+      },
+      {
+        id: 'q5',
+        prompt: 'Why is it important to profile on realistic data rather than a tiny toy example?',
+        options: ['It is not important, any data size works the same', 'A tiny example can easily hide the real bottleneck, which often only becomes visible at realistic scale', 'Profiling tools only function correctly above a certain data size', 'Smaller data always profiles faster with no other consequence'],
+        answerIndex: 1,
+        explanation: 'A bottleneck that takes 0.0001 seconds on 5 rows might dominate the runtime entirely at 5 million rows — realistic data size is what reveals that.'
+      }
+    ]
+  },
+  'py-a-9': {
+    title: 'Check your understanding: Type hints',
+    intro: 'Test your knowledge of writing self-documenting, type-hinted Python.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'In def calculate_discount(price: float, rate: float) -> float:, what does -> float indicate?',
+        options: ['The function requires exactly one float argument', 'The function is expected to return a float value', 'The function will automatically convert its inputs to floats', 'This is invalid Python syntax'],
+        answerIndex: 1,
+        explanation: 'The arrow syntax after the parentheses specifies the expected return type of the function.'
+      },
+      {
+        id: 'q2',
+        prompt: 'Does Python enforce type hints at runtime by stopping a function from running with the "wrong" type?',
+        options: ['Yes, Python always raises an error if a type hint is violated', 'No — type hints are documentation with structure; Python still runs the code regardless, and mismatches are caught by a separate tool', 'Only for built-in types like int and str', 'Only inside classes, never inside plain functions'],
+        answerIndex: 1,
+        explanation: 'Type hints by themselves do not change runtime behaviour — Python happily runs calculate_discount("a", "b") and fails elsewhere, not because of the hints.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What does List[Dict[str, float]] describe?',
+        options: ['A single dictionary with one key', 'A list of dictionaries, where each dictionary has text keys and float values', 'A list of strings only', 'An invalid type hint'],
+        answerIndex: 1,
+        explanation: 'Nested generic type hints describe the precise shape of more complex data, like a list of order-style dictionaries.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What does Optional[Dict] mean?',
+        options: ['A dictionary that can never be empty', 'Either a Dict, or possibly None — flagging that callers need to handle a "nothing found" case', 'A dictionary with optional keys', 'The same thing as just Dict, with no real difference'],
+        answerIndex: 1,
+        explanation: 'Optional[X] is shorthand for "X or None," commonly used for functions that might not find a result, like a lookup that can fail.'
+      },
+      {
+        id: 'q5',
+        prompt: 'What tool actually checks whether your code\'s type hints are being honoured, without running the program?',
+        options: ['pytest', 'mypy, a static type checker run from the command line', 'cProfile', 'The Python interpreter itself, automatically'],
+        answerIndex: 1,
+        explanation: 'mypy reads your type hints and reports mismatches as a separate static-analysis step, distinct from actually executing the code.'
+      }
+    ]
+  },
+  'py-a-10': {
+    title: 'Check your understanding: Testing with pytest',
+    intro: 'Test your knowledge of writing automated tests.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What does a bare assert statement do if its condition is False?',
+        options: ['It prints a warning but keeps running', 'It immediately crashes the program with an AssertionError', 'It silently does nothing', 'It automatically retries the operation'],
+        answerIndex: 1,
+        explanation: 'assert is the foundation every testing tool builds on — a False condition stops execution immediately with an AssertionError.'
+      },
+      {
+        id: 'q2',
+        prompt: 'How does pytest decide which functions in a file to run as tests?',
+        options: ['It runs every function in the file, regardless of name', 'It looks for functions whose names start with test_', 'It only runs functions explicitly listed in a separate config file', 'It requires every test to be a class method'],
+        answerIndex: 1,
+        explanation: 'pytest automatically discovers and runs any function named starting with test_, without needing to register them manually.'
+      },
+      {
+        id: 'q3',
+        prompt: 'Why might you write several small, specifically-named test functions instead of one large combined test?',
+        options: ['Smaller tests always run faster', 'If only one specific case breaks, separate named tests immediately tell you exactly which behaviour failed, rather than just "something failed"', 'pytest does not support multiple test functions per file', 'Combined tests are not valid pytest syntax'],
+        answerIndex: 1,
+        explanation: 'Specific, named tests like test_calculate_total_zero_quantity pinpoint exactly which behaviour broke, which a single all-in-one test cannot.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What does pytest.raises(ValueError) let you test?',
+        options: ['That a function never raises any error', 'That a specific block of code correctly raises a ValueError, confirming that error-raising behaviour is itself working as intended', 'That a function returns a float', 'That a test file has no syntax errors'],
+        answerIndex: 1,
+        explanation: 'Sometimes correct behaviour IS raising an error (like rejecting invalid input) — pytest.raises checks that this actually happens as expected.'
+      },
+      {
+        id: 'q5',
+        prompt: 'What is the real long-term payoff of having a solid test suite for a function?',
+        options: ['Tests only matter the first time you write the function', 'You can refactor or rewrite the function later and know within seconds whether you broke anything, instead of manually re-checking every case by hand', 'Tests eliminate the need to ever read the function\'s code again', 'Tests make the original code run faster'],
+        answerIndex: 1,
+        explanation: 'The biggest value of tests shows up months later, when changing the code — a good test suite catches regressions instantly instead of relying on manual re-verification.'
+      }
+    ]
+  },
+  'py-a-11': {
+    title: 'Check your understanding: Packaging your code',
+    intro: 'Test your knowledge of structuring and distributing a real Python package.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What does an __init__.py file inside a folder signal to Python?',
+        options: ['That the folder should be deleted', 'That the folder should be treated as an importable package', 'That the folder contains only test files', 'Nothing — __init__.py has no special meaning'],
+        answerIndex: 1,
+        explanation: '__init__.py (even when empty) is what makes a plain folder behave as a proper, importable Python package.'
+      },
+      {
+        id: 'q2',
+        prompt: 'What is pyproject.toml used for?',
+        options: ['It stores your actual Python source code', 'It describes the package to the outside world — its name, version, dependencies, and how to build it', 'It is a file used only for writing tests', 'It replaces the need for an __init__.py file'],
+        answerIndex: 1,
+        explanation: 'pyproject.toml is the modern standard configuration file describing a package\'s metadata and build requirements, separate from the actual source code.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What does pip install -e . do, run from inside a package\'s root folder?',
+        options: ['It permanently deletes the package', 'It installs the package in "editable" mode, so changes to the source files take effect immediately without reinstalling', 'It uploads the package to PyPI', 'It only works on packages already published online'],
+        answerIndex: 1,
+        explanation: 'Editable installs are the standard approach during active development, letting you keep editing source files without repeating the install step.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What is PyPI?',
+        options: ['A Python testing framework', 'The Python Package Index — the public repository that pip install pandas (and similar commands) actually downloads from', 'A type checker', 'A built-in Python module for profiling'],
+        answerIndex: 1,
+        explanation: 'PyPI is the central public index where published Python packages live, which is exactly what makes "pip install anything" work for the whole community.'
+      },
+      {
+        id: 'q5',
+        prompt: 'What is the practical difference between "a script that works" and "a properly packaged tool"?',
+        options: ['There is no real difference, they behave identically', 'A packaged tool (with tests, structure, and clear dependencies) can be installed and trusted across many projects and by other people, not just used once in the folder it was written in', 'Packaged code always runs faster than a script', 'Scripts cannot contain functions or classes'],
+        answerIndex: 1,
+        explanation: 'Packaging, combined with tests and type hints from earlier modules, is what turns one-off code into something genuinely reusable and trustworthy elsewhere.'
+      }
+    ]
+  },
+
   // Excel
   'ex-b-1': {
     title: 'Check your understanding: Excel Basics',
@@ -2266,6 +2719,428 @@ const QUIZ_BANK = {
         options: ['It makes the spreadsheet load faster', 'It restricts what can be typed into that cell, preventing typos like "actve" instead of "Active" before they ever happen', 'It automatically sorts the column', 'It hides the column from other users'],
         answerIndex: 1,
         explanation: 'Data Validation prevents bad data at the source by only allowing pre-approved values, which is more reliable than cleaning up typos after the fact.'
+      }
+    ]
+  },
+
+  // Excel Intermediate
+  'ex-i-1': {
+    title: 'Check your understanding: VLOOKUP and INDEX/MATCH',
+    intro: 'Test your knowledge of looking up data across tables.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'In =VLOOKUP(C2, Products!A:C, 2, FALSE), what does the FALSE argument do?',
+        options: ['It tells Excel to ignore errors', 'It forces an exact match instead of an approximate one, which is almost always what you want', 'It hides the result', 'It searches in reverse order'],
+        answerIndex: 1,
+        explanation: 'Without FALSE, VLOOKUP defaults to an approximate match and can silently return a wrong answer instead of an error.'
+      },
+      {
+        id: 'q2',
+        prompt: 'What is the key limitation of VLOOKUP that INDEX/MATCH does not have?',
+        options: ['VLOOKUP cannot handle numbers, only text', 'VLOOKUP can only search the first column of a range and return values to its right — it cannot look left', 'VLOOKUP only works on one sheet at a time', 'VLOOKUP is slower for small datasets'],
+        answerIndex: 1,
+        explanation: 'VLOOKUP always searches the leftmost column of its range. INDEX/MATCH has no such direction restriction.'
+      },
+      {
+        id: 'q3',
+        prompt: 'In =INDEX(A:A, MATCH(D2, D:D, 0)), what does the MATCH part actually return?',
+        options: ['The value found in column A', 'The position (a row number within the range) where D2 was found in column D', 'TRUE or FALSE', 'The column letter'],
+        answerIndex: 1,
+        explanation: 'MATCH returns a position, not a value. INDEX then uses that position to pull the actual value from a different range.'
+      },
+      {
+        id: 'q4',
+        prompt: 'Why is a VLOOKUP column number considered fragile?',
+        options: ['It always returns text instead of numbers', 'If someone inserts a new column into the searched table, every existing column number shifts and the formula can start pulling the wrong data', 'It cannot be copied to other cells', 'It only works with numeric IDs'],
+        answerIndex: 1,
+        explanation: 'VLOOKUP relies on a hardcoded column count, so inserting or reordering columns in the source table silently breaks it.'
+      },
+      {
+        id: 'q5',
+        prompt: 'You get a #N/A error from VLOOKUP. What is the most likely cause?',
+        options: ['Your computer has a virus', 'The value you searched for does not exist in the lookup range, often due to a typo or extra space', 'You used too many decimal places', 'The workbook is too large'],
+        answerIndex: 1,
+        explanation: '#N/A specifically means "not found" — the search value genuinely is not present in the range you pointed VLOOKUP at.'
+      }
+    ]
+  },
+
+  'ex-i-2': {
+    title: 'Check your understanding: Pivot Tables',
+    intro: 'Test your knowledge of summarising data with Pivot Tables.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What are the four boxes you drag fields into when building a Pivot Table?',
+        options: ['Rows, Columns, Values, Filters', 'Header, Footer, Body, Sidebar', 'Sum, Count, Average, Max', 'Sheet1, Sheet2, Sheet3, Sheet4'],
+        answerIndex: 0,
+        explanation: 'Rows and Columns control grouping, Values controls what number gets summarised, and Filters narrows the whole table to a category.'
+      },
+      {
+        id: 'q2',
+        prompt: 'When you drag a numeric field like Revenue into the Values box, what does Excel do by default?',
+        options: ['Counts the number of entries', 'Sums all the values', 'Averages all the values', 'Leaves it blank until you choose'],
+        answerIndex: 1,
+        explanation: 'Sum is the default aggregation for numeric fields dropped into Values; you can change it via Value Field Settings.'
+      },
+      {
+        id: 'q3',
+        prompt: 'You added 200 new rows to the data your Pivot Table is built on, but the pivot still shows old numbers. What should you do?',
+        options: ['Delete the pivot table and start over', 'Right-click the pivot and choose Refresh (or press Alt+F5)', 'Nothing — it updates automatically within an hour', 'Save the file and reopen it'],
+        answerIndex: 1,
+        explanation: 'A Pivot Table is a snapshot, not a live formula — it only updates when you explicitly Refresh it.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What happens if you drag a text column like Customer Name into the Values box?',
+        options: ['Excel throws an error and refuses', 'Excel automatically switches to Count, since text values cannot be summed', 'Excel converts the text to numbers', 'Nothing happens — the column is ignored'],
+        answerIndex: 1,
+        explanation: 'Text cannot be summed, so Excel defaults to counting how many entries exist instead.'
+      },
+      {
+        id: 'q5',
+        prompt: 'What is a Slicer used for?',
+        options: ['Cutting a worksheet into separate files', 'A clickable visual filter for a Pivot Table, as an alternative to the dropdown filter', 'Splitting one column into two', 'Removing duplicate rows'],
+        answerIndex: 1,
+        explanation: 'Slicers give Pivot Tables a clickable, visual filtering interface, popular for simple interactive dashboards.'
+      }
+    ]
+  },
+
+  'ex-i-3': {
+    title: 'Check your understanding: Conditional Formatting',
+    intro: 'Test your knowledge of highlighting data automatically based on rules.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What is the main purpose of Conditional Formatting?',
+        options: ['To lock cells from being edited', 'To automatically change a cell\'s appearance (colour, icon, bar) when it meets a rule you define', 'To validate data before it is entered', 'To merge multiple cells together'],
+        answerIndex: 1,
+        explanation: 'Conditional Formatting changes visual appearance based on rules, making important values jump out without manual checking.'
+      },
+      {
+        id: 'q2',
+        prompt: 'You want to highlight an entire row red whenever the Status column (F) says "Cancelled". Which formula-based rule is correct, assuming the whole data range is selected first?',
+        options: ['=F2="Cancelled"', '=$F2="Cancelled"', '=$F$2="Cancelled"', '=F$2="Cancelled"'],
+        answerIndex: 1,
+        explanation: 'Locking only the column ($F2) keeps every cell in a row checking column F, while letting the row number adjust per row.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What do Data Bars do?',
+        options: ['Add a dropdown list to a cell', 'Draw a small bar inside each cell, proportional to its value, for comparing magnitudes at a glance', 'Lock the column width', 'Convert numbers to percentages'],
+        answerIndex: 1,
+        explanation: 'Data Bars are a visual, in-cell bar chart — longer bars represent larger values, useful for quick comparisons.'
+      },
+      {
+        id: 'q4',
+        prompt: 'A cell is not formatting the way you expect, even though your rule looks correct. Where should you check first?',
+        options: ['The Name Manager', 'Conditional Formatting → Manage Rules, to check for a conflicting rule positioned above yours', 'The Page Layout tab', 'The AutoSave settings'],
+        answerIndex: 1,
+        explanation: 'Multiple rules can apply to the same cell, evaluated top to bottom — Manage Rules shows the order and lets you check for conflicts.'
+      },
+      {
+        id: 'q5',
+        prompt: 'What does the formula rule =A2<TODAY() achieve when applied to a Due Date column?',
+        options: ['It deletes any past due date', 'It highlights any date that has already passed today\'s date', 'It blocks future dates from being entered', 'It sorts the dates chronologically'],
+        answerIndex: 1,
+        explanation: 'TODAY() returns the current date, so this rule is TRUE (and applies formatting) for any due date earlier than today — i.e., overdue.'
+      }
+    ]
+  },
+
+  'ex-i-4': {
+    title: 'Check your understanding: Named ranges and data validation',
+    intro: 'Test your knowledge of naming cells and preventing bad data entry.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What is the main benefit of using a Named Range like "TaxRate" instead of $F$1 in a formula?',
+        options: ['Named ranges calculate faster', 'It makes formulas easier to read, and the name keeps working even if the cell is moved elsewhere', 'It lets you store text and numbers in the same cell', 'It removes the need for the equals sign'],
+        answerIndex: 1,
+        explanation: 'A named range behaves like an absolute reference automatically, and stays valid even if you relocate the underlying cell.'
+      },
+      {
+        id: 'q2',
+        prompt: 'Where can you see and edit every named range in a workbook?',
+        options: ['Data → Sort', 'Formulas → Name Manager', 'View → Freeze Panes', 'Insert → Names'],
+        answerIndex: 1,
+        explanation: 'Name Manager lists all defined names, what they point to, and lets you edit or delete them.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What does a Data Validation dropdown list (Allow: List) primarily prevent?',
+        options: ['Slow formula calculation', 'Typos and inconsistent entries, by only allowing pre-approved values to be typed into a cell', 'Accidental file deletion', 'Formulas referencing the wrong sheet'],
+        answerIndex: 1,
+        explanation: 'A dropdown list restricts input to exact, pre-approved values, eliminating issues like "Sales" vs "sales" vs "SALES" meaning the same thing.'
+      },
+      {
+        id: 'q4',
+        prompt: 'A custom Data Validation rule uses the formula =AND(B2>0, B2<=C2). What does it enforce?',
+        options: ['B2 must always equal C2', 'B2 must be greater than 0 and not exceed the value in C2', 'B2 must be negative', 'C2 must be greater than B2 by exactly 1'],
+        answerIndex: 1,
+        explanation: 'AND requires both conditions to be true — here, a positive quantity that does not exceed some limit stored in C2 (like stock on hand).'
+      },
+      {
+        id: 'q5',
+        prompt: 'Does Data Validation retroactively flag data that was already in the cells before the rule was applied?',
+        options: ['Yes, it instantly highlights all existing invalid entries', 'No — it only stops new entries going forward, not data already present', 'It deletes existing invalid entries automatically', 'It converts existing invalid entries to the nearest valid option'],
+        answerIndex: 1,
+        explanation: 'Data Validation rules apply going forward from when they are created — always set them up before a sheet is shared for filling in, not after.'
+      }
+    ]
+  },
+
+  'ex-i-5': {
+    title: 'Check your understanding: Power Query',
+    intro: 'Test your knowledge of importing and cleaning messy data automatically.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What is the main advantage of cleaning data with Power Query instead of manual formulas?',
+        options: ['It is the only way to remove duplicate rows', 'The cleanup steps are recorded and can be replayed automatically on future versions of the same messy data via Refresh', 'It makes charts automatically', 'It permanently changes the original source file'],
+        answerIndex: 1,
+        explanation: "Power Query records a repeatable recipe of steps, so a recurring messy export can be re-cleaned with one click instead of redoing the work."
+      },
+      {
+        id: 'q2',
+        prompt: 'What is the "Applied Steps" panel in the Power Query Editor?',
+        options: ['A list of every formula in the workbook', 'An ordered, named list of every transformation you have performed, which can be clicked through, edited, or reordered', 'A history of files you have opened', 'A list of all open Excel windows'],
+        answerIndex: 1,
+        explanation: 'Applied Steps records each transformation (like "Removed Columns" or "Split Column") in order, and re-runs all of them on Refresh.'
+      },
+      {
+        id: 'q3',
+        prompt: 'Does working in the Power Query Editor change your original source file?',
+        options: ['Yes, every change is saved back to the source file immediately', 'No — it is a safe sandbox; the original source file is untouched until you choose Close & Load', 'Only if you forget to undo', 'Only for CSV files, not Excel files'],
+        answerIndex: 1,
+        explanation: 'Power Query builds a separate recipe of transformations; the source file itself is never modified.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What does "Merge Queries" in Power Query conceptually correspond to?',
+        options: ['A VLOOKUP formula, but reusable', 'A SQL-style JOIN, combining two tables based on a matching column', 'Combining two Excel files into one', 'Removing duplicate columns'],
+        answerIndex: 1,
+        explanation: 'Merge Queries combines two tables on a matching column, similar to a SQL JOIN, with "Left Outer" matching a LEFT JOIN.'
+      },
+      {
+        id: 'q5',
+        prompt: 'You replace the source file with a new export and click Refresh All. What is most likely to go wrong if a column was renamed in the new file?',
+        options: ['Nothing — Power Query always adapts automatically', 'A step that depends on that exact column name may fail or pull the wrong column, so you should spot-check the result after refreshing', 'Excel will permanently delete the new file', 'The workbook will be corrupted'],
+        answerIndex: 1,
+        explanation: 'Refresh assumes the new file has the same structure as the one the steps were built against — a renamed or reordered column can break a step silently.'
+      }
+    ]
+  },
+
+  // Excel Advanced
+  'ex-a-1': {
+    title: 'Check your understanding: Power Pivot and the Data Model',
+    intro: 'Test your knowledge of connecting tables through relationships instead of lookup formulas.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'Why does Power Pivot use relationships instead of VLOOKUP at large scale?',
+        options: ['VLOOKUP is more accurate', 'VLOOKUP formulas copied down hundreds of thousands of rows are slow and bloat the file; relationships connect tables without copying any formulas at all', 'Relationships work only with text columns', 'VLOOKUP cannot be used inside Pivot Tables at all'],
+        answerIndex: 1,
+        explanation: 'A relationship connects tables structurally, the way a database does, avoiding the performance and fragility costs of millions of lookup formulas.'
+      },
+      {
+        id: 'q2',
+        prompt: 'In the Sales / Products / Customers Data Model, what kind of relationship exists between Sales and Products?',
+        options: ['Many-to-many', 'One-to-many, with Sales as the "many" side', 'No relationship is needed', 'One-to-one'],
+        answerIndex: 1,
+        explanation: 'Many sales rows can reference the same single product, making Sales the "many" side and Products the "one" side.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What requirement must the "one" side of a relationship (e.g., Products[Product ID]) satisfy?',
+        options: ['It must be sorted alphabetically', 'It must contain no duplicate values', 'It must be the first column in the table', 'It must be formatted as currency'],
+        answerIndex: 1,
+        explanation: 'Excel refuses to create a relationship if the "one" side has duplicate key values, since that breaks the lookup logic.'
+      },
+      {
+        id: 'q4',
+        prompt: 'This pattern of one central transactional table connected to several small lookup tables is commonly called:',
+        options: ['A pivot schema', 'A star schema', 'A flat file', 'A macro table'],
+        answerIndex: 1,
+        explanation: 'A star schema has one "facts" table (like Sales) surrounded by smaller "dimension" tables (like Products and Customers) it relates to.'
+      },
+      {
+        id: 'q5',
+        prompt: 'After adding three tables to the Data Model with relationships built, what can a Pivot Table now do that a normal Pivot Table cannot?',
+        options: ['Use columns from different related tables together (like Products[Category] alongside Sales[Quantity]) without any VLOOKUP formulas', 'Automatically email itself', 'Convert all numbers to text', 'Delete duplicate rows in the source data'],
+        answerIndex: 0,
+        explanation: 'The Data Model lets a single Pivot Table combine fields from multiple related tables directly, using the relationships instead of helper lookup columns.'
+      }
+    ]
+  },
+
+  'ex-a-2': {
+    title: 'Check your understanding: DAX measures',
+    intro: 'Test your knowledge of writing calculations on top of the Data Model.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What does RELATED do inside a DAX measure like SUMX(Sales, Sales[Quantity] * RELATED(Products[Price]))?',
+        options: ['Sorts the Sales table', 'Reaches across an existing relationship to fetch a matching value from a related table, for the current row', 'Deletes unrelated rows', 'Converts text to numbers'],
+        answerIndex: 1,
+        explanation: 'RELATED follows the relationship from the "many" side to fetch the corresponding value on the "one" side, row by row.'
+      },
+      {
+        id: 'q2',
+        prompt: 'What is the key difference between a DAX measure and a calculated column?',
+        options: ['They are exactly the same thing', 'A calculated column stores one static value per row; a measure recalculates fresh every time, based on whatever filters a Pivot Table currently applies', 'Measures can only return text', 'Calculated columns are faster in every case'],
+        answerIndex: 1,
+        explanation: 'A measure is dynamic and filter-aware, recomputing for whatever Rows/Columns/Filters context it is placed in — a calculated column is static per row.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What does CALCULATE([Total Revenue], Customers[City] = "Mumbai") do?',
+        options: ['Deletes all non-Mumbai rows permanently', 'Recomputes the Total Revenue measure, but forced to only consider rows where the customer city is Mumbai', 'Renames the Total Revenue measure', 'Creates a new table called Mumbai'],
+        answerIndex: 1,
+        explanation: 'CALCULATE takes an existing measure and recomputes it under a modified filter context — here, restricted to Mumbai.'
+      },
+      {
+        id: 'q4',
+        prompt: 'Why should DIVIDE(a, b) be used instead of writing a/b directly in DAX?',
+        options: ['DIVIDE is faster to type', 'DIVIDE returns blank instead of an error when the denominator is zero, which a plain a/b would throw as #DIV/0!', 'a/b is not valid DAX syntax at all', 'DIVIDE always rounds the result'],
+        answerIndex: 1,
+        explanation: 'DIVIDE gracefully handles a zero denominator (like a month with no sales) by returning blank instead of breaking the calculation with an error.'
+      },
+      {
+        id: 'q5',
+        prompt: 'What does TOTALYTD([Total Revenue], Sales[Date]) calculate, when used in a Pivot Table broken down by month?',
+        options: ['The revenue for that single month only', 'The running cumulative total from the start of the year through the end of that month', 'The average monthly revenue for the whole year', 'Next year\'s projected revenue'],
+        answerIndex: 1,
+        explanation: 'TOTALYTD is a time-intelligence function that accumulates a measure from the start of the year up to the current filter context.'
+      }
+    ]
+  },
+
+  'ex-a-3': {
+    title: 'Check your understanding: Advanced array formulas',
+    intro: 'Test your knowledge of formulas that operate across entire ranges at once.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What does =SUMPRODUCT((D2:D30="Mumbai") * B2:B30 * C2:C30) calculate?',
+        options: ['The total of columns B and C for every row, regardless of city', 'The sum of B×C for only the rows where column D equals "Mumbai," since the TRUE/FALSE condition acts as 1/0 in the multiplication', 'A count of how many rows say "Mumbai"', 'An error, because SUMPRODUCT cannot use conditions'],
+        answerIndex: 1,
+        explanation: 'The (D2:D30="Mumbai") condition produces an array of 1s and 0s, zeroing out the contribution of any row that is not Mumbai before summing the products.'
+      },
+      {
+        id: 'q2',
+        prompt: 'What do the curly braces {} around a legacy array formula in the formula bar mean?',
+        options: ['You should type them yourself when writing the formula', 'Excel added them automatically to show the formula was confirmed with Ctrl+Shift+Enter as an array calculation', 'The formula contains an error', 'The formula is locked from editing'],
+        answerIndex: 1,
+        explanation: 'Curly braces are Excel\'s own indicator that a formula was entered as a legacy array formula — you never type them manually.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What makes a Dynamic Array formula like =UNIQUE(D2:D30) different from a regular formula?',
+        options: ['It can only be used once per worksheet', 'It automatically "spills" its results into as many cells as needed, with no Ctrl+Shift+Enter or manual range sizing required', 'It only works with numbers, not text', 'It requires Power Pivot to be enabled'],
+        answerIndex: 1,
+        explanation: 'Dynamic Arrays in modern Excel spill multiple results automatically into adjacent cells, unlike older array formulas or single-cell formulas.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What does the #SPILL! error mean?',
+        options: ['The formula has a typo', 'A dynamic array formula needs to spill results into cells that already contain other data', 'The file is corrupted', 'A circular reference was detected'],
+        answerIndex: 1,
+        explanation: '#SPILL! appears when something is blocking the cells a dynamic array formula needs to expand into — clearing those cells resolves it.'
+      },
+      {
+        id: 'q5',
+        prompt: 'What does =SORT(UNIQUE(D2:D30)) produce?',
+        options: ['A count of unique values', 'An alphabetically sorted list of every distinct value in the range, spilled automatically', 'The largest value in the range', 'A list with duplicates removed but in random order'],
+        answerIndex: 1,
+        explanation: 'UNIQUE removes duplicates and SORT then alphabetizes the result, with both functions spilling the combined output automatically.'
+      }
+    ]
+  },
+
+  'ex-a-4': {
+    title: 'Check your understanding: Macros and VBA basics',
+    intro: 'Test your knowledge of recording and writing simple automation.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What file format must you save a workbook as to keep a macro inside it?',
+        options: ['.xlsx, the standard format', '.xlsm, the Macro-Enabled Workbook format', '.csv', '.pdf'],
+        answerIndex: 1,
+        explanation: 'Saving as a regular .xlsx silently strips out any macros with no warning — .xlsm is required to preserve them.'
+      },
+      {
+        id: 'q2',
+        prompt: 'In VBA, what does Cells(Rows.Count, "B").End(xlUp).Row typically find?',
+        options: ['The first empty row at the very top of the sheet', 'The last row that actually contains data in column B, regardless of how much data exists', 'The total number of columns in the sheet', 'A random row in column B'],
+        answerIndex: 1,
+        explanation: 'This is the standard VBA idiom for finding the last used row in a column, making a macro work correctly no matter how the data grows or shrinks.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What does a For i = 2 To lastRow ... Next i loop in VBA do?',
+        options: ['Runs the code inside it exactly once', 'Repeats the code inside it once for every row from row 2 through lastRow, with i taking each row number in turn', 'Deletes rows 2 through lastRow', 'Pauses the macro for "lastRow" seconds'],
+        answerIndex: 1,
+        explanation: 'This is a counting loop — i increments from 2 up to lastRow, running the enclosed code once per value, which is how macros process every row of a table.'
+      },
+      {
+        id: 'q4',
+        prompt: 'Why does Excel show a security warning bar when opening a .xlsm file from someone else?',
+        options: ['Because .xlsm files are always corrupted', 'Because macros can run arbitrary actions on your computer and are a real, common way malware spreads through email attachments', 'Because the file is too large', 'Because macros always contain viruses'],
+        answerIndex: 1,
+        explanation: 'Macros have broad capability on your system, so Excel disables them by default on files from outside sources until you explicitly trust and enable them.'
+      },
+      {
+        id: 'q5',
+        prompt: 'What is the main limitation of recording a macro (rather than hand-writing VBA) for automation?',
+        options: ['Recorded macros run slower than typed code', 'Recording only captures a linear sequence of actions — it cannot capture loops or conditional logic like "for every row, check if X"', 'Recorded macros cannot be saved', 'Recording requires an internet connection'],
+        answerIndex: 1,
+        explanation: 'The macro recorder can only play back the exact clicks you made — any logic involving loops or conditions needs to be hand-written in the VBA editor.'
+      }
+    ]
+  },
+
+  'ex-a-5': {
+    title: 'Check your understanding: Building interactive dashboards',
+    intro: 'Test your knowledge of assembling Pivot Tables, charts, and slicers into one usable dashboard.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What should you decide before opening Excel and building dashboard charts?',
+        options: ['Which font to use', 'Who the dashboard is for, and the 3-5 specific questions it needs to answer', 'How many sheets the workbook should have', 'The file size limit'],
+        answerIndex: 1,
+        explanation: 'Designing around the audience\'s actual questions first prevents a dashboard that looks busy but does not answer anything useful.'
+      },
+      {
+        id: 'q2',
+        prompt: 'What does connecting a Slicer to multiple Pivot Tables via "Report Connections" achieve?',
+        options: ['It merges the Pivot Tables into one', 'One click on the slicer filters every connected Pivot Table and Pivot Chart simultaneously', 'It deletes the unconnected Pivot Tables', 'It hides the slicer from view'],
+        answerIndex: 1,
+        explanation: 'Report Connections let a single slicer control multiple visuals at once, which is the foundation of an interactive, click-to-filter dashboard.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What does GETPIVOTDATA let you do?',
+        options: ['Delete a Pivot Table', 'Pull one specific number out of an existing Pivot Table into a standalone cell, useful for building a styled KPI card', 'Convert a Pivot Table into a regular range', 'Connect to an external database'],
+        answerIndex: 1,
+        explanation: 'GETPIVOTDATA extracts a single value from a Pivot Table so it can be displayed independently, like in a large-font KPI card.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What does Data → Refresh All update in one click?',
+        options: ['Only the active cell', 'Every Pivot Table, Pivot Chart, Power Query step, and Data Model calculation in the entire workbook', 'Only charts, not Pivot Tables', 'Only the formatting, not the data'],
+        answerIndex: 1,
+        explanation: 'Refresh All is the single action a dashboard\'s end user needs, updating every data-dependent element across the whole workbook at once.'
+      },
+      {
+        id: 'q5',
+        prompt: 'Why hide gridlines and move underlying Pivot Tables to a separate sheet on a finished dashboard?',
+        options: ['It is required for slicers to function', 'It makes the dashboard look intentional and focused on the visuals, rather than exposing raw working data', 'It speeds up Excel\'s calculation engine', 'It is required to save as .xlsm'],
+        answerIndex: 1,
+        explanation: 'A clean, deliberate layout — without visible raw pivot grids or gridlines — is read faster and trusted more by the people actually using the dashboard.'
       }
     ]
   },

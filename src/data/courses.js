@@ -51,9 +51,9 @@ export const COURSE_CATALOG = [
     tracks: {
       beginner: { modules: 14, hours: 8, label: 'From print() to 5 mini projects + 2 capstones' },
       intermediate: { modules: 15, hours: 9, label: 'pandas, NumPy, matplotlib, APIs, web scraping' },
-      advanced: { modules: 7, hours: 8, label: 'OOP, decorators, async, testing, packaging' }
+      advanced: { modules: 15, hours: 9, label: 'OOP, decorators, async, profiling, testing, packaging' }
     },
-    totalModules: 36,
+    totalModules: 44,
   },
   {
     id: 'excel',
@@ -75,10 +75,10 @@ export const COURSE_CATALOG = [
     datasets: ['Superstore Sales (US)', 'AdventureWorks', 'European Retailers'],
     tracks: {
       beginner: { modules: 12, hours: 6, label: 'Formulas, 4 mini projects, 2 capstone workbooks' },
-      intermediate: { modules: 5, hours: 4, label: 'Pivot Tables, VLOOKUP, conditional formatting' },
-      advanced: { modules: 5, hours: 5, label: 'Power Query, Power Pivot, DAX in Excel' }
+      intermediate: { modules: 8, hours: 6, label: 'Pivot Tables, VLOOKUP, conditional formatting, 2 mini projects + capstone' },
+      advanced: { modules: 8, hours: 8, label: 'Power Pivot, DAX, array formulas, VBA macros, dashboards, 2 mini projects + capstone' }
     },
-    totalModules: 22,
+    totalModules: 28,
   },
   {
     id: 'powerbi',
