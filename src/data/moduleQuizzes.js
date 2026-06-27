@@ -3188,6 +3188,636 @@ const QUIZ_BANK = {
     ]
   },
 
+  'pb-b-2': {
+    title: 'Check your understanding: Loading data from Excel and CSV',
+    intro: 'Test your knowledge of connecting Power BI to real data sources.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What is the very first step in building any Power BI report?',
+        options: ['Choosing a chart type', 'Get Data, to connect to a source like Excel, CSV, or a database', 'Publishing to the Service', 'Writing a DAX formula'],
+        answerIndex: 1,
+        explanation: 'Every report starts by connecting to a data source through Get Data — there is nothing to visualise before data is loaded in.'
+      },
+      {
+        id: 'q2',
+        prompt: 'When loading an Excel workbook, what does the Navigator window let you do?',
+        options: ['Edit the formulas inside the Excel file directly', 'Choose which sheet or table inside the workbook to load, with a preview before confirming', 'Convert the file into a CSV automatically', 'Delete the original Excel file'],
+        answerIndex: 1,
+        explanation: 'The Navigator shows every sheet/table found in the workbook with a preview, letting you pick exactly which one to bring in.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What is the key difference between clicking "Load" and clicking "Transform Data" after connecting to a source?',
+        options: ['They do exactly the same thing', '"Load" brings data in as-is; "Transform Data" opens the Power Query Editor first, so you can fix problems before the data reaches your report', '"Transform Data" deletes the source file', '"Load" only works with CSV files'],
+        answerIndex: 1,
+        explanation: 'Transform Data lets you clean and fix the data before it ever lands in your report — generally the safer default habit.'
+      },
+      {
+        id: 'q4',
+        prompt: 'Why does a CSV file behave differently from an Excel file in the Get Data flow?',
+        options: ['CSV files cannot be loaded into Power BI at all', 'A CSV has no sheets or named tables to choose from — it is one flat block of data, so there is no Navigator selection step', 'CSV files load faster but cannot contain dates', 'CSV files require a paid Power BI license'],
+        answerIndex: 1,
+        explanation: 'Since CSV is just plain comma-separated data with a single structure, there is nothing to select between like there is with multi-sheet Excel workbooks.'
+      },
+      {
+        id: 'q5',
+        prompt: 'After loading data, you check the Data view and see a Date column showing "ABC" (text) instead of a calendar icon. Why does this matter?',
+        options: ['It does not matter, Power BI treats text and dates identically', 'A wrongly-typed Date column will silently break date-based visuals and time filters later, so it should be fixed immediately after loading', 'It means the file failed to load', 'It only affects the column\'s colour in the Data view'],
+        answerIndex: 1,
+        explanation: 'Catching a wrong data type right after loading takes seconds; catching it after building several visuals on top of it is much more disruptive.'
+      }
+    ]
+  },
+
+  'pb-b-3': {
+    title: 'Check your understanding: Cleaning data with Power Query',
+    intro: 'Test your knowledge of fixing messy data before it reaches your report.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'Is the Power Query Editor in Power BI a different tool from the one in Excel?',
+        options: ['Yes, they share no features at all', 'No — Power BI uses the exact same Power Query Editor and concept as Excel: recorded, replayable cleanup steps', 'Power BI\'s version only works with CSV files', 'Excel\'s Power Query cannot remove duplicates, but Power BI\'s can'],
+        answerIndex: 1,
+        explanation: 'Power Query is the same underlying engine in both Excel and Power BI, including the same Applied Steps concept.'
+      },
+      {
+        id: 'q2',
+        prompt: 'How do you reopen the Power Query Editor after data has already been loaded into a report?',
+        options: ['It cannot be reopened once data is loaded', 'Home → Transform Data', 'Delete the report and start over', 'File → Print Preview'],
+        answerIndex: 1,
+        explanation: 'Transform Data reopens the editor at any time, letting you add or adjust cleanup steps without reloading from scratch.'
+      },
+      {
+        id: 'q3',
+        prompt: 'A City column has entries like "mumbai", " Mumbai", and "MUMBAI" that should all be treated as the same city. Which two transformations, used together, fix this?',
+        options: ['Remove Columns and Remove Rows', 'Trim and Capitalize Each Word', 'Change Type and Merge Queries', 'Sort Ascending and Sort Descending'],
+        answerIndex: 1,
+        explanation: 'Trim removes the inconsistent extra spaces, and Capitalize Each Word fixes the inconsistent casing, together producing a single consistent "Mumbai."'
+      },
+      {
+        id: 'q4',
+        prompt: 'What does the Applied Steps panel let you do that is especially useful for troubleshooting?',
+        options: ['Permanently delete the original source file', 'Click any previous step to see exactly what the data looked like at that point, helping pinpoint where something went wrong', 'Automatically publish the report', 'Convert every column to text'],
+        answerIndex: 1,
+        explanation: 'Being able to click back through each named step makes it easy to isolate exactly which transformation caused an unexpected result.'
+      },
+      {
+        id: 'q5',
+        prompt: 'What does Home → Close & Apply do?',
+        options: ['Deletes all the cleanup steps you just created', 'Loads the cleaned data into your report\'s data model so visuals can be built from it', 'Publishes the report to the Power BI Service', 'Opens the Navigator window again'],
+        answerIndex: 1,
+        explanation: 'Close & Apply is the Power BI equivalent of Excel\'s Close & Load — it brings the cleaned result into the report, ready for visuals.'
+      }
+    ]
+  },
+
+  'pb-b-4': {
+    title: 'Check your understanding: Your first chart',
+    intro: 'Test your knowledge of building visuals on the Report canvas.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'Which view do you switch to in order to actually build charts on a canvas?',
+        options: ['Data view', 'Report view', 'Model view', 'Power Query Editor'],
+        answerIndex: 1,
+        explanation: 'Report view is the blank canvas where visuals are placed and arranged; Data and Model views are for inspecting data and relationships instead.'
+      },
+      {
+        id: 'q2',
+        prompt: 'You select a Clustered Column Chart and drag City onto the X-axis and Quantity onto the Y-axis. What happens by default?',
+        options: ['Nothing, until you write a DAX formula', 'A bar appears for each city, with Quantity automatically summed for that city', 'An error appears, since two fields cannot be combined this way', 'The chart shows only the first row of data'],
+        answerIndex: 1,
+        explanation: 'Power BI automatically aggregates (typically sums) a numeric field when it is dropped onto an axis well alongside a category field.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What does the DAX formula Revenue = Sales[Quantity] * Sales[Price] create?',
+        options: ['A new table called Revenue', 'A calculated column, giving every row in the Sales table its own Revenue value', 'A chart titled Revenue', 'A filter on the Quantity column'],
+        answerIndex: 1,
+        explanation: 'This is a calculated column — a new column computed from existing ones, available afterward like any other field in the Fields pane.'
+      },
+      {
+        id: 'q4',
+        prompt: 'You have a column chart built and want to see the same fields as a line chart instead. What is the fastest way to do this?',
+        options: ['Delete the visual and build a brand new line chart from scratch', 'Select the existing visual and click the line chart icon in the Visualizations pane — the same fields carry over automatically', 'Export the data and reimport it', 'This is not possible in Power BI'],
+        answerIndex: 1,
+        explanation: 'Changing a visual\'s type while it is selected keeps its assigned fields and just redraws them in the new chart type.'
+      },
+      {
+        id: 'q5',
+        prompt: 'For showing the rough split of revenue between just two categories (Beverage vs Snack), which visual fits best?',
+        options: ['A line chart', 'A pie chart, since it is well suited to showing parts of a whole with a small number of categories', 'A Card', 'A Slicer'],
+        answerIndex: 1,
+        explanation: 'Pie charts work well for a small number of categories showing how a total splits into parts — exactly this scenario.'
+      }
+    ]
+  },
+
+  'pb-b-5': {
+    title: 'Check your understanding: Slicers and filters',
+    intro: 'Test your knowledge of making a report interactive.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What happens when a viewer clicks a city inside a Slicer on a report page?',
+        options: ['Only the Slicer itself changes; nothing else on the page is affected', 'Every visual on the page that uses the same underlying table updates automatically to reflect that selection', 'The report needs to be republished for the change to show', 'It permanently deletes the data for other cities'],
+        answerIndex: 1,
+        explanation: 'Visuals on the same Power BI report page are connected by default — a Slicer selection filters all of them simultaneously, with no extra setup.'
+      },
+      {
+        id: 'q2',
+        prompt: 'What does changing a date Slicer\'s style to "Between" provide?',
+        options: ['A single dropdown with one date', 'A from/to date range picker, letting the viewer narrow the report to a specific period', 'A button that resets all filters', 'A list of every unique product instead of dates'],
+        answerIndex: 1,
+        explanation: '"Between" style turns a date slicer into a range selector, useful for narrowing a report to a custom time window.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What is the difference between a "Filters on this visual" and a "Filters on this page" entry in the Filters pane?',
+        options: ['They are identical in every way', '"This visual" affects only the single selected chart; "This page" affects every visual on the current report page', '"This page" only works with Slicers, not charts', '"This visual" filters cannot be removed once applied'],
+        answerIndex: 1,
+        explanation: 'The Filters pane has three scopes — visual, page, and all pages — each affecting a progressively wider part of the report.'
+      },
+      {
+        id: 'q4',
+        prompt: 'When should you use a Slicer instead of a Filter (in the Filters pane)?',
+        options: ['When the choice should be made once by the report builder and hidden from the viewer', 'When the viewer themselves should be able to make and change that choice visibly while using the report', 'Slicers and Filters are always interchangeable with no difference', 'Only when working with date columns'],
+        answerIndex: 1,
+        explanation: 'A Slicer is for viewer-facing, self-service choices; a Filter is for decisions the report builder locks in, typically invisible to the viewer.'
+      },
+      {
+        id: 'q5',
+        prompt: 'A report builder wants every page in the entire report to always exclude test/dummy transactions, regardless of what the viewer clicks. What is the right tool for this?',
+        options: ['A Slicer set to "Between"', 'A filter applied at the "Filters on all pages" scope', 'Renaming the column', 'A Card visual'],
+        answerIndex: 1,
+        explanation: 'An "all pages" filter is the widest scope, ensuring the exclusion applies report-wide and cannot be accidentally removed by a viewer interacting with a Slicer.'
+      }
+    ]
+  },
+
+  'pb-b-6': {
+    title: 'Check your understanding: Publishing to the Power BI Service',
+    intro: 'Test your knowledge of sharing a finished report with others.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'Why is a report still not useful to anyone else right after it is built in Power BI Desktop?',
+        options: ['Desktop reports are always broken until refreshed', 'It only exists on the local computer where it was built — nobody else can open or view it until it is published somewhere they can access', 'Desktop reports expire after 24 hours', 'Charts cannot be saved in Desktop at all'],
+        answerIndex: 1,
+        explanation: 'Power BI Desktop is purely an authoring tool; the report has to be published to the Service before anyone else can view it.'
+      },
+      {
+        id: 'q2',
+        prompt: 'What is a workspace in the Power BI Service?',
+        options: ['A folder on your local hard drive', 'A shared space (similar to a shared drive folder) where published reports live, which specific people can be given access to', 'A type of chart', 'A setting inside Power BI Desktop only'],
+        answerIndex: 1,
+        explanation: 'Workspaces organise published content and control who has access — "My workspace" is private by default; team workspaces are shared.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What is the key difference between a Report and a Dashboard in the Power BI Service?',
+        options: ['They are exactly the same thing with two different names', 'A Report is the full multi-page interactive document built in Desktop; a Dashboard is a single page assembled in the Service by pinning visuals, often from multiple reports', 'Dashboards can only show text, never charts', 'Reports cannot be shared, only Dashboards can'],
+        answerIndex: 1,
+        explanation: 'Reports are authored in Desktop with full interactivity; Dashboards are built afterward in the Service by combining pinned visuals into one summary view.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What does Scheduled Refresh allow a published report to do?',
+        options: ['Automatically change its chart colours daily', 'Automatically reload from the original data source on a schedule, so the published report reflects new data without manual republishing', 'Email a copy of itself to every employee', 'Convert itself from a Report into a Dashboard'],
+        answerIndex: 1,
+        explanation: 'Scheduled Refresh keeps a published report up to date by reloading from its source on a set schedule, rather than staying frozen at the moment it was published.'
+      },
+      {
+        id: 'q5',
+        prompt: 'You publish a report, but a chart looks outdated compared to your latest changes in Desktop. What is the most likely cause?',
+        options: ['The Power BI Service is down', 'You published before saving your .pbix file in Desktop, so the Service received an older version', 'Dashboards always lag behind Reports by 24 hours', 'Publishing is broken and needs reinstalling'],
+        answerIndex: 1,
+        explanation: 'Publishing sends whatever is currently open in Desktop — saving (Ctrl+S) immediately before publishing ensures the latest changes are included.'
+      }
+    ]
+  },
+
+  'pb-i-1': {
+    title: 'Check your understanding: Data modelling and relationships',
+    intro: 'Test your knowledge of connecting multiple tables in the Power BI Data Model.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'Why does splitting data into separate Sales, Items, and Cities tables become necessary as a business grows, instead of keeping one flat table?',
+        options: ['Power BI cannot load more than one table otherwise', 'Repeating item and city details on every single sales row becomes a maintenance nightmare — updating one item\'s price would mean finding and fixing it everywhere it repeats', 'Flat tables are not supported by Power BI at all', 'It makes the file open faster regardless of size'],
+        answerIndex: 1,
+        explanation: 'Splitting facts (Sales) from descriptive lookup data (Items, Cities) avoids repeating and having to update the same information across thousands of rows.'
+      },
+      {
+        id: 'q2',
+        prompt: 'Which view in Power BI Desktop is used to build and review relationships between tables?',
+        options: ['Report view', 'Data view', 'Model view', 'Power Query Editor'],
+        answerIndex: 2,
+        explanation: 'Model view shows every loaded table as a box, with relationship lines drawn between them.'
+      },
+      {
+        id: 'q3',
+        prompt: 'In the relationship between Sales and Items, which table is the "many" side?',
+        options: ['Items, since it has fewer rows', 'Sales, since many sales rows can reference the same single item', 'Neither table is the "many" side', 'Both tables are equally the "many" side'],
+        answerIndex: 1,
+        explanation: 'Many transactions can reference the same product, making Sales the "many" side and Items the "one" side.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What does the "Cross filter direction" setting of Single (the default) mean for a relationship?',
+        options: ['Filtering Items filters Sales, but filtering Sales does not filter Items back', 'Filtering only works one time, then stops', 'Both tables filter each other in both directions automatically', 'It disables filtering between the two tables entirely'],
+        answerIndex: 0,
+        explanation: 'Single direction means the "one" side filters the "many" side, but not the reverse — the safe, predictable default for most relationships.'
+      },
+      {
+        id: 'q5',
+        prompt: 'Why should "Both" cross filter direction be used carefully rather than applied to every relationship "just in case"?',
+        options: ['It is always slower with no other effect', 'It can introduce ambiguous filtering paths, causing visuals to behave unexpectedly when Power BI no longer has one clear path to follow', 'It only works with text columns', 'It permanently deletes one of the two tables'],
+        answerIndex: 1,
+        explanation: 'Setting every relationship to Both can create multiple valid filtering paths, leading to confusing or incorrect visual behaviour — Single should be the deliberate default.'
+      }
+    ]
+  },
+
+  'pb-i-2': {
+    title: 'Check your understanding: DAX calculated columns vs measures',
+    intro: 'Test your knowledge of the difference between static columns and dynamic measures.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What does RELATED(Items[Price]) do inside a calculated column or measure on the Sales table?',
+        options: ['Deletes unrelated rows from Items', 'Reaches across the relationship to fetch the matching Price value from the Items table, for the current row', 'Sorts the Items table by price', 'Converts Price into text'],
+        answerIndex: 1,
+        explanation: 'RELATED follows an existing relationship from the "many" side to fetch a value from the related "one" side, row by row.'
+      },
+      {
+        id: 'q2',
+        prompt: 'What is the core difference between a calculated column and a measure?',
+        options: ['They are exactly the same, just named differently', 'A calculated column is computed once per row and stored permanently; a measure is computed fresh every time it is used, based on the current filter context', 'Measures cannot use the RELATED function', 'Calculated columns always update instantly with every click, but measures do not'],
+        answerIndex: 1,
+        explanation: 'A measure recalculates dynamically based on whatever Rows/Columns/Slicers/Filters are active; a calculated column is fixed once the model refreshes.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What does CALCULATE([Total Revenue], Cities[City] = "Mumbai") produce?',
+        options: ['A new table named Mumbai', 'Total Revenue recomputed, but forced to only consider rows where the related city is Mumbai', 'An error, since CALCULATE cannot take a condition', 'A permanent filter applied to the entire report'],
+        answerIndex: 1,
+        explanation: 'CALCULATE takes an existing measure and recomputes it under a modified filter — here, restricted to Mumbai regardless of other report filters.'
+      },
+      {
+        id: 'q4',
+        prompt: 'According to the practical rule of thumb from the lesson, when should you use a calculated column instead of a measure?',
+        options: ['Whenever a chart needs any number at all', 'Only when you genuinely need a fixed, per-row value — such as one needed as input to other row-level logic, or to filter/sort by directly', 'Always, since columns are simpler to write', 'Never — measures should replace every calculated column'],
+        answerIndex: 1,
+        explanation: 'Most chart and Card calculations should be measures (dynamic); calculated columns are reserved for cases needing a fixed, stored per-row value.'
+      },
+      {
+        id: 'q5',
+        prompt: 'What does New Quick Measure provide?',
+        options: ['A way to permanently delete existing measures', 'A dialog of common calculation templates (like running total or percentage of grand total) that writes correct DAX for you automatically', 'A shortcut to publish the report instantly', 'A tool exclusively for renaming tables'],
+        answerIndex: 1,
+        explanation: 'Quick Measures generate working DAX from a template, useful both as a time-saver and as a way to learn correct DAX patterns by reading the generated formula.'
+      }
+    ]
+  },
+
+  'pb-i-3': {
+    title: 'Check your understanding: Time intelligence functions',
+    intro: 'Test your knowledge of calendar-aware DAX calculations.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What is required before time intelligence functions like TOTALYTD will work correctly?',
+        options: ['A published report in the Service', 'A continuous date column, ideally marked as a Date Table (or a dedicated Calendar table)', 'At least one Row-Level Security role', 'A mobile layout for every page'],
+        answerIndex: 1,
+        explanation: 'Time intelligence functions rely on a properly recognised, continuous date column to calculate periods correctly.'
+      },
+      {
+        id: 'q2',
+        prompt: 'What does TOTALYTD([Total Revenue], Sales[Date]) calculate when shown in a chart broken down by month?',
+        options: ['The revenue for that single month only', 'The cumulative total from January through the end of that month', 'Next year\'s projected revenue', 'The average revenue across the year'],
+        answerIndex: 1,
+        explanation: 'TOTALYTD accumulates a measure from the start of the year up to the current filter context, giving a running year-to-date total.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What does SAMEPERIODLASTYEAR(Sales[Date]) do when used inside a CALCULATE?',
+        options: ['Deletes last year\'s data permanently', 'Shifts the current date filter back exactly one year, so the measure reflects the equivalent period 12 months earlier', 'Predicts next year\'s sales using AI', 'Converts the Date column into text'],
+        answerIndex: 1,
+        explanation: 'SAMEPERIODLASTYEAR shifts the filter context back a year, enabling direct year-over-year comparison.'
+      },
+      {
+        id: 'q4',
+        prompt: 'How does DATEADD(Sales[Date], -1, MONTH) differ from SAMEPERIODLASTYEAR?',
+        options: ['They are completely unrelated functions', 'DATEADD is a more flexible building block — it can shift by any amount (day, month, quarter, year), while SAMEPERIODLASTYEAR is really a convenient shortcut specifically for shifting back one year', 'DATEADD only works with whole numbers, not dates', 'SAMEPERIODLASTYEAR works on any column, not just dates'],
+        answerIndex: 1,
+        explanation: 'SAMEPERIODLASTYEAR is essentially DATEADD(..., -1, YEAR) — DATEADD is the more general-purpose tool underneath it.'
+      },
+      {
+        id: 'q5',
+        prompt: 'Why is "we sold X today, 12% more than the same day last month" a more useful statement than just "we sold X today" for a growing business?',
+        options: ['It uses bigger numbers, which always looks more impressive', 'A comparison against a calendar-aware baseline gives genuine context to a raw number, which time intelligence measures make possible directly inside a report', 'It is not actually more useful, just longer', 'It removes the need for any visuals at all'],
+        answerIndex: 1,
+        explanation: 'Raw numbers without context are weak signals; time intelligence measures provide the comparative context that makes a number meaningful.'
+      }
+    ]
+  },
+
+  'pb-i-4': {
+    title: 'Check your understanding: Drill-through and bookmarks',
+    intro: 'Test your knowledge of navigable, stateful report interactivity.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What does setting up a drill-through page let a viewer do?',
+        options: ['Edit the underlying DAX measures directly from the report', 'Right-click a specific data point on a summary page and jump to a dedicated detail page, automatically filtered to that exact selection', 'Permanently delete a data point from the model', 'Convert any chart into a table instantly'],
+        answerIndex: 1,
+        explanation: 'Drill-through carries the clicked value as a filter onto a separate detail page built specifically for deeper exploration of that selection.'
+      },
+      {
+        id: 'q2',
+        prompt: 'What is placed in the "Drill-through" well in the Filters pane to set this up?',
+        options: ['A measure', 'The field that the detail page should be filtered by when a viewer drills through (e.g., City)', 'A chart visual', 'A bookmark name'],
+        answerIndex: 1,
+        explanation: 'Dragging a field like City into the Drill-through well configures that page to receive and filter by whatever value was clicked.'
+      },
+      {
+        id: 'q3',
+        prompt: 'Why might drill-through be preferred over simply adding a City Slicer to a summary page?',
+        options: ['Slicers are not supported in Power BI', 'Drill-through keeps the summary page focused and uncluttered, while still making detailed exploration available one right-click away when actually needed', 'Drill-through is always faster to compute than a Slicer', 'They achieve completely different, unrelated goals'],
+        answerIndex: 1,
+        explanation: 'A summary page stays clean without detail-only visuals or slicers, while drill-through still offers a path to deeper exploration on demand.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What does a Bookmark capture when created via View → Bookmarks → Add Bookmark?',
+        options: ['Only the report\'s file size', 'The current state of a page — including slicer selections, applied filters, and which visuals are visible', 'A static screenshot image only, with no underlying data', 'A copy of the entire underlying dataset'],
+        answerIndex: 1,
+        explanation: 'A bookmark remembers the live report state (filters, slicers, visibility), which can be restored later with one click.'
+      },
+      {
+        id: 'q5',
+        prompt: 'How do you make a button on the report canvas jump to a specific bookmark when clicked?',
+        options: ['Buttons cannot be linked to bookmarks in Power BI', 'Select the button, open the Format pane → Action, turn Action on, set Type to Bookmark, and choose the target bookmark', 'Rename the button to match the bookmark\'s name exactly', 'Buttons automatically link to the most recently created bookmark'],
+        answerIndex: 1,
+        explanation: 'The Format pane\'s Action setting is what connects a button to a specific bookmark (or other navigation target) when clicked.'
+      }
+    ]
+  },
+
+  'pb-i-5': {
+    title: 'Check your understanding: Row-level security',
+    intro: 'Test your knowledge of restricting which data different viewers can see in the same report.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What is the purpose of Row-Level Security (RLS)?',
+        options: ['To prevent the report from ever being edited again', 'To restrict which rows of data a given viewer can see, within the very same published report everyone else uses', 'To speed up how quickly a report loads', 'To control which chart types are available'],
+        answerIndex: 1,
+        explanation: 'RLS lets one single published report show different, correctly restricted data depending on who is viewing it.'
+      },
+      {
+        id: 'q2',
+        prompt: 'A role is created with the DAX filter [City] = "Mumbai" applied to the Cities table. Why does this also restrict the much larger Sales table?',
+        options: ['It does not — Sales remains fully visible regardless', 'Because Cities is related to Sales, the filter cascades through the relationship and restricts Sales automatically wherever the relationship reaches', 'Power BI applies every role to every table automatically, regardless of relationships', 'The filter must be manually copied onto Sales as well'],
+        answerIndex: 1,
+        explanation: 'A relationship lets a filter on a small lookup table (Cities) automatically restrict the related fact table (Sales) too, without writing a separate rule against Sales directly.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What is the purpose of Modeling → View As when working with RLS roles?',
+        options: ['It permanently applies the role to every future viewer', 'It lets you preview the report exactly as a specific role would see it, before publishing — the key habit for verifying a role works correctly', 'It deletes the role being tested', 'It only works after the report has already been published'],
+        answerIndex: 1,
+        explanation: 'View As is how you confirm a role\'s filter actually restricts the report as intended, catching mistakes before anyone else sees a wrong report.'
+      },
+      {
+        id: 'q4',
+        prompt: 'Why does a dynamic role using USERPRINCIPALNAME() scale better than writing one static role per city?',
+        options: ['It does not scale better — they are equivalent in every way', 'A single dynamic role automatically restricts every manager based on who is actually logged in, instead of needing a separately hand-written role for every new city added', 'USERPRINCIPALNAME() only works for a maximum of 3 users', 'Dynamic roles do not require any DAX at all'],
+        answerIndex: 1,
+        explanation: 'One dynamic rule comparing the logged-in user\'s email against a data column replaces having to write and maintain a new static role every time the business adds a location.'
+      },
+      {
+        id: 'q5',
+        prompt: 'When does Row-Level Security become fully enforced for real users?',
+        options: ['Immediately when the role is created in Desktop, even unpublished', 'After publishing, once users are assigned to the appropriate role in the dataset\'s Security settings in the Power BI Service', 'Only after the report is downloaded as a PDF', 'RLS only works for the report\'s original author'],
+        answerIndex: 1,
+        explanation: 'Roles must be created in Desktop, but actual enforcement for real users requires publishing and then assigning specific user accounts to each role in the Service.'
+      }
+    ]
+  },
+
+  'pb-a-1': {
+    title: 'Check your understanding: Advanced DAX patterns',
+    intro: 'Test your knowledge of variables, ranking, and filter-context functions in DAX.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What is the main benefit of using VAR and RETURN in a measure?',
+        options: ['It is required syntax for every DAX measure', 'It computes a sub-expression once, stores it under a name, and reuses it — improving both readability and often performance compared to repeating the same expression', 'It permanently saves the result to the data model as a new column', 'It disables filter context for the whole measure'],
+        answerIndex: 1,
+        explanation: 'VAR/RETURN avoids recalculating the same sub-expression multiple times and makes complex measures much easier to read and debug.'
+      },
+      {
+        id: 'q2',
+        prompt: 'What does RANKX(ALL(Cities[City]), [Total Revenue]) calculate?',
+        options: ['The total revenue across all cities combined', 'Each city\'s rank compared to every other city\'s Total Revenue, ignoring whatever filter the report itself might currently have applied to City', 'A random ranking with no relation to revenue', 'The number of cities in the table'],
+        answerIndex: 1,
+        explanation: 'ALL(Cities[City]) removes any existing filter on City so every city is compared against every other one when ranking.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What is the key difference between ALL and ALLSELECTED?',
+        options: ['They are interchangeable with no difference', 'ALL ignores every filter on a column everywhere, including report-level slicers; ALLSELECTED respects filters from outside the visual (like a slicer) but ignores filters from within the visual\'s own context', 'ALLSELECTED only works with numeric columns', 'ALL only works inside RANKX, never elsewhere'],
+        answerIndex: 1,
+        explanation: 'This distinction is critical for percentage-of-total measures that should respect a slicer\'s narrowing but still compute correctly within a table\'s row context.'
+      },
+      {
+        id: 'q4',
+        prompt: 'Why might a "percentage of total" measure built with ALL instead of ALLSELECTED look wrong once a viewer applies a slicer?',
+        options: ['ALL always causes a DAX error', 'ALL ignores the slicer entirely, so percentages would be calculated against the full unfiltered dataset rather than just the slicer-narrowed selection, often no longer summing to 100% the way the viewer expects', 'ALLSELECTED cannot be used with slicers at all', 'Slicers disable all measures automatically'],
+        answerIndex: 1,
+        explanation: 'ALL ignores the slicer\'s filter too, which can make a percentage breakdown look inconsistent with what the viewer has actually selected.'
+      },
+      {
+        id: 'q5',
+        prompt: 'What does a What-If Parameter (e.g., a Discount % slider) let a viewer do?',
+        options: ['Permanently edit the underlying source data', 'Interactively explore a scenario (like "what would a 10% discount do to revenue") with every visual recalculating live, without touching the actual data', 'Change which workspace the report is published to', 'Add new rows to the Sales table'],
+        answerIndex: 1,
+        explanation: 'A what-if parameter generates a small table and measure that a viewer can adjust live, letting measures reference it for interactive scenario analysis.'
+      }
+    ]
+  },
+
+  'pb-a-2': {
+    title: 'Check your understanding: Performance tuning',
+    intro: 'Test your knowledge of diagnosing and fixing a slow Power BI report.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What should you do before attempting to optimise a slow-feeling report?',
+        options: ['Immediately delete the most complex-looking visual', 'Use Performance Analyzer to measure exactly which visual is actually slow and why, rather than guessing', 'Switch the entire model to DirectQuery without further investigation', 'Republish the report and hope it improves'],
+        answerIndex: 1,
+        explanation: 'Performance Analyzer gives an actual measured breakdown per visual, often revealing the real bottleneck is not the visual you would have guessed.'
+      },
+      {
+        id: 'q2',
+        prompt: 'What is the key tradeoff between Import and DirectQuery storage modes?',
+        options: ['There is no real difference between them', 'Import copies data into Power BI\'s fast in-memory engine but is only as fresh as the last refresh; DirectQuery stays live but every interaction depends on the speed of the underlying source database', 'DirectQuery is always faster than Import', 'Import cannot be used with relationships'],
+        answerIndex: 1,
+        explanation: 'Import trades real-time freshness for speed; DirectQuery trades speed for always-current data, since it queries the source live.'
+      },
+      {
+        id: 'q3',
+        prompt: 'Why is a column with extremely high cardinality (like a precise per-second timestamp) often a performance concern?',
+        options: ['High-cardinality columns cannot be loaded into Power BI at all', 'A column where nearly every row has a distinct value compresses poorly in Power BI\'s in-memory engine, making the model larger and slower than necessary', 'It has no real performance impact, only a visual one', 'It only affects DirectQuery models, never Import'],
+        answerIndex: 1,
+        explanation: 'The VertiPaq engine compresses repeated values efficiently; columns with mostly unique values compress far less effectively, increasing model size.'
+      },
+      {
+        id: 'q4',
+        prompt: 'Why is "Both" cross filter direction a performance consideration as well as a modelling one?',
+        options: ['It has no performance impact whatsoever', 'It gives the engine more possible filtering paths to evaluate, adding real computational cost on top of the ambiguity risk covered in the Intermediate track', 'It only affects how visuals look, not how fast they load', 'It disables the relationship entirely'],
+        answerIndex: 1,
+        explanation: 'Bidirectional relationships increase the complexity the engine must resolve when evaluating filters, which can measurably slow down a report.'
+      },
+      {
+        id: 'q5',
+        prompt: 'What is the purpose of an Aggregation table at very large data scale?',
+        options: ['To permanently delete the detailed underlying data', 'To provide a pre-summarised, much smaller version of the data that Power BI automatically uses for high-level visuals, only using the full detail when a viewer drills into specifics', 'To replace the need for any relationships', 'To convert DirectQuery models into Import models automatically'],
+        answerIndex: 1,
+        explanation: 'Aggregations let high-level visuals query a small summarised table instead of scanning the full detailed dataset every time, improving performance at huge scale.'
+      }
+    ]
+  },
+
+  'pb-a-3': {
+    title: 'Check your understanding: Custom visuals with R and Python',
+    intro: 'Test your knowledge of extending Power BI beyond its built-in chart types.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What is AppSource, in the context of Power BI?',
+        options: ['A built-in chart type', 'A marketplace of community and Microsoft-built custom visuals, installable with one click and then usable like any built-in chart type', 'A Power BI security setting', 'A way to publish reports to the Service'],
+        answerIndex: 1,
+        explanation: 'AppSource hosts pre-built custom visuals (box plots, Sankey diagrams, and more) that extend Power BI\'s standard visual library.'
+      },
+      {
+        id: 'q2',
+        prompt: 'Why should you check a custom visual\'s publisher and certification status before relying on it in a business report?',
+        options: ['Certification has no practical meaning', 'Microsoft-certified visuals have passed a security and performance review; many community visuals have not, which matters more in a business setting than personal learning', 'Uncertified visuals are always free, certified ones always cost money', 'Certification only affects how the visual looks, not how it behaves'],
+        answerIndex: 1,
+        explanation: 'Certification signals a level of review that uncertified community visuals may not have undergone, a real consideration for business use.'
+      },
+      {
+        id: 'q3',
+        prompt: 'When you drag fields onto a Python visual in Power BI, what does Power BI provide to your script?',
+        options: ['Nothing — fields must be loaded manually inside the script', 'A dataframe (commonly named \'dataset\') containing exactly the dragged fields, ready to use in your Python code', 'A direct connection to the original source database', 'An empty file with no data at all'],
+        answerIndex: 1,
+        explanation: 'Power BI automatically passes the dragged fields into the script as a dataframe, which the Python (or R) code then uses to produce a plot.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What is a genuine limitation of R and Python visuals compared to native Power BI visuals?',
+        options: ['They cannot use any data at all', 'They render as static images and do not support native interactivity like cross-filtering other visuals when clicked', 'They are not allowed to be published to the Service under any circumstances', 'They only work with text data, never numbers'],
+        answerIndex: 1,
+        explanation: 'Unlike native visuals, R/Python script visuals are static outputs — a viewer cannot click them to cross-filter the rest of the report.'
+      },
+      {
+        id: 'q5',
+        prompt: 'According to the lesson, when should a Python or R visual be the first choice over a native or AppSource visual?',
+        options: ['Always, since they offer the most flexibility', 'Only when a genuinely specific statistical chart is required and no native or AppSource visual covers it, given the loss of native interactivity', 'Never, they should not be used at all', 'Only on mobile layouts'],
+        answerIndex: 1,
+        explanation: 'The interactivity cost of script visuals means they are a deliberate, narrow-use tool, not a default first choice for charting.'
+      }
+    ]
+  },
+
+  'pb-a-4': {
+    title: 'Check your understanding: Embedded analytics',
+    intro: 'Test your knowledge of putting Power BI reports inside other applications.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What is the key difference between "embed for your organisation" and "embed for your customers" (App Owns Data)?',
+        options: ['There is no real difference between them', '"For your organisation" is for viewers who already have their own Power BI account; "for your customers" is for external viewers with no Power BI account at all, authenticated entirely by the host application', 'Embedding for customers is always free, embedding for an organisation always costs extra', '"For your customers" only works with Excel files, not Power BI reports'],
+        answerIndex: 1,
+        explanation: 'App Owns Data lets external users view embedded reports without ever needing their own Power BI license or login.'
+      },
+      {
+        id: 'q2',
+        prompt: 'In the "embed for your customers" flow, who actually authenticates to Power BI to get an embed token?',
+        options: ['Each individual external viewer, using their own personal Power BI login', 'The host application\'s own backend, using a dedicated service identity, on behalf of the viewer', 'No authentication is required at any point', 'The viewer\'s web browser directly, with no backend involved'],
+        answerIndex: 1,
+        explanation: 'The portal\'s backend authenticates and requests a scoped embed token; the external viewer never logs into Power BI themselves.'
+      },
+      {
+        id: 'q3',
+        prompt: 'Why is Row-Level Security described as essential, not optional, for safely embedding a report for external customers?',
+        options: ['RLS is unrelated to embedding entirely', 'Without RLS, an embed token for "the report" would show the same unrestricted data to every external viewer; combined with RLS, each viewer sees only their own data', 'RLS only matters for internal Power BI Service users, never embedded ones', 'RLS slows down embedded reports too much to be practical'],
+        answerIndex: 1,
+        explanation: 'RLS is what makes a single embedded report safe to show to many different external parties, each restricted to their own data.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What is the Power BI REST API primarily used for?',
+        options: ['Designing the visual layout of a report by hand', 'Programmatic operations like generating embed tokens, triggering dataset refreshes, or managing workspace users, typically called from a backend application', 'Replacing Power BI Desktop entirely', 'Only for billing and invoicing purposes'],
+        answerIndex: 1,
+        explanation: 'The REST API is the standard way external code (like a partner portal\'s backend) interacts with Power BI programmatically.'
+      },
+      {
+        id: 'q5',
+        prompt: 'What licensing reality applies to embedding reports for external customers at real scale?',
+        options: ['It is automatically included free with any Power BI Pro license', 'It requires a dedicated Power BI Embedded capacity or existing Premium capacity, billed separately from standard per-user Pro licensing', 'Only Power BI Desktop is needed, with no other cost', 'Embedding for customers is technically impossible in Power BI'],
+        answerIndex: 1,
+        explanation: 'Embedding for customers is a genuine capacity-based cost and architecture decision, distinct from standard Pro per-user licensing.'
+      }
+    ]
+  },
+
+  'pb-a-5': {
+    title: 'Check your understanding: Workspace governance',
+    intro: 'Test your knowledge of managing Power BI at an organisational scale.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What is the difference between the Member and Viewer workspace roles?',
+        options: ['They have identical permissions', 'Member can edit and publish content and share it onward; Viewer can only view already-published content with no editing rights', 'Viewer has more permissions than Member', 'Member can only view content, never edit it'],
+        answerIndex: 1,
+        explanation: 'Workspace roles range from full control (Admin) down to view-only (Viewer), with Member and Contributor offering different levels of editing and sharing ability in between.'
+      },
+      {
+        id: 'q2',
+        prompt: 'What is the purpose of a Dev → Test → Production deployment pipeline?',
+        options: ['To make every report load faster automatically', 'To ensure in-progress or unverified changes are reviewed in earlier stages before being promoted to Production, where real business users see them', 'To permanently lock a report from ever being edited again', 'To automatically translate a report into multiple languages'],
+        answerIndex: 1,
+        explanation: 'Deployment pipelines mirror standard software development discipline, applied to BI content, preventing half-finished changes from reaching real users.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What problem does a shared, certified dataset solve?',
+        options: ['It makes reports load in a different colour scheme', 'It prevents multiple analysts from each redefining the same measure (like Total Revenue) slightly differently across separate reports, which would otherwise produce inconsistent numbers', 'It is required before any report can be published at all', 'It automatically translates DAX into SQL'],
+        answerIndex: 1,
+        explanation: 'A single shared dataset with certified measures ensures everyone builds reports against the same trusted definitions, avoiding inconsistent numbers.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What do sensitivity labels address that workspace roles do not?',
+        options: ['Exactly the same thing as workspace roles, with a different name', 'How sensitive the content is and what handling rules (like export or external-sharing restrictions) should automatically follow it, rather than just who is allowed in', 'Which chart types are allowed in a report', 'How often a dataset refreshes'],
+        answerIndex: 1,
+        explanation: 'Sensitivity labels classify data sensitivity and apply handling policies, a different concern from the access-control question workspace roles answer.'
+      },
+      {
+        id: 'q5',
+        prompt: 'What is managed through the Power BI Admin Portal that is distinct from any single workspace\'s settings?',
+        options: ['Only that one workspace\'s visuals', 'Tenant-wide settings — like whether publishing to the web is allowed, who can create workspaces, and organisation-wide usage metrics', 'Individual users\' personal desktop wallpaper', 'The colour theme of one specific report'],
+        answerIndex: 1,
+        explanation: 'The Admin Portal is for organisation-wide governance settings, managed by a tenant-level Power BI administrator, not a per-workspace setting.'
+      }
+    ]
+  },
+
   // Tableau
   'tb-b-1': {
     title: 'Check your understanding: Tableau Basics',

@@ -99,11 +99,11 @@ export const COURSE_CATALOG = [
     careerPaths: ['BI Analyst', 'Power BI Developer', 'Data Visualisation Specialist'],
     datasets: ['AdventureWorks (Microsoft)', 'COVID-19 Global Data', 'Olympics Historical Data'],
     tracks: {
-      beginner: { modules: 6, hours: 4, label: 'Connecting data, basic charts' },
+      beginner: { modules: 7, hours: 5, label: 'Connecting data, basic charts, 1 mini project' },
       intermediate: { modules: 6, hours: 5, label: 'Data modelling, DAX, interactivity' },
-      advanced: { modules: 6, hours: 6, label: 'Row-level security, optimisation, deployment' }
+      advanced: { modules: 6, hours: 6, label: 'Advanced DAX, performance tuning, embedding, governance' }
     },
-    totalModules: 18,
+    totalModules: 19,
   },
   {
     id: 'tableau',

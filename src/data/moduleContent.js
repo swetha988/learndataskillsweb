@@ -7735,6 +7735,878 @@ const POWERBI_BEGINNER = [
       { type: 'paragraph', content: 'Install Power BI Desktop and open it once. Familiarise yourself with the three views on the left side: Report view (the canvas), Data view (your tables), and Model view (relationships between tables). The next module will walk through loading your first dataset.' },
     ],
   },
+
+  {
+    id: 'pb-b-2',
+    title: 'Loading data from Excel and CSV',
+    duration: '20 min',
+    sections: [
+      { type: 'heading', content: 'The running example for this whole track' },
+      { type: 'paragraph', content: 'Imagine "Brew & Bite," a small chain of 3 cafés (Mumbai, Delhi, Bengaluru) selling tea, coffee, and snacks. The owner keeps daily sales in an Excel file: Date, City, Item, Category, Quantity, Price. Every module from here on builds one real dashboard from this exact dataset, the same way a real analyst would be handed a spreadsheet and asked to "make sense of this."' },
+      { type: 'list', items: [
+        'Date | City | Item | Category | Quantity | Price',
+        '01-Jun-2024 | Mumbai | Masala Chai | Beverage | 42 | 25',
+        '01-Jun-2024 | Mumbai | Samosa | Snack | 30 | 20',
+        '01-Jun-2024 | Delhi | Filter Coffee | Beverage | 25 | 40',
+        '01-Jun-2024 | Bengaluru | Filter Coffee | Beverage | 38 | 40',
+        '02-Jun-2024 | Mumbai | Masala Chai | Beverage | 50 | 25',
+        '02-Jun-2024 | Delhi | Samosa | Snack | 22 | 20',
+        '(in practice, this file would have hundreds or thousands of rows spanning months — type in 20-30 rows yourself, reusing these cities and items, to follow along)',
+      ]},
+
+      { type: 'heading', content: 'Get Data: the starting point of every report' },
+      { type: 'paragraph', content: 'Open Power BI Desktop and click "Get Data" on the Home ribbon (or the welcome screen). This opens a list of every source Power BI can connect to — Excel, CSV/Text, SQL Server, web pages, folders, and dozens more. For this track, choose Excel Workbook, browse to your Brew & Bite file, and select it.' },
+      { type: 'paragraph', content: 'A Navigator window appears, listing every sheet and named table found inside the file. Tick the checkbox next to the sheet containing your sales data and a preview appears on the right, so you can confirm you picked the right one before loading anything.' },
+
+      { type: 'heading', content: 'Load vs Transform Data: a decision every single time' },
+      { type: 'paragraph', content: 'The Navigator window gives you two buttons: "Load" and "Transform Data." This choice matters every time you connect to anything.' },
+      { type: 'list', items: [
+        'Load — brings the data in exactly as it is, with no changes. Fine only when you are completely certain the data is already clean.',
+        'Transform Data — opens the Power Query Editor first, where you can fix problems (wrong data types, extra spaces, unwanted columns) before the data ever lands in your report.',
+      ]},
+      { type: 'callout', kind: 'tip', content: 'As a habit, always click "Transform Data" instead of "Load," even if the data looks clean at a glance. It costs nothing if there is genuinely nothing to fix, and saves you from re-importing everything later the moment you spot a problem after the fact.' },
+
+      { type: 'heading', content: 'CSV files: the simpler, more universal format' },
+      { type: 'paragraph', content: 'Get Data → Text/CSV works almost identically to the Excel flow, but a CSV file has no sheets or tables to choose from — it is just one flat block of comma-separated values. Power BI shows a preview with its best guess at column types (text, whole number, date), which you can override before loading.' },
+      { type: 'paragraph', content: 'Real-life parallel: a billing system might export "today\'s transactions" as a fresh CSV every morning. Because a CSV has a fixed, predictable shape, it is one of the most common automated data sources feeding into real dashboards.' },
+
+      { type: 'heading', content: 'The Data view: confirming what actually loaded' },
+      { type: 'paragraph', content: 'After loading, click the Data view icon on the far left (the table-grid icon, second from top). This shows your data exactly as Power BI now understands it — every row, every column, and crucially, the data type of each column shown by a small icon in the column header (123 for whole numbers, a calendar for dates, ABC for text).' },
+      { type: 'callout', kind: 'warning', content: 'A date column that loads showing a calendar icon as "General Date" or, worse, as plain text (ABC) will silently break later date-based visuals and time filters. Always check the Data view immediately after loading — catching a wrong data type here takes ten seconds; catching it after building five visuals on top of it does not.' },
+
+      { type: 'heading', content: 'Try it' },
+      { type: 'paragraph', content: 'Build the Brew & Bite spreadsheet yourself (20-30 rows across the 3 cities). Save it as an .xlsx file, then load it into Power BI Desktop using Get Data → Excel, clicking "Transform Data" rather than "Load." Open the Data view afterward and confirm the Date column shows a calendar icon, and Quantity/Price show the numeric icon.' },
+
+      { type: 'heading', content: "What's next" },
+      { type: 'paragraph', content: 'Real spreadsheets are rarely as clean as the example above. The next module covers Power Query — the same cleanup tool from the Excel course, now used to fix messy real-world exports before they ever reach your report.' },
+    ],
+  },
+
+  {
+    id: 'pb-b-3',
+    title: 'Cleaning data with Power Query',
+    duration: '25 min',
+    sections: [
+      { type: 'heading', content: 'The same Power Query, a familiar engine' },
+      { type: 'paragraph', content: 'If you have used Power Query inside Excel, this entire module will feel familiar — Power BI uses the exact same Power Query Editor and the exact same idea: record a sequence of cleanup steps once, and replay them automatically every time the data refreshes.' },
+      { type: 'paragraph', content: 'Real export from Brew & Bite\'s point-of-sale system rarely looks as tidy as the table from the last module. A realistic export might have: city names with inconsistent spacing and casing ("mumbai", " Mumbai", "MUMBAI"), a few duplicated rows from a register glitch, and a "Notes" column nobody needs.' },
+
+      { type: 'heading', content: 'Opening the Power Query Editor' },
+      { type: 'paragraph', content: 'Home → Transform Data opens the editor at any time, even after data has already loaded — you do not need to reload from scratch to start cleaning. Each table you loaded appears as its own query in the left-hand panel.' },
+
+      { type: 'heading', content: 'Common cleanup steps for the Brew & Bite data' },
+      { type: 'list', items: [
+        'Trim — Transform → Format → Trim, removing extra leading/trailing spaces from the City column',
+        'Capitalize Each Word — Transform → Format → Capitalize Each Word, fixing "mumbai" / "MUMBAI" into a consistent "Mumbai"',
+        'Remove Duplicates — right-click a column (or select all columns) → Remove Duplicates, to eliminate the register-glitch repeat rows',
+        'Remove Columns — right-click the "Notes" column → Remove, since it adds no value to the dashboard',
+        'Change Type — click the data-type icon on the Date column header to confirm it is set to Date, not Text',
+      ]},
+
+      { type: 'heading', content: 'The Applied Steps panel' },
+      { type: 'paragraph', content: 'On the right side of the editor, "Applied Steps" lists every transformation you perform, in order, by name — "Trimmed Text," "Removed Duplicates," "Changed Type." Click any step to see the data exactly as it looked at that point, which makes it easy to find exactly where something went wrong if a later step looks unexpected.' },
+      { type: 'code', language: 'excel', content: `Applied Steps (example, top to bottom):
+1. Source                      (the raw Excel sheet, as loaded)
+2. Trimmed Text                (City column, extra spaces removed)
+3. Capitalized Each Word       (City column, casing made consistent)
+4. Removed Duplicates          (based on every column, or a chosen subset)
+5. Removed Columns             (dropped "Notes")
+6. Changed Type                (Date column confirmed as a real Date)
+
+-- this entire list re-runs automatically every time the report
+   is refreshed against new data, with no extra effort required` },
+
+      { type: 'heading', content: "Close & Apply: bringing the cleaned data into your report" },
+      { type: 'paragraph', content: 'Once your steps look right, click Home → Close & Apply (the Power BI equivalent of Excel\'s "Close & Load"). The cleaned table loads into your report\'s data model, and every visual you build afterward is automatically working from this clean version.' },
+
+      { type: 'heading', content: 'Refreshing later' },
+      { type: 'paragraph', content: 'A week later, Brew & Bite\'s owner sends a fresh export with the same messy patterns. Instead of repeating the cleanup by hand, point the same query at the new file (or simply replace the file in the same location) and click Home → Refresh. Every recorded step — trimming, capitalising, removing duplicates — runs again automatically on the new data.' },
+      { type: 'callout', kind: 'warning', content: 'Just like in Excel, Refresh assumes the new file has the same column names and structure as the one the steps were originally built against. If a column gets renamed in a future export, a step may fail — always spot-check the result after refreshing data from a new file.' },
+
+      { type: 'heading', content: 'Try it' },
+      { type: 'paragraph', content: 'Add a few deliberately messy rows to your Brew & Bite data (inconsistent city casing, one duplicated row, an extra "Notes" column with random text). Load it into Power BI, open Transform Data, and apply Trim, Capitalize Each Word, Remove Duplicates, and Remove Columns, in that order. Confirm the Applied Steps panel shows all four steps, then Close & Apply.' },
+
+      { type: 'heading', content: "What's next" },
+      { type: 'paragraph', content: 'With clean data loaded, the next module covers the actual reason people use Power BI: turning that data into your first real chart, on the Report view canvas.' },
+    ],
+  },
+
+  {
+    id: 'pb-b-4',
+    title: 'Your first chart',
+    duration: '25 min',
+    sections: [
+      { type: 'heading', content: 'The Report view: your canvas' },
+      { type: 'paragraph', content: 'Click the Report view icon (the bar-chart icon, top of the left-hand strip) to switch from the Data or Power Query views into the actual report-building canvas — a blank page you will fill with visuals, the same way a slide in a presentation starts blank.' },
+      { type: 'paragraph', content: 'Two panels matter most here: the Fields pane (usually on the right), listing every table and column from your cleaned data, and the Visualizations pane right next to it, showing every chart type available as a row of icons.' },
+
+      { type: 'heading', content: 'Building your first visual: revenue by city' },
+      { type: 'paragraph', content: 'Click the Clustered Column Chart icon in the Visualizations pane — this places an empty chart placeholder on the canvas. With the placeholder selected, drag City from the Fields pane onto the "X-axis" well, and drag Quantity onto the "Y-axis" well. A bar appears for each city automatically, summed by default.' },
+      { type: 'paragraph', content: 'Real-life read: Brew & Bite\'s owner instantly sees which city sells the most volume, without scrolling through a single row of raw data — exactly the kind of "answer at a glance" Power BI exists to deliver.' },
+
+      { type: 'heading', content: 'Adding a Revenue measure first' },
+      { type: 'paragraph', content: 'Your raw data has Quantity and Price as separate columns, but no Revenue column yet. In the Fields pane, right-click your Sales table → New Column, and type:' },
+      { type: 'code', language: 'excel', content: `Revenue = Sales[Quantity] * Sales[Price]
+
+-- this is DAX, the same formula language used by Power Pivot in
+   Excel — here, a calculated column multiplying two existing
+   columns together, giving every row its own revenue figure` },
+      { type: 'paragraph', content: 'Now build a second chart: a Clustered Column Chart with City on the X-axis and the new Revenue field on the Y-axis (Power BI defaults to summing it). This answers a different, more useful question than raw quantity: which city actually brings in the most money, factoring in that some items cost more than others.' },
+
+      { type: 'heading', content: 'Trying different chart types on the same fields' },
+      { type: 'list', items: [
+        'Bar/Column chart — best for comparing categories side by side, like revenue by city or by item. The safest default choice.',
+        'Line chart — drag Date onto the X-axis instead of City, to see revenue trend day by day across June.',
+        'Pie chart — drag Category (Beverage vs Snack) onto it, to see the rough split of revenue between the two — only sensible with a small number of categories.',
+        'Card — a single big number, like Total Revenue with nothing on an axis at all, for an instant headline figure.',
+      ]},
+      { type: 'callout', kind: 'tip', content: 'You can change an existing visual\'s type without rebuilding it — select it, then click a different icon in the Visualizations pane. Power BI keeps the same fields assigned and just redraws them as the new chart type, which is the fastest way to compare "does this look better as a bar or a line?"' },
+
+      { type: 'heading', content: 'Formatting a visual' },
+      { type: 'paragraph', content: 'With a visual selected, the Format pane (the paint-roller icon next to the Visualizations pane) lets you adjust title text, colours, data labels (showing the actual number on each bar), and axis formatting — small touches that make a chart presentation-ready rather than a rough draft.' },
+
+      { type: 'heading', content: 'Try it' },
+      { type: 'paragraph', content: 'Add a Revenue calculated column to your Brew & Bite data using the DAX formula above. Build three visuals on one report page: a column chart of Revenue by City, a line chart of Revenue by Date, and a Card showing Total Revenue. Turn on data labels for the column chart so each bar shows its number directly.' },
+
+      { type: 'heading', content: "What's next" },
+      { type: 'paragraph', content: "A quick mini project next puts loading, cleaning, and charting together on one realistic deliverable. Then the next module covers Slicers and Filters — letting someone click a city or a date range and watch every chart on the page update together." },
+    ],
+  },
+
+  {
+    id: 'pb-mp-1',
+    title: 'Mini Project: Weekly Sales Snapshot Report',
+    duration: '30 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'Quick practice before moving on' },
+      { type: 'paragraph', content: "This is the single most common first request a new BI analyst actually gets: \"here's an export, build me something I can look at.\" This project runs the full pipeline from raw file to a finished report page — Get Data, Power Query cleanup, a calculated column, and three real visuals — the exact combination of skills every Power BI job uses on day one." },
+      { type: 'list', items: [
+        'Concepts used: Get Data, Transform Data / Power Query cleanup, DAX calculated column, column chart, line chart, Card',
+      ]},
+
+      { type: 'heading', content: 'The scenario' },
+      { type: 'paragraph', content: "Brew & Bite's owner emails you a fresh weekly export and asks for \"a one-page snapshot of how this week went.\" Build it exactly the way a real first assignment would arrive — messy, with no instructions beyond that one sentence." },
+      { type: 'paragraph', content: 'Type this table into an Excel sheet, keeping the messiness exactly as shown — it is deliberate:' },
+      { type: 'list', items: [
+        'Date | City | Item | Category | Quantity | Price | Notes',
+        '10-Jun-2024 | mumbai | Masala Chai | Beverage | 45 | 25 | regular',
+        '10-Jun-2024 |  Delhi | Samosa | Snack | 28 | 20 | regular',
+        '11-Jun-2024 | MUMBAI | Filter Coffee | Beverage | 33 | 40 | regular',
+        '11-Jun-2024 | Bengaluru | Filter Coffee | Beverage | 41 | 40 | regular',
+        '11-Jun-2024 | Bengaluru | Filter Coffee | Beverage | 41 | 40 | regular',
+        '12-Jun-2024 | Mumbai | Masala Chai | Beverage | 52 | 25 | weekend rush',
+        '12-Jun-2024 |  delhi | Samosa | Snack | 19 | 20 | weekend rush',
+        '13-Jun-2024 | Bengaluru | Cold Coffee | Beverage | 36 | 45 | regular',
+        '13-Jun-2024 | Mumbai | Veg Sandwich | Snack | 24 | 60 | regular',
+        '14-Jun-2024 | Delhi | Masala Chai | Beverage | 47 | 25 | regular',
+      ]},
+      { type: 'paragraph', content: 'Notice row 4 and 5 are identical (an accidental duplicate), City casing is inconsistent, and the Notes column adds nothing useful to a revenue report — three realistic problems to clean before any chart can be trusted.' },
+
+      { type: 'heading', content: 'Step 1 — Load it' },
+      { type: 'paragraph', content: 'Get Data → Excel Workbook, select the sheet in the Navigator, and click Transform Data (not Load) to open straight into the Power Query Editor.' },
+
+      { type: 'heading', content: 'Step 2 — Clean it' },
+      { type: 'list', items: [
+        'Trim the City column to remove extra spaces',
+        'Capitalize Each Word on the City column, so "mumbai" / "MUMBAI" / "Mumbai" all become one consistent value',
+        'Remove Duplicates, based on all columns, to eliminate the repeated Bengaluru row',
+        'Remove the Notes column entirely',
+        'Confirm the Date column shows as a proper Date type, not text, before continuing',
+      ]},
+      { type: 'paragraph', content: 'Close & Apply once all five steps are confirmed in the Applied Steps panel.' },
+
+      { type: 'heading', content: 'Step 3 — Add the Revenue measure' },
+      { type: 'code', language: 'excel', content: `Revenue = Sales[Quantity] * Sales[Price]` },
+
+      { type: 'heading', content: 'Step 4 — Build the snapshot page' },
+      { type: 'list', items: [
+        'A Card showing Total Revenue for the week',
+        'A column chart: Revenue by City',
+        'A line chart: Revenue by Date, to show the day-by-day trend across the week',
+      ]},
+      { type: 'callout', kind: 'tip', content: 'Before calling this finished, sanity-check the Total Revenue Card by hand: add up Quantity × Price for all 9 cleaned rows (after the duplicate is removed) and confirm it roughly matches what the Card shows. Catching a cleanup mistake this way, before sharing the report, is exactly what a careful analyst does on a real job.' },
+
+      { type: 'heading', content: 'Stretch goal' },
+      { type: 'paragraph', content: 'Add a fourth visual: a column chart of Revenue by Item, so the owner can see which single item (not just which city) is actually driving the week\'s sales — a different, equally real question from "which city" alone.' },
+    ],
+  },
+
+  {
+    id: 'pb-b-5',
+    title: 'Slicers and filters',
+    duration: '20 min',
+    sections: [
+      { type: 'heading', content: 'From a static report to an interactive one' },
+      { type: 'paragraph', content: 'The three charts from the last module always show all the data, all the time. A regional manager who only cares about Mumbai has to mentally filter out Delhi and Bengaluru every time she looks at the page. Slicers and filters let her do that filtering with one click, instead of in her head.' },
+
+      { type: 'heading', content: 'Adding a Slicer' },
+      { type: 'paragraph', content: 'Click the Slicer icon in the Visualizations pane, then drag City onto it. A small box appears on the canvas listing Mumbai, Delhi, and Bengaluru as clickable buttons (or a dropdown/list, depending on its formatting). Click "Mumbai," and watch your column chart, line chart, and Card all update simultaneously, since they all read from the same underlying table.' },
+      { type: 'callout', kind: 'tip', content: 'This automatic, simultaneous filtering of every visual on the page is the single biggest difference between a Power BI report and a set of separate Excel charts — in Power BI, every visual on a page is connected by default, with no manual setup required to link them.' },
+
+      { type: 'heading', content: 'A second slicer: date range' },
+      { type: 'paragraph', content: 'Add a second slicer, drag Date onto it, and change its style to "Between" in the Format pane (Slicer settings → Options → Style). This gives a from/to date range picker, letting the owner narrow the whole report to just the first week of June, for example, with both slicers working together — Mumbai AND that specific week.' },
+
+      { type: 'heading', content: 'The Filters pane: three levels of filtering' },
+      { type: 'paragraph', content: 'Beyond slicers (which the report viewer can click themselves), the Filters pane (usually docked on the right, above or below Visualizations) lets the report builder apply filters that are fixed, at three different scopes:' },
+      { type: 'list', items: [
+        'Filters on this visual — affects only the one chart currently selected, e.g., a chart showing only the top 5 items by revenue',
+        'Filters on this page — affects every visual on the current report page, e.g., excluding a discontinued item from this page entirely',
+        'Filters on all pages — affects the whole report, every page, e.g., always excluding test/dummy transactions',
+      ]},
+      { type: 'paragraph', content: 'Real-life use: the owner wants one page showing only "Beverage" category performance. A page-level filter on Category = "Beverage" achieves this without needing a slicer the viewer could accidentally change.' },
+
+      { type: 'heading', content: 'Slicer vs Filter: when to use which' },
+      { type: 'paragraph', content: 'A Slicer is for choices the viewer should make themselves, visibly, as part of using the report (pick your city, pick your date range). A Filter is for decisions the report builder makes once and locks in, usually invisible to the end viewer (excluding test data, restricting a page to one category). Mixing them up — like making someone use a hidden Filter when they actually need to self-serve — is one of the most common beginner dashboard mistakes.' },
+
+      { type: 'heading', content: 'Try it' },
+      { type: 'paragraph', content: 'Add a City slicer and a Date range slicer to your Brew & Bite report page. Confirm clicking a city updates all three visuals from the last module together. Then add a page-level filter restricting the whole page to Category = "Beverage," and observe how the charts change compared to when that filter is removed.' },
+
+      { type: 'heading', content: "What's next" },
+      { type: 'paragraph', content: "You have a clean, interactive report sitting on your own laptop. The final module covers Publishing to the Power BI Service — turning it into something Brew & Bite's owner (who does not have Power BI Desktop installed) can actually open and click around in, from a browser or their phone." },
+    ],
+  },
+
+  {
+    id: 'pb-b-6',
+    title: 'Publishing to the Power BI Service',
+    duration: '25 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'A report that only lives on your laptop is not yet useful' },
+      { type: 'paragraph', content: 'Everything built so far exists only inside Power BI Desktop, on your computer. Brew & Bite\'s owner cannot see any of it unless you publish it somewhere she can access — exactly the gap the Power BI Service (the website, app.powerbi.com) exists to close.' },
+
+      { type: 'heading', content: 'Publishing your report' },
+      { type: 'paragraph', content: 'In Power BI Desktop, click Home → Publish. The first time, you will be asked to sign in with a (free) Power BI account, and choose a destination workspace — for now, "My workspace" is the simplest option, a personal area every user gets by default.' },
+      { type: 'paragraph', content: 'After publishing finishes, Power BI Desktop shows a link to open the report directly in your browser, where it now lives on the Power BI Service alongside any other reports you publish.' },
+
+      { type: 'heading', content: 'Workspaces: where reports actually live' },
+      { type: 'paragraph', content: 'A workspace is a shared space, similar in spirit to a folder or a Google Drive shared folder. "My workspace" is private to you, but in a real team, an analyst would publish to a shared workspace like "Brew & Bite Analytics" that specific colleagues have access to, instead of everything sitting only in one person\'s personal area.' },
+
+      { type: 'heading', content: 'Reports vs. Dashboards: a distinction unique to the Service' },
+      { type: 'paragraph', content: 'Once published, you will see two related but different things in the Service:' },
+      { type: 'list', items: [
+        'A Report — exactly what you built in Desktop: one or more pages, each with multiple visuals, slicers, and filters, fully interactive.',
+        'A Dashboard — a single page assembled in the Service itself by "pinning" individual visuals from one or more reports onto it, often combining visuals from several different reports into one summary view.',
+      ]},
+      { type: 'paragraph', content: 'Real-life use: Brew & Bite eventually has separate reports for Sales, Inventory, and Staffing. A single Dashboard could pin the one most important visual from each of those three reports onto one screen — the "give me everything important in 10 seconds" view, distinct from any single detailed report.' },
+
+      { type: 'heading', content: 'Sharing with someone else' },
+      { type: 'paragraph', content: 'From the Service, click Share on your published report and enter a colleague\'s email. They receive a link, and (depending on their organisation\'s licensing) can open and interact with the report in their browser, without ever installing Power BI Desktop themselves — Desktop is the authoring tool; the Service is how everyone else actually consumes the result.' },
+      { type: 'callout', kind: 'tip', content: 'Sharing in the free tier has real limits — typically, both you and the person you share with need a Power BI license of some kind, and free "My workspace" sharing is more restricted than a paid Pro or Premium workspace. For a learning project, sharing with a free trial account or simply demonstrating the report yourself is enough; production sharing across an entire company usually needs a paid plan.' },
+
+      { type: 'heading', content: 'Scheduled refresh: keeping a published report current' },
+      { type: 'paragraph', content: 'A report published from a local Excel file is, by default, a snapshot — it will not reflect new data in that file automatically. In the Service, a report\'s Settings page offers Scheduled Refresh, letting you set a daily time for Power BI to reload the source file (if it is stored somewhere the Service can reach, like OneDrive or SharePoint) and update the published report automatically.' },
+
+      { type: 'heading', content: 'Capstone: publish your own Brew & Bite report' },
+      { type: 'paragraph', content: 'Bring together everything from this entire track. Using the Brew & Bite data you built and cleaned, with the Revenue calculated column, the three visuals, and the two slicers, do the following end-to-end:' },
+      { type: 'list', items: [
+        'Confirm your data is clean (no duplicate rows, consistent city casing, a real Date type)',
+        'Confirm you have at least three visuals: a column chart, a line chart, and a Card, all using the Revenue measure',
+        'Confirm a City slicer and a Date range slicer both correctly filter every visual on the page together',
+        'Publish the report to "My workspace" using Home → Publish',
+        'Open the published report in your browser via the link Power BI Desktop provides, and confirm the slicers still work identically to how they worked in Desktop',
+      ]},
+      { type: 'callout', kind: 'warning', content: 'If a visual looks different or a slicer is missing after publishing, the most common cause is publishing before saving the latest changes in Desktop. Always save your .pbix file (Ctrl+S) immediately before clicking Publish, so the Service receives your most recent version.' },
+
+      { type: "heading", content: "You've finished the Power BI Beginner track" },
+      { type: 'paragraph', content: "You can now load data from Excel and CSV, clean it with Power Query, build charts on the Report canvas, make a report interactive with slicers and filters, and publish the finished result somewhere a non-technical stakeholder can actually open and use. That full pipeline — load, clean, visualise, interact, publish — is the real day-to-day job of a BI analyst, just on a small example for now." },
+      { type: 'paragraph', content: "The Intermediate track goes deeper into the part that makes Power BI genuinely powerful: data modelling and relationships across multiple tables, DAX measures (the same formula language from Power Pivot in Excel, used here as the heart of every Power BI calculation), time intelligence, and the interactivity features (drill-through, bookmarks) that turn a good report into a great one." },
+    ],
+  },
+]
+
+/* ════════════════════════════════════════════════════════════════
+   POWER BI — INTERMEDIATE (full real track)
+   Brew & Bite has grown to 6 cafés across 3 cities, with a proper
+   Items catalogue and city managers who each need their own view —
+   exactly the scale where a single flat table stops being enough.
+   ════════════════════════════════════════════════════════════════ */
+const POWERBI_INTERMEDIATE = [
+  {
+    id: 'pb-i-1',
+    title: 'Data modelling and relationships',
+    duration: '30 min',
+    sections: [
+      { type: 'heading', content: 'When one flat table stops being enough' },
+      { type: 'paragraph', content: 'Brew & Bite has grown: 6 cafés now, across Mumbai, Delhi, and Bengaluru, selling 15 different items. Keeping every fact — item name, category, price, city, region — repeated on every single sales row works for a small example, but at real volume it becomes a maintenance nightmare: change one item\'s price, and you would need to find and update it on thousands of rows. The fix is splitting data into separate, related tables, exactly the star schema idea from the Excel Power Pivot lesson, now built natively in Power BI.' },
+
+      { type: 'heading', content: 'Three tables for this track' },
+      { type: 'paragraph', content: '"Sales" — one row per transaction, kept thin:' },
+      { type: 'list', items: [
+        'Date | City | Item ID | Quantity',
+        '10-Jun-2024 | Mumbai | I1 | 45',
+        '10-Jun-2024 | Delhi | I3 | 28',
+        '11-Jun-2024 | Bengaluru | I2 | 33',
+        '(extend this to 40-50 rows across several weeks, reusing the Item IDs and cities below)',
+      ]},
+      { type: 'paragraph', content: '"Items" — one row per product:' },
+      { type: 'list', items: [
+        'Item ID | Item Name | Category | Price',
+        'I1 | Masala Chai | Beverage | 25',
+        'I2 | Filter Coffee | Beverage | 40',
+        'I3 | Samosa | Snack | 20',
+        'I4 | Veg Sandwich | Snack | 60',
+      ]},
+      { type: 'paragraph', content: '"Cities" — one row per city, with a manager assigned (used again in the Row-Level Security lesson):' },
+      { type: 'list', items: [
+        'City | Region | Manager',
+        'Mumbai | West | Aditi Rao',
+        'Delhi | North | Rohan Kumar',
+        'Bengaluru | South | Priya Sharma',
+      ]},
+
+      { type: 'heading', content: 'The Model view' },
+      { type: 'paragraph', content: 'Click the Model view icon (the third icon down the left strip, showing connected boxes). After loading all three tables, each appears as its own box listing its columns. This is where relationships between tables are built and reviewed — the visual equivalent of Power Pivot\'s Diagram View in Excel.' },
+
+      { type: 'heading', content: 'Creating a relationship' },
+      { type: 'paragraph', content: 'Drag Sales[Item ID] onto Items[Item ID] to draw a connecting line between the two tables. Repeat by dragging Sales[City] onto Cities[City]. Power BI usually detects the relationship type (cardinality) automatically, but it is worth understanding what it picked.' },
+      { type: 'code', language: 'excel', content: `Relationships created (shown as lines in Model view):
+
+Sales[Item ID]  ──────  Items[Item ID]      (many-to-one)
+Sales[City]     ──────  Cities[City]        (many-to-one)
+
+-- Sales is the "many" side on both relationships: many sales
+   rows can share the same item, and many sales rows can share
+   the same city. Items and Cities are each the "one" side.` },
+
+      { type: 'heading', content: 'Cardinality: one-to-many vs. other options' },
+      { type: 'paragraph', content: 'Double-click a relationship line to see its full settings. "Cardinality" describes how many rows on each side can match: one-to-many (the common case here), one-to-one (each row matches exactly one row on the other side), or many-to-many (less common, and the trickiest to reason about correctly). Most real Data Models are almost entirely one-to-many relationships, exactly like Sales-to-Items and Sales-to-Cities here.' },
+
+      { type: 'heading', content: 'Cross filter direction' },
+      { type: 'paragraph', content: 'Each relationship also has a "Cross filter direction": Single or Both. Single (the default, and usually correct) means filtering Items filters Sales, but filtering Sales does not filter Items back. Both lets filtering flow in either direction — occasionally needed for more advanced scenarios, but it can introduce ambiguous filtering paths if used carelessly, so the safe default for this track is to leave it on Single unless you have a specific reason to change it.' },
+      { type: 'callout', kind: 'warning', content: 'A common beginner-to-intermediate mistake is setting every relationship to "Both" direction "just in case." This can cause visuals to behave unexpectedly, since Power BI may no longer have one clear path to follow when filtering. Start every relationship as Single, and only change it deliberately, once you understand exactly why a specific report needs it.' },
+
+      { type: 'heading', content: 'Why this unlocks better reporting immediately' },
+      { type: 'paragraph', content: 'With both relationships built, drag Cities[Region] and Items[Category] onto a single chart\'s axes, alongside Sales[Quantity] in Values — three fields from three different tables, combined correctly with zero VLOOKUP-style formulas, because the relationships do that matching automatically.' },
+
+      { type: 'heading', content: 'Try it' },
+      { type: 'paragraph', content: 'Build the three tables above (extend Sales to 40-50 rows) and load all three into Power BI. In Model view, create both relationships, confirm they show as one-to-many with Single cross filter direction, then build a quick column chart with Region on the X-axis and Quantity in Values to confirm the relationships are working correctly.' },
+
+      { type: 'heading', content: "What's next" },
+      { type: 'paragraph', content: 'A connected Data Model is the foundation — the next module covers writing your own calculations on top of it with DAX, going deeper into the difference between a calculated column (like the Revenue column from the Beginner track) and a measure that recalculates dynamically.' },
+    ],
+  },
+
+  {
+    id: 'pb-i-2',
+    title: 'DAX: calculated columns vs measures',
+    duration: '35 min',
+    sections: [
+      { type: 'heading', content: 'A recap, then the real distinction' },
+      { type: 'paragraph', content: 'In the Beginner track, you wrote Revenue = Sales[Quantity] * Sales[Price] as a calculated column. That worked because Price lived directly on the Sales table. Now that Price lives on the separate Items table instead, a calculated column needs to reach across the relationship — and this is exactly where measures, not columns, become the better tool.' },
+
+      { type: 'heading', content: 'A calculated column that reaches across a relationship' },
+      { type: 'code', language: 'excel', content: `Revenue (calculated column on the Sales table) =
+Sales[Quantity] * RELATED(Items[Price])
+
+-- RELATED follows the relationship from the "many" side (Sales)
+   to fetch the matching Price from the "one" side (Items),
+   for each row — the same RELATED function from Excel's Power Pivot` },
+      { type: 'paragraph', content: 'This works and is a perfectly valid calculated column. But it is computed once, stored as a static value per row, and recalculated only when the model refreshes — exactly like a regular Excel column.' },
+
+      { type: 'heading', content: 'Writing your first measure' },
+      { type: 'paragraph', content: 'On the Home (or Modeling) tab, click New Measure. Type a name and formula in the formula bar that appears at the top of the canvas:' },
+      { type: 'code', language: 'excel', content: `Total Revenue = SUMX(Sales, Sales[Quantity] * RELATED(Items[Price]))
+
+-- SUMX iterates row by row over the Sales table, multiplying
+   Quantity by the related Price for each row, then sums the
+   result — the same pattern as the Excel Power Pivot module,
+   now written directly in Power BI's measure editor` },
+      { type: 'paragraph', content: 'Drop this measure into a Card visual. It shows a single number — but unlike a calculated column, this number recalculates instantly for whatever filter context is active: total across everything with nothing selected, or just Mumbai\'s total the moment a City slicer is clicked.' },
+
+      { type: 'heading', content: 'The core difference, concretely' },
+      { type: 'list', items: [
+        'A calculated column: computed once per row when the model refreshes, stored permanently, takes up memory, and does not change based on what is clicked in a report',
+        'A measure: computed fresh every time it is used in a visual, automatically respecting whatever Rows/Columns/Slicers/Filters that visual currently has applied, and adds no permanent storage to the model',
+      ]},
+      { type: 'callout', kind: 'tip', content: 'A practical rule of thumb: if a calculation should change depending on what the viewer clicks or filters (almost everything you put in a chart or Card), make it a measure. Use a calculated column only when you genuinely need a fixed, per-row value — like a Revenue figure used as an input to other row-level logic, or a column you need to filter or sort by directly.' },
+
+      { type: 'heading', content: 'CALCULATE: filtering a measure deliberately' },
+      { type: 'code', language: 'excel', content: `Mumbai Revenue = CALCULATE([Total Revenue], Cities[City] = "Mumbai")
+
+-- recomputes Total Revenue, but forced to only consider rows
+   where the related city is Mumbai, regardless of what
+   slicers or filters the report page might also have applied` },
+      { type: 'paragraph', content: 'Real-life use: a comparison Card showing "Mumbai Revenue" sitting permanently next to a "Total Revenue" Card, letting the owner glance at both at once without needing to click a slicer back and forth.' },
+
+      { type: 'heading', content: 'Quick Measures: a built-in shortcut' },
+      { type: 'paragraph', content: 'Right-click a table in the Fields pane → New Quick Measure opens a dialog of common calculation templates (running total, percentage of grand total, average per category) that write the underlying DAX for you. They are a genuinely useful way to see correct DAX patterns for common business questions, even after you are comfortable writing measures by hand — open one afterward and read the generated formula to learn from it.' },
+
+      { type: 'heading', content: 'DIVIDE: safe division, worth repeating' },
+      { type: 'code', language: 'excel', content: `Average Order Value = DIVIDE([Total Revenue], COUNTROWS(Sales))
+
+-- DIVIDE returns blank instead of an error if there happen to
+   be zero sales rows in the current filter context (e.g., a city
+   with no transactions on a specific filtered day)` },
+
+      { type: 'heading', content: 'Try it' },
+      { type: 'paragraph', content: 'Write Total Revenue as a measure using SUMX and RELATED. Add a Mumbai Revenue measure using CALCULATE. Build a report page with two Cards (Total Revenue, Mumbai Revenue) and a column chart of Total Revenue by Region. Then open New Quick Measure once, build a "percentage of grand total" quick measure for Revenue by City, and read the DAX it generates.' },
+
+      { type: 'heading', content: "What's next" },
+      { type: 'paragraph', content: "Measures unlock more than static totals — the next module covers Time Intelligence, the family of DAX functions built specifically for comparing this period to last period, running year-to-date totals, and other calendar-aware questions every real business asks." },
+    ],
+  },
+
+  {
+    id: 'pb-i-3',
+    title: 'Time intelligence functions',
+    duration: '30 min',
+    sections: [
+      { type: 'heading', content: 'Questions that need a calendar, not just a sum' },
+      { type: 'paragraph', content: 'SUMX and CALCULATE answer "how much, given a condition." Real business questions are often calendar-shaped instead: "how does this month compare to the same month last year?" "what is our running total so far this year?" DAX has a dedicated family of time intelligence functions built exactly for these.' },
+
+      { type: 'heading', content: 'The prerequisite: a proper date column' },
+      { type: 'paragraph', content: 'Time intelligence functions need a continuous, gap-free date column to work correctly — not necessarily every calendar date needs a sale, but the column itself should be marked clearly as a date. In Model view, select the Sales table, then Table tools → Mark as Date Table, and confirm the Date column. For a small learning project, marking Sales[Date] directly is enough; in a larger real model, a dedicated separate "Calendar" table (just dates, with no sales data) is the more robust standard practice.' },
+
+      { type: 'heading', content: 'TOTALYTD: running total since the start of the year' },
+      { type: 'code', language: 'excel', content: `Revenue YTD = TOTALYTD([Total Revenue], Sales[Date])
+
+-- in a chart broken down by month, this measure shows the
+   cumulative total from January through the end of that month —
+   answering "how are we doing so far this year" at any point` },
+
+      { type: 'heading', content: 'SAMEPERIODLASTYEAR: comparing to the same period a year ago' },
+      { type: 'code', language: 'excel', content: `Revenue Last Year = CALCULATE([Total Revenue], SAMEPERIODLASTYEAR(Sales[Date]))
+
+-- SAMEPERIODLASTYEAR shifts the current date filter back exactly
+   one year, so this measure shows what revenue looked like in
+   the equivalent period 12 months earlier` },
+      { type: 'paragraph', content: 'Real-life use: a "Revenue" column next to a "Revenue Last Year" column on the same chart, broken down by month, instantly shows growth or decline month by month compared to the same point in the previous year — a far more meaningful comparison than the raw number alone.' },
+
+      { type: 'heading', content: 'DATEADD: a more flexible building block' },
+      { type: 'code', language: 'excel', content: `Revenue Previous Month = CALCULATE([Total Revenue], DATEADD(Sales[Date], -1, MONTH))
+
+-- DATEADD shifts the date filter by any amount you specify —
+   here, back one month — and works with DAY, MONTH, QUARTER,
+   or YEAR depending on what comparison is needed` },
+      { type: 'paragraph', content: 'SAMEPERIODLASTYEAR is really just a convenient shortcut for DATEADD(Sales[Date], -1, YEAR) — knowing DATEADD means you are not limited to only year-over-year comparisons.' },
+
+      { type: 'heading', content: 'A growth percentage measure, combining what came before' },
+      { type: 'code', language: 'excel', content: `Revenue Growth % =
+DIVIDE([Total Revenue] - [Revenue Last Year], [Revenue Last Year])
+
+-- combines a time intelligence measure (Revenue Last Year) with
+   plain subtraction and the safe-division DIVIDE pattern,
+   giving a percentage growth figure ready to drop onto a Card` },
+
+      { type: 'heading', content: 'Why this matters for a growing business like Brew & Bite' },
+      { type: 'paragraph', content: 'With 6 cafés and data accumulating month after month, "we sold X today" is a far weaker signal than "we sold X today, which is 12% more than the same day last month, and 30% more than this time last year." Time intelligence measures are what make that second, genuinely useful sentence possible directly inside a report, recalculating automatically as new data arrives.' },
+
+      { type: 'heading', content: 'Try it' },
+      { type: 'paragraph', content: 'Mark Sales[Date] as a Date Table in Model view. Build Revenue YTD, Revenue Last Year (using SAMEPERIODLASTYEAR), and Revenue Growth % as measures. Build a line chart of Revenue YTD by month, and a Card showing Revenue Growth %.' },
+
+      { type: 'heading', content: "What's next" },
+      { type: 'paragraph', content: 'With strong measures in place, the next module covers two features that make a report feel genuinely polished and navigable: Drill-through (jumping from a summary to a focused detail page) and Bookmarks (saving and restoring a specific report state with one click).' },
+    ],
+  },
+
+  {
+    id: 'pb-i-4',
+    title: 'Drill-through and bookmarks',
+    duration: '30 min',
+    sections: [
+      { type: 'heading', content: 'The problem: one page cannot show everything' },
+      { type: 'paragraph', content: 'A summary page showing Revenue by City is great for a glance, but the moment Brew & Bite\'s owner wants to ask "OK, but what specifically is happening in Mumbai?", a single static page runs out of room. Drill-through solves this by letting a viewer right-click a specific data point and jump to a dedicated detail page, automatically filtered to exactly that selection.' },
+
+      { type: 'heading', content: 'Setting up a drill-through page' },
+      { type: 'paragraph', content: 'Create a new report page named "City Detail." On this page, find the Drill-through well in the Filters pane (it appears automatically on any page once you start setting this up) and drag Cities[City] onto it. Build a few detail visuals on this page as normal — perhaps Revenue by Item and Revenue by Date, specifically for one city.' },
+      { type: 'paragraph', content: 'Back on your summary page, right-click any bar in a Revenue-by-City chart (say, the Mumbai bar) and choose "Drill through → City Detail." Power BI navigates to the detail page, automatically filtered to show only Mumbai\'s data — no slicer needed, the filter travels with the click itself.' },
+      { type: 'callout', kind: 'tip', content: 'A drill-through page automatically gets a back arrow in its top-left corner once at least one field is in the Drill-through well, letting a viewer return to the summary page they came from with one click — no manual button needed for this specific case.' },
+
+      { type: 'heading', content: 'Drill-through vs. just adding a Slicer' },
+      { type: 'paragraph', content: 'A Slicer for City on the summary page would also let a viewer narrow things down — but it would clutter a clean overview page with detail-page-only visuals, or force every page to repeat the same slicer. Drill-through keeps the summary page focused and simple, while still making detailed exploration one right-click away whenever it is actually needed.' },
+
+      { type: 'heading', content: 'Bookmarks: saving a specific report state' },
+      { type: 'paragraph', content: 'View → Bookmarks pane → Add Bookmark captures the current state of a page: which slicers are set, which filters are applied, even which visuals are currently visible. Clicking that bookmark later instantly restores everything back to exactly that state.' },
+      { type: 'paragraph', content: 'Real-life use: create a bookmark called "This Month, All Cities" (capturing the report with a Date slicer set to the current month and no city filter), and a second bookmark called "Mumbai Only." A viewer can jump between these two pre-configured views by clicking buttons, without manually resetting slicers themselves.' },
+
+      { type: 'heading', content: 'Assigning a bookmark to a button' },
+      { type: 'paragraph', content: 'Insert → Buttons → Blank places a clickable button on the canvas. With it selected, open the Format pane → Action, switch Action to "On," and set Type to "Bookmark," then choose the bookmark to jump to when that button is clicked. Build two buttons this way, one per bookmark from the previous step, and a viewer now has one-click toggles between pre-set views.' },
+
+      { type: 'heading', content: 'The Selection pane: controlling what is visible' },
+      { type: 'paragraph', content: 'View → Selection opens a list of every object on the current page, each with a small eye icon to toggle visibility. Combined with bookmarks (which remember visibility state), you can build a page that shows a simple summary by default, with a button that reveals additional detailed visuals on top of the same page — a lightweight way to add a "show more" interaction without a separate drill-through page.' },
+
+      { type: 'heading', content: 'Try it' },
+      { type: 'paragraph', content: 'Build a summary page with a Revenue-by-City chart, and a "City Detail" drill-through page with City in the Drill-through well plus a Revenue-by-Item chart. Confirm right-clicking a city bar drills through correctly. Then create two bookmarks ("This Month" and "Last Month," using a Date slicer set differently for each) and two buttons that jump between them.' },
+
+      { type: 'heading', content: "What's next" },
+      { type: 'paragraph', content: "Everything so far assumes every viewer should see all the data. The next module covers Row-Level Security — making sure Mumbai's café manager only ever sees Mumbai's numbers when they open the exact same published report." },
+    ],
+  },
+
+  {
+    id: 'pb-i-5',
+    title: 'Row-level security',
+    duration: '30 min',
+    sections: [
+      { type: 'heading', content: 'One report, different data per viewer' },
+      { type: 'paragraph', content: 'Brew & Bite now has a manager per city (from the Cities table in the first lesson: Aditi Rao for Mumbai, Rohan Kumar for Delhi, Priya Sharma for Bengaluru). The owner wants to publish one single report, but have each manager see only their own city\'s numbers when they open it — not all three cities, and definitely not each other\'s figures. Row-Level Security (RLS) is exactly this: restricting which rows of data a given viewer can see, inside the very same published report everyone else uses.' },
+
+      { type: 'heading', content: 'Creating a role' },
+      { type: 'paragraph', content: 'In Power BI Desktop, Modeling → Manage Roles → Create. Name the role (e.g., "Mumbai Manager"), select the Cities table, and write a DAX filter expression that must evaluate to TRUE for a row to be visible to anyone in this role:' },
+      { type: 'code', language: 'excel', content: `Role: Mumbai Manager
+Table: Cities
+DAX filter expression:
+[City] = "Mumbai"
+
+-- because Cities is related to Sales (from the data modelling
+   lesson), this single filter on the small Cities table
+   automatically restricts the much larger Sales table too —
+   the relationship enforces the security everywhere it touches` },
+      { type: 'paragraph', content: 'This is the same payoff the relationships from the first lesson were quietly setting up — RLS applied to one small lookup table (Cities) automatically cascades through the relationship to filter the much larger fact table (Sales), without needing a separate, more complex rule written against Sales directly.' },
+
+      { type: 'heading', content: 'Testing a role before publishing: View As' },
+      { type: 'paragraph', content: 'Modeling → View As, then check the role you just created and click OK. The entire report now behaves exactly as it would for someone assigned to that role — every visual recalculates as if filtered to Mumbai only. This is the single most important habit in building RLS correctly: always test with View As before assuming the rule works.' },
+      { type: 'callout', kind: 'warning', content: 'Forgetting to test with View As is the most common RLS mistake. A role\'s DAX filter can look correct but reference the wrong table, or a missing relationship can mean the filter never actually reaches the Sales table at all — View As catches both problems immediately, before anyone outside your own testing ever sees a wrong (or worse, unrestricted) report.' },
+
+      { type: 'heading', content: 'A dynamic alternative: one role for everyone' },
+      { type: 'paragraph', content: 'Writing a separate role per city does not scale to a chain of 50 cafés. A more advanced, dynamic approach uses USERPRINCIPALNAME() (the logged-in viewer\'s email address) compared against a column in your data, such as a Cities[Manager Email] column, so a single role definition automatically restricts every manager to their own city based on who is actually logged in:' },
+      { type: 'code', language: 'excel', content: `Role: Manager Access (dynamic, works for every city at once)
+Table: Cities
+DAX filter expression:
+[Manager Email] = LOWER(USERPRINCIPALNAME())
+
+-- USERPRINCIPALNAME() returns whoever is currently signed in to
+   the Power BI Service; comparing it to a Manager Email column
+   means one single role correctly restricts every manager,
+   instead of needing one hand-written role per city` },
+      { type: 'paragraph', content: 'This dynamic pattern is genuinely the more advanced approach (it requires keeping an accurate email column in your data, and careful testing), but is worth knowing exists, since hand-writing one static role per city is a pattern that breaks down the moment a business grows past a handful of locations.' },
+
+      { type: 'heading', content: 'Assigning roles after publishing' },
+      { type: 'paragraph', content: 'Roles are only fully enforced after publishing. In the Power BI Service, open the dataset\'s Security settings and add each actual user\'s email under the appropriate role. From that point on, when each manager logs into the Service and opens the report, they automatically see only the data their assigned role permits — the same .pbix file and same published report for everyone, but a different, correctly restricted experience per viewer.' },
+
+      { type: 'heading', content: 'Try it' },
+      { type: 'paragraph', content: 'Create a "Mumbai Manager" role with the static filter [City] = "Mumbai" on the Cities table. Use View As to confirm every visual on your report now shows Mumbai-only figures. Create a second role, "Delhi Manager," and confirm switching View As between the two roles changes the data shown correctly each time.' },
+
+      { type: 'heading', content: "What's next" },
+      { type: 'paragraph', content: "The final module shifts focus from data and security to the viewing experience itself — Designing for Mobile, so a café manager checking numbers from their phone between customers gets a report built for that screen, not just a squeezed-down version of the desktop layout." },
+    ],
+  },
+
+  {
+    id: 'pb-i-6',
+    title: 'Designing for mobile',
+    duration: '25 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'Why a desktop report does not just work on a phone' },
+      { type: 'paragraph', content: "A report page designed for a wide desktop screen — a row of 4 Cards, a wide bar chart, a big line chart below — does not translate well onto a phone screen. Shrinking everything proportionally makes text unreadable and touch targets too small. Brew & Bite's managers will mostly check numbers from their phones between customers, so the mobile experience is not optional polish — for them, it may be the primary way the report ever gets used." },
+
+      { type: 'heading', content: 'The Mobile Layout view' },
+      { type: 'paragraph', content: 'View → Mobile Layout switches the canvas into a tall, phone-shaped frame, separate from your normal desktop page. Every visual from the desktop layout appears in a tray on the right, ready to be dragged onto the phone canvas in whatever order and size makes sense for a narrow screen.' },
+      { type: 'paragraph', content: 'A typical mobile reordering for a Brew & Bite summary page: Total Revenue Card at the very top (the single most important number), then Revenue Growth % Card right below it, then a simplified Revenue-by-City chart, with the more detailed Revenue-by-Item chart placed last or left out of the mobile layout entirely.' },
+
+      { type: 'heading', content: 'What happens if you skip mobile layout entirely' },
+      { type: 'paragraph', content: 'If no mobile layout is built for a page, the Power BI Mobile app falls back to showing a scaled-down version of the full desktop page — readable, but cramped, with small text and visuals that may need pinching and zooming to use comfortably. Building an explicit mobile layout is what unlocks the clean, single-column, large-touch-target experience instead.' },
+      { type: 'callout', kind: 'tip', content: 'You do not have to build a mobile layout for every single page of a report. Prioritise it for the pages a phone user would realistically open first — usually a summary or overview page — and let more detailed analyst-only pages rely on the desktop fallback if phone use of those specific pages is unlikely.' },
+
+      { type: 'heading', content: 'Capstone: the complete Brew & Bite intermediate report' },
+      { type: 'paragraph', content: 'Bring together everything from this entire track into one finished, realistic deliverable.' },
+      { type: 'list', items: [
+        'A Data Model with Sales, Items, and Cities tables, correctly related (from the first lesson)',
+        'Measures for Total Revenue, Revenue YTD, Revenue Last Year, and Revenue Growth % (from the DAX and Time Intelligence lessons)',
+        'A summary report page with a Revenue-by-City chart and the four measures shown as Cards',
+        'A "City Detail" drill-through page, reachable by right-clicking any city on the summary chart',
+        'Two bookmarks (e.g., "This Month" and "Last Month") with buttons to jump between them',
+        'A "Mumbai Manager" role with a working Row-Level Security filter, tested with View As',
+        'A mobile layout built for the summary page, with the Cards prioritised at the top',
+      ]},
+      { type: 'callout', kind: 'warning', content: 'Test the RLS role with View As one final time after finishing the mobile layout — adding new visuals or measures late in the process occasionally introduces a field that is not properly covered by the existing relationships, which View As will reveal immediately if something has quietly broken.' },
+
+      { type: 'heading', content: "You've finished the Power BI Intermediate track" },
+      { type: 'paragraph', content: "You can now build a proper multi-table Data Model with correct relationships, write DAX measures (including time intelligence) instead of relying on static calculated columns, give viewers a path from summary to detail with drill-through, save and restore report states with bookmarks, restrict who sees what with Row-Level Security, and design specifically for how a report is actually viewed on a phone. This is the core skill set of a working BI analyst, applied end-to-end on one growing, realistic business." },
+      { type: 'paragraph', content: "The Advanced track goes further still: advanced DAX patterns, performance tuning for large models, custom visuals, embedded analytics, workspace governance, and Premium-tier features — the skills that separate a solid analyst from someone trusted to design and maintain BI systems at organisation scale." },
+    ],
+  },
+]
+
+/* ════════════════════════════════════════════════════════════════
+   POWER BI — ADVANCED (full real track)
+   Brew & Bite is no longer a small chain — it has franchised to
+   50+ outlets, a head-office BI team, an IT department with
+   governance requirements, and franchise partners who need their
+   own numbers embedded into a partner portal website.
+   ════════════════════════════════════════════════════════════════ */
+const POWERBI_ADVANCED = [
+  {
+    id: 'pb-a-1',
+    title: 'Advanced DAX patterns',
+    duration: '40 min',
+    sections: [
+      { type: 'heading', content: 'Beyond SUMX and CALCULATE' },
+      { type: 'paragraph', content: 'Brew & Bite head office now wants questions the Intermediate track\'s DAX cannot answer directly: "rank every franchise outlet by revenue," "show each outlet\'s share of its own region\'s total," and "compare a measure\'s result before and after a what-if discount." These need a handful of more advanced DAX patterns, used constantly in real BI work.' },
+
+      { type: 'heading', content: 'VAR and RETURN: readable, efficient DAX' },
+      { type: 'paragraph', content: 'Complex measures often reuse the same sub-calculation multiple times. VAR lets you compute something once, store it in a named variable, and reuse it — both more readable and, since it is only calculated once, often faster than repeating the same sub-expression several times.' },
+      { type: 'code', language: 'excel', content: `Revenue Growth % =
+VAR CurrentRevenue = [Total Revenue]
+VAR PriorRevenue = CALCULATE([Total Revenue], SAMEPERIODLASTYEAR(Sales[Date]))
+RETURN
+    DIVIDE(CurrentRevenue - PriorRevenue, PriorRevenue)
+
+-- VAR computes each piece once and names it; RETURN supplies the
+   final result using those names — equivalent to writing the
+   full nested expression, but far easier to read and to debug` },
+
+      { type: 'heading', content: 'RANKX: ranking outlets against each other' },
+      { type: 'code', language: 'excel', content: `Outlet Rank by Revenue =
+RANKX(ALL(Cities[City]), [Total Revenue])
+
+-- RANKX ranks the current City's Total Revenue against every
+   other city's Total Revenue (ALL(Cities[City]) temporarily
+   ignores any existing filter on City, so every city is compared
+   against every other one, regardless of what the report itself
+   has currently filtered)` },
+      { type: 'paragraph', content: 'Real-life use: a head-office leaderboard table listing every franchise outlet with its rank, instantly highlighting the top and bottom performers without manually sorting and counting rows by hand.' },
+
+      { type: 'heading', content: 'ALL vs ALLSELECTED: two different kinds of "ignore filters"' },
+      { type: 'paragraph', content: 'ALL(Cities[City]) ignores every filter on City, everywhere, including report-level slicers. ALLSELECTED behaves differently — it respects filters coming from outside the current visual (like a slicer) but ignores filters from within the visual\'s own context (like the row currently being evaluated in a table). This distinction matters constantly for "percentage of total" calculations.' },
+      { type: 'code', language: 'excel', content: `% of Selected Total =
+DIVIDE([Total Revenue], CALCULATE([Total Revenue], ALLSELECTED(Cities[City])))
+
+-- if a viewer has used a slicer to narrow the report to just
+   2 of the 50 outlets, this measure shows each outlet's share
+   of THOSE 2 outlets' combined total — not all 50 — because
+   ALLSELECTED respects the slicer while still ignoring the
+   row-by-row City context inside the table itself` },
+      { type: 'callout', kind: 'warning', content: 'Using ALL instead of ALLSELECTED (or vice versa) is one of the most common sources of a "percentage of total" measure that looks correct until someone applies a slicer, at which point the percentages stop adding up to 100% in a way that confuses whoever is viewing the report. Always test percentage-of-total measures with a slicer applied, not just with the full unfiltered dataset.' },
+
+      { type: 'heading', content: 'ALLEXCEPT: keeping some filters, dropping others' },
+      { type: 'code', language: 'excel', content: `Revenue Share Within Region =
+DIVIDE([Total Revenue], CALCULATE([Total Revenue], ALLEXCEPT(Cities, Cities[Region])))
+
+-- ALLEXCEPT removes every filter on the Cities table EXCEPT
+   Region — so this measure shows an outlet's share of its own
+   region's total, even though City itself is no longer filtered` },
+
+      { type: 'heading', content: 'What-if parameters: letting a viewer test a scenario' },
+      { type: 'paragraph', content: 'Modeling → New Parameter → Numeric Range creates a slider a viewer can drag (e.g., a "Discount %" parameter from 0% to 30%), which generates its own small table and a matching measure automatically. Reference that generated measure inside your own calculation to build "what if we discounted by this much" scenario reports.' },
+      { type: 'code', language: 'excel', content: `Discounted Revenue =
+[Total Revenue] * (1 - 'Discount %'[Discount % Value])
+
+-- as the viewer drags the Discount % slider, every visual using
+   this measure recalculates live, letting head office explore
+   "what would a 10% franchise-wide discount do to revenue"
+   without touching the underlying data at all` },
+
+      { type: 'heading', content: 'Try it' },
+      { type: 'paragraph', content: 'Rewrite your Revenue Growth % measure using VAR/RETURN. Add an Outlet Rank by Revenue measure using RANKX and ALL. Build a "Discount %" what-if parameter and a Discounted Revenue measure that uses it, then build a table visual showing City, Total Revenue, Outlet Rank, and Discounted Revenue together.' },
+
+      { type: 'heading', content: "What's next" },
+      { type: 'paragraph', content: 'These richer DAX patterns add real computation cost. The next module covers Performance Tuning — making sure a report with 50 outlets\' worth of data (and the DAX patterns from this lesson) still loads and responds quickly.' },
+    ],
+  },
+
+  {
+    id: 'pb-a-2',
+    title: 'Performance tuning',
+    duration: '35 min',
+    sections: [
+      { type: 'heading', content: 'When "it works" stops being good enough' },
+      { type: 'paragraph', content: 'A report built against 50 rows of sample data feels instant no matter what you write. The same report against years of real data from 50 franchise outlets can start to feel sluggish — slicers that take a few seconds to respond, visuals that spin before rendering. Performance tuning is the practice of finding and fixing exactly why, instead of guessing.' },
+
+      { type: 'heading', content: 'Performance Analyzer: measuring before guessing' },
+      { type: 'paragraph', content: 'View → Performance Analyzer → Start Recording, then interact with the report (click a slicer, switch a page) and click Stop. A breakdown appears showing exactly how many milliseconds each visual took, split into DAX query time, visual rendering time, and other overhead — telling you precisely which visual is actually the slow one, instead of assuming.' },
+      { type: 'callout', kind: 'tip', content: 'Always profile with Performance Analyzer before optimising anything. It is common to assume the biggest, most complex-looking chart is the slow one, when Performance Analyzer often reveals a small Card with an inefficient measure behind it is the actual bottleneck.' },
+
+      { type: 'heading', content: 'Import vs DirectQuery vs Composite models' },
+      { type: 'list', items: [
+        'Import — data is copied into Power BI\'s own highly compressed in-memory engine (VertiPaq) at refresh time. Fastest to query, but only as fresh as the last refresh, and limited by available memory for very large datasets.',
+        'DirectQuery — Power BI sends live queries to the source database for every interaction, with no data copied in. Always current, but every click is only as fast as the underlying database query, and complex DAX can translate into very expensive generated SQL.',
+        'Composite model — mixes both: some tables imported for speed, others left as DirectQuery for freshness or scale, in the same model.',
+      ]},
+      { type: 'paragraph', content: 'For Brew & Bite\'s franchise reporting, Import is usually the right default — daily sales data does not need second-by-second freshness, and Import gives by far the most responsive viewer experience.' },
+
+      { type: 'heading', content: 'Reducing cardinality: a frequently overlooked cost' },
+      { type: 'paragraph', content: 'Cardinality is how many distinct values a column has. A column with a unique value on every single row (like a long transaction ID, or a precise timestamp down to the second) is expensive for the VertiPaq engine to compress and store efficiently. Splitting a single Date+Time column into a separate Date column and a Time column (with far fewer distinct values each) is a classic, simple optimisation that can meaningfully shrink a large model.' },
+
+      { type: 'heading', content: 'Star schema, again, now as a performance practice' },
+      { type: 'paragraph', content: 'The relationships and star schema design from the Intermediate track were framed as a modelling best practice — they are equally a performance best practice. A clean star schema (Sales as a thin fact table, Items/Cities/Calendar as small dimension tables) is dramatically faster for the engine to query than one giant flat table repeating every item and city detail on every row.' },
+
+      { type: 'heading', content: 'Avoiding unnecessary bidirectional relationships' },
+      { type: 'paragraph', content: 'Recall from the Intermediate track that "Both" cross filter direction can cause ambiguous filtering — it also has a real performance cost, since the engine has to evaluate more possible filtering paths. Keeping relationships Single-direction wherever genuinely possible is both clearer to reason about and lighter on performance.' },
+
+      { type: 'heading', content: 'Aggregations: pre-summarising for speed at huge scale' },
+      { type: 'paragraph', content: 'For a dataset truly large enough that even a well-modelled Import is slow (tens of millions of rows and beyond), Power BI supports Aggregation tables — a pre-summarised, much smaller version of the detailed data (e.g., daily totals per outlet instead of every individual transaction) that Power BI automatically uses for high-level visuals, only dropping down to the full detail table when a viewer drills into specifics that need it.' },
+
+      { type: 'heading', content: 'Try it' },
+      { type: 'paragraph', content: 'Open Performance Analyzer on your Brew & Bite report, record an interaction (click a slicer), and identify which visual took the longest. Check whether any relationship in your Model view is set to "Both" direction unnecessarily, and switch it to Single if so.' },
+
+      { type: 'heading', content: "What's next" },
+      { type: 'paragraph', content: "With a fast, well-modelled report, the next module covers going beyond Power BI's built-in chart types entirely — Custom Visuals, including ones written in R and Python, for the rare cases a standard bar or line chart genuinely cannot show what is needed." },
+    ],
+  },
+
+  {
+    id: 'pb-a-3',
+    title: 'Custom visuals with R and Python',
+    duration: '30 min',
+    sections: [
+      { type: 'heading', content: 'When the built-in visuals are not enough' },
+      { type: 'paragraph', content: 'Brew & Bite\'s data science team wants a specific statistical chart — a box plot showing the spread of daily revenue per outlet, with outliers clearly marked — that is not one of Power BI\'s standard chart types. Two paths exist: import a pre-built custom visual, or write a script-based visual directly in R or Python.' },
+
+      { type: 'heading', content: 'AppSource: importing pre-built custom visuals' },
+      { type: 'paragraph', content: 'Visualizations pane → "Get more visuals" (the "..." menu, or the small icon at the bottom of the visuals list) opens a marketplace of community and Microsoft-built visuals — box plots, Sankey diagrams, word clouds, and dozens more, each installed with one click and then usable exactly like a built-in chart type, with fields dragged onto it the same way.' },
+      { type: 'callout', kind: 'tip', content: 'Always check a custom visual\'s publisher and reviews on AppSource before relying on it for a real report. Microsoft-certified visuals (marked with a certification badge) have passed a security and performance review; many community visuals have not, which matters more in a business setting than a personal learning project.' },
+
+      { type: 'heading', content: 'R and Python visuals: when you need genuinely custom logic' },
+      { type: 'paragraph', content: 'If even the AppSource marketplace does not have what you need, Power BI Desktop includes a Python visual and an R visual in the standard Visualizations pane. Dragging fields onto one of these opens a script editor where you write actual R or Python code that produces a plot, using the dragged fields as a dataframe.' },
+      { type: 'code', language: 'excel', content: `# Inside a Python visual, after dragging City and Revenue onto it,
+# Power BI automatically provides a 'dataset' dataframe with those
+# columns. A simple example script:
+
+import matplotlib.pyplot as plt
+plt.boxplot(dataset.groupby('City')['Revenue'].apply(list))
+plt.xticks(range(1, len(dataset['City'].unique()) + 1), dataset['City'].unique())
+plt.show()
+
+# Power BI captures whatever matplotlib renders and displays
+# it as the visual on the report canvas` },
+      { type: 'paragraph', content: 'This requires Python (or R) installed locally and configured in Power BI Desktop\'s options first (Options → Python scripting, pointing to your installed Python environment), and the specific packages used (like matplotlib or pandas) must already be installed in that environment.' },
+
+      { type: 'heading', content: 'The real tradeoffs of script visuals' },
+      { type: 'list', items: [
+        'They are static images, not interactive — a viewer cannot click a bar on a Python/R visual to cross-filter other visuals the way they can with a native Power BI chart.',
+        'They can be noticeably slower to render than native visuals, since an entire R or Python process runs behind the scenes for every refresh.',
+        'When published to the Service, R/Python visuals require an appropriate gateway and runtime to be configured for them to refresh correctly — they are not "just published" as simply as native visuals.',
+      ]},
+      { type: 'callout', kind: 'warning', content: 'Reach for a Python or R visual only when a genuinely specific statistical chart is required and no native visual or AppSource visual covers it — not as a first choice. The loss of native interactivity (cross-filtering, drill-through) is a real cost most reports should not pay unnecessarily.' },
+
+      { type: 'heading', content: 'Try it' },
+      { type: 'paragraph', content: 'Browse AppSource from inside Power BI Desktop and install one custom visual (a box plot visual is a good match for this track\'s data). Drag City and Revenue onto it to see the spread of revenue per outlet. If Python is installed locally, optionally try the matplotlib box plot script above as a second approach to the same question.' },
+
+      { type: 'heading', content: "What's next" },
+      { type: 'paragraph', content: 'So far every report has been viewed inside the Power BI Service itself. The next module covers Embedded Analytics — putting a Power BI report directly inside another website or application, exactly what Brew & Bite needs for its franchise partner portal.' },
+    ],
+  },
+
+  {
+    id: 'pb-a-4',
+    title: 'Embedded analytics',
+    duration: '35 min',
+    sections: [
+      { type: 'heading', content: 'The franchise partner portal problem' },
+      { type: 'paragraph', content: "Brew & Bite's franchise partners each log into a separate partner portal website (not the Power BI Service directly) to see their own outlet's numbers, place supply orders, and read company announcements, all in one place. Asking them to also separately log into app.powerbi.com would be a clunky, disconnected experience. Embedded Analytics solves this: a Power BI report rendered directly inside that existing partner portal website, as if it were a native part of the page." },
+
+      { type: 'heading', content: 'Two different embedding scenarios' },
+      { type: 'list', items: [
+        '"Embed for your organisation" — embedding a report inside an internal company application or intranet, for viewers who already have a Power BI account and license themselves.',
+        '"Embed for your customers" (also called App Owns Data) — embedding a report inside an external-facing application or website (like a franchise partner portal) for viewers who do NOT have their own Power BI account at all — they never log into Power BI directly; the host application handles authentication on their behalf.',
+      ]},
+      { type: 'paragraph', content: 'Brew & Bite\'s franchise partner portal is squarely the second case — partners should never need to know Power BI exists at all behind the scenes.' },
+
+      { type: 'heading', content: 'How "embed for your customers" actually works' },
+      { type: 'paragraph', content: 'The partner portal\'s own backend application (not the partner\'s browser directly) authenticates to Power BI using a dedicated service identity, requests an embed token scoped to a specific report (and, combined with Row-Level Security from the Intermediate track, scoped to that specific franchise partner\'s data), and passes that token to the front-end page, which uses Power BI\'s embedding JavaScript SDK to render the report inside an iframe-like container on the page.' },
+      { type: 'code', language: 'excel', content: `Conceptual flow (not literal code, but the real sequence):
+
+1. Partner logs into the existing portal website (their normal login,
+   nothing Power BI-specific)
+2. Portal's backend requests a Power BI embed token, scoped to:
+   - the specific report to show
+   - an RLS role/identity matching that exact franchise partner
+3. Portal's frontend uses the embed token + Power BI JavaScript SDK
+   to render the report inside the page
+4. The partner sees only their own outlet's data, inside a page that
+   never required them to have a separate Power BI login at all` },
+      { type: 'callout', kind: 'tip', content: 'Notice that Row-Level Security from the Intermediate track is not optional here — it is the exact mechanism that makes embedding for customers safe. Without RLS, an embed token for "the report" would show every franchise partner the same, unrestricted data; combined with RLS, the same embedded report safely shows each partner only their own outlet.' },
+
+      { type: 'heading', content: 'The Power BI REST API' },
+      { type: 'paragraph', content: 'Embedding (and most automation around Power BI generally) goes through the Power BI REST API — a set of web endpoints for things like generating embed tokens, listing reports in a workspace, triggering a dataset refresh programmatically, or managing workspace users. A developer building the partner portal\'s backend would call these endpoints directly, typically using one of Microsoft\'s client libraries rather than raw HTTP calls.' },
+
+      { type: 'heading', content: 'Licensing reality: this is not free at any scale' },
+      { type: 'paragraph', content: 'Embedding for customers requires either a Power BI Embedded capacity (a dedicated Azure resource, billed by capacity size rather than per user) or a Premium capacity that the organisation already owns. This is a genuine cost and architecture decision a real company makes deliberately — not something to assume is automatically included with a standard Power BI Pro license.' },
+
+      { type: 'heading', content: 'Try it (conceptual — full implementation needs a backend app)' },
+      { type: 'paragraph', content: 'In Power BI Desktop, open File → Embed Report to see the iframe embed code Power BI generates for a published report (this is the simpler "embed for your organisation" pattern, usable directly without writing backend code). Read through it and identify which part of the URL identifies the specific report being embedded.' },
+
+      { type: 'heading', content: "What's next" },
+      { type: 'paragraph', content: 'Embedding raises a real organisational question: who is allowed to publish, edit, and manage all of these reports and workspaces in the first place? The next module covers Workspace Governance — the structure a head-office BI team puts in place once there are dozens of reports and many more people who could potentially touch them.' },
+    ],
+  },
+
+  {
+    id: 'pb-a-5',
+    title: 'Workspace governance',
+    duration: '30 min',
+    sections: [
+      { type: 'heading', content: 'From "one person\'s reports" to "a managed BI estate"' },
+      { type: 'paragraph', content: "When it was just you building one report, governance was not a real question. With a head-office BI team, 50 franchise outlets, embedded partner portals, and dozens of stakeholders, Brew & Bite needs actual structure: who can edit what, what counts as the trusted official version of a number, and how a change gets tested before reaching anyone who matters." },
+
+      { type: 'heading', content: 'Workspace roles' },
+      { type: 'paragraph', content: 'Every workspace has four built-in roles, each with a different level of access:' },
+      { type: 'list', items: [
+        'Admin — full control, including adding/removing other members and deleting the workspace itself',
+        'Member — can edit and publish content, and share it with others, but cannot manage workspace membership',
+        'Contributor — can edit and publish content, but cannot share it onward to others',
+        'Viewer — can only view published content, with no editing rights at all',
+      ]},
+      { type: 'paragraph', content: 'Real-life assignment: the head-office BI lead is Admin; a couple of BI analysts who build reports day-to-day are Members; franchise regional managers who should see but never alter reports are Viewers.' },
+
+      { type: 'heading', content: 'Deployment pipelines: Dev, Test, Production' },
+      { type: 'paragraph', content: 'A Premium-capacity feature, Deployment Pipelines, lets a workspace exist in three parallel stages — Development, Test, and Production — with a button to promote content from one stage to the next. A BI analyst builds and experiments in Dev, a designated reviewer checks the Test stage against real (or close-to-real) data, and only verified content ever reaches Production, which is what franchise partners and managers actually see day to day.' },
+      { type: 'callout', kind: 'tip', content: 'This mirrors the same Dev → Test → Production discipline used in regular software engineering — applied here to reports and datasets instead of application code. It exists specifically to prevent an in-progress, half-finished change from accidentally appearing in front of real business users.' },
+
+      { type: 'heading', content: 'The "single source of truth" problem, and shared datasets' },
+      { type: 'paragraph', content: 'Without governance, it is common for five different analysts to each build their own separate "Revenue" measure, slightly differently, across five different reports — leading to five different numbers when someone asks "what was last month\'s revenue?" A shared, certified dataset (published once, to one workspace, then connected to by multiple separate reports) solves this: one Total Revenue measure, defined once, used everywhere, instead of redefined and subtly diverging five times.' },
+      { type: 'paragraph', content: 'A dataset can be marked "Certified" or "Promoted" in the Service (an admin or designated steward action), signalling to everyone in the organisation which version is the trusted, official one to build new reports against.' },
+
+      { type: 'heading', content: 'Sensitivity labels: data classification, not just access control' },
+      { type: 'paragraph', content: 'Beyond who can edit or view a report, sensitivity labels (e.g., "Public," "Internal," "Confidential — Franchise Financials") can be applied to reports and datasets, often integrated with an organisation\'s wider Microsoft 365 data protection policies. This addresses a different question from workspace roles — not "who is allowed in," but "how sensitive is this content, and what handling rules (like restrictions on exporting or sharing externally) should follow it automatically.' },
+
+      { type: 'heading', content: 'The Admin Portal: tenant-wide settings' },
+      { type: 'paragraph', content: 'A Power BI administrator (a distinct, organisation-wide role, separate from any individual workspace\'s Admin) manages tenant-level settings through the Admin Portal — controlling things like whether publishing to the web is allowed at all, who can create new workspaces, and reviewing usage metrics across the entire organisation\'s Power BI activity, not just one workspace.' },
+
+      { type: 'heading', content: 'Try it (conceptual)' },
+      { type: 'paragraph', content: 'In a workspace you have access to (My workspace counts), check Workspace Access settings to see the roles available. Think through how you would assign roles for the Brew & Bite scenario: who should be Admin, who should be Member, and who should only ever be Viewer.' },
+
+      { type: 'heading', content: "What's next" },
+      { type: 'paragraph', content: 'The final module covers the Premium-tier capabilities referenced throughout this track — deployment pipelines, large dataset support, paginated reports, and AI features — tying together exactly what a Premium or Premium Per User license unlocks versus standard Pro.' },
+    ],
+  },
+
+  {
+    id: 'pb-a-6',
+    title: 'Power BI Premium features',
+    duration: '35 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'Pro vs Premium: what the upgrade actually buys' },
+      { type: 'paragraph', content: 'Several features referenced throughout this Advanced track — Deployment Pipelines, larger dataset sizes, dedicated capacity for embedding — specifically require Premium (either organisation-wide Premium capacity, or Premium Per User, a more affordable per-person variant with most of the same features). Pro, the standard license, covers everything in the Beginner and Intermediate tracks; Premium is what a growing organisation like Brew & Bite head office eventually needs.' },
+
+      { type: 'heading', content: 'Larger datasets and faster refresh' },
+      { type: 'paragraph', content: 'Pro-licensed datasets are capped at 1 GB and a limited number of scheduled refreshes per day. Premium capacity raises the dataset size limit substantially (capacity-dependent, but far beyond 1 GB) and allows far more frequent refreshes — relevant the moment Brew & Bite\'s transaction history across 50 outlets, several years deep, would otherwise hit that Pro-tier ceiling.' },
+
+      { type: 'heading', content: 'Paginated reports: the "looks like a PDF" format' },
+      { type: 'paragraph', content: 'Standard Power BI reports are built for interactive, on-screen exploration. Paginated Reports (built with the separate Power BI Report Builder tool) are designed instead for printing or exporting a precisely formatted, page-by-page document — exactly what is needed for something like a formal monthly invoice or franchise royalty statement that must look identical and correctly paginated every time it is generated, whether viewed on screen or printed.' },
+      { type: 'callout', kind: 'tip', content: 'A common real mistake is trying to force a standard interactive report into looking like a perfectly formatted printable invoice — fighting Power BI\'s canvas to get pixel-perfect page breaks. The moment a report genuinely needs to be a precisely formatted printed document, Paginated Reports is almost always the right tool, not a workaround inside a normal report.' },
+
+      { type: 'heading', content: 'AI features: Q&A and Quick Insights' },
+      { type: 'list', items: [
+        'Q&A — a visual where a viewer types a plain-English question ("total revenue by city last month") and Power BI generates a matching visual automatically, using the underlying data model\'s field names and synonyms',
+        'Quick Insights — Power BI automatically scans a dataset and surfaces patterns it finds notable on its own (like an unusual spike or a strong correlation), without anyone specifically asking it to look',
+      ]},
+      { type: 'paragraph', content: 'Both work best on a clean, well-modelled dataset (exactly what the Intermediate track\'s relationships and the Advanced track\'s DAX patterns produce) — Q&A in particular relies heavily on sensible, well-named fields and measures to correctly interpret a typed question.' },
+
+      { type: 'heading', content: 'Dataflows: reusable, centralised data preparation' },
+      { type: 'paragraph', content: 'A Dataflow is essentially a Power Query cleanup recipe (the same Get & Transform skills from the Beginner track) saved centrally in the Service itself, rather than locked inside one single .pbix file. Multiple separate reports across multiple workspaces can then connect to the same Dataflow, so a cleanup step (like the City trimming/capitalising from early in this whole journey) is defined once centrally, instead of being redefined inside every individual report file.' },
+
+      { type: 'heading', content: 'Capstone: bringing the Advanced track together' },
+      { type: 'paragraph', content: 'Reflect on the full Brew & Bite journey across all three tracks, and design (conceptually — a written plan, not necessarily a fully built file) how a real head-office BI team would now structure things at 50-outlet scale:' },
+      { type: 'list', items: [
+        'Which DAX patterns from this track (VAR/RETURN, RANKX, ALLEXCEPT) would power a head-office "outlet leaderboard" report',
+        'What you would check first in Performance Analyzer if franchise managers started complaining the dashboard felt slow',
+        'Whether the franchise partner portal should use "embed for your organisation" or "embed for your customers," and why',
+        'How you would structure workspace roles across head office (Admin/Member) versus regional managers (Viewer)',
+        'Whether a Dev → Test → Production deployment pipeline is justified yet at this scale, and what would change your answer',
+        'One scenario where a Paginated Report would genuinely be the better tool than a standard interactive report',
+      ]},
+      { type: 'callout', kind: 'warning', content: 'There is genuinely no single correct answer to several of these — real BI governance decisions depend on team size, budget, and organisational maturity. The valuable skill this capstone tests is being able to reason clearly through the tradeoffs, not memorising one fixed "correct" architecture.' },
+
+      { type: 'heading', content: "You've finished the Power BI Advanced track" },
+      { type: 'paragraph', content: "Across all three tracks, you have gone from loading a single Excel file to designing a multi-table model with real DAX, securing it with row-level security, embedding it into an external partner-facing application, and reasoning about the governance and Premium-tier decisions a real organisation faces once BI stops being one person's side project. That progression — from a chai shop owner's first chart to a 50-outlet franchise's governed BI estate — mirrors the actual career path from junior analyst to someone trusted with organisation-wide Power BI architecture." },
+    ],
+  },
 ]
 
 /* ════════════════════════════════════════════════════════════════
@@ -7855,32 +8727,9 @@ export const COURSE_CONTENT = {
     advanced: EXCEL_ADVANCED,
   },
   powerbi: {
-    beginner: [
-      ...POWERBI_BEGINNER,
-      ...productionList([
-        'Loading data from Excel and CSV',
-        'Cleaning data with Power Query',
-        'Your first chart',
-        'Slicers and filters',
-        'Publishing to the Power BI Service',
-      ]),
-    ],
-    intermediate: productionList([
-      'Data modelling and relationships',
-      'DAX: calculated columns vs measures',
-      'Time intelligence functions',
-      'Drill-through and bookmarks',
-      'Row-level security',
-      'Designing for mobile',
-    ], 3),
-    advanced: productionList([
-      'Advanced DAX patterns',
-      'Performance tuning',
-      'Custom visuals with R and Python',
-      'Embedded analytics',
-      'Workspace governance',
-      'Power BI premium features',
-    ], 5),
+    beginner: POWERBI_BEGINNER,
+    intermediate: POWERBI_INTERMEDIATE,
+    advanced: POWERBI_ADVANCED,
   },
   tableau: {
     beginner: [
