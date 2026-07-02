@@ -149,11 +149,11 @@ export const COURSE_CATALOG = [
     careerPaths: ['Data Analyst', 'Research Analyst', 'Quality Analyst'],
     datasets: ['Stock Market (NYSE)', 'World Health Organisation', 'Election polling'],
     tracks: {
-      beginner: { modules: 4, hours: 3, label: 'Mean, median, distributions' },
-      intermediate: { modules: 4, hours: 4, label: 'Sampling, hypothesis tests, correlation' },
-      advanced: { modules: 4, hours: 5, label: 'Regression, A/B testing, Bayesian basics' }
+      beginner: { modules: 8, hours: 6, label: 'Descriptive stats, distributions, probability, hypothesis testing, A/B test capstone' },
+      intermediate: { modules: 8, hours: 7, label: 'Sampling, confidence intervals, ANOVA, correlation, simple & multiple regression, house price capstone' },
+      advanced: { modules: 8, hours: 9, label: 'Logistic regression, time series, Bayesian stats, advanced A/B testing, causal inference, capstone' }
     },
-    totalModules: 12,
+    totalModules: 24,
   },
 
   {
