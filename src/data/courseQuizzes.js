@@ -1,4 +1,258 @@
 export const COURSE_QUIZZES = {
+  ml: {
+    beginner: {
+      title: 'Machine Learning Essentials — Beginner Final Assessment',
+      intro: 'You have completed all 8 Machine Learning Beginner modules: what is ML, data preparation, linear regression, classification, model evaluation, scikit-learn Pipelines, and two end-to-end projects. These 30 questions test whether you can apply these concepts to real problems — the way a working ML engineer would.',
+      questions: [
+        // ── ML Concepts & Workflow (Q1–5) ─────────────────────────
+        {
+          id: 'ml-b-f-1',
+          type: 'mcq',
+          prompt: 'Predicting the sale price of a house given its features (size, location, age) is an example of which type of ML problem?',
+          options: ['Binary Classification — there are two outcomes (sold / not sold)', 'Regression — the output is a continuous numeric value', 'Unsupervised Learning — there are no labels for sale prices', 'Reinforcement Learning — the agent learns from buyer feedback'],
+          answerIndex: 1,
+          explanation: 'Regression targets a continuous number. Classification targets a discrete category. Sale price is continuous — making this a regression problem regardless of domain.'
+        },
+        {
+          id: 'ml-b-f-2',
+          type: 'mcq',
+          prompt: 'What is "data leakage" in a Machine Learning project?',
+          options: ['When the model accidentally deletes rows from the dataset during training', 'When information from the test set influences the training process — causing unrealistically optimistic performance metrics that will not hold in production', 'When the database connection drops during model training', 'When two features are highly correlated with each other'],
+          answerIndex: 1,
+          explanation: 'Leakage occurs when test data influences training (directly or via shared preprocessing steps). The model appears to perform well, but it has "seen" the test set — the real-world score will be much lower.'
+        },
+        {
+          id: 'ml-b-f-3',
+          type: 'mcq',
+          prompt: 'In the standard ML workflow, at which step do you first touch test data?',
+          options: ['Before training — to understand the full data distribution', 'Only after training, during evaluation — test data must never be seen during any training or preprocessing fitting step', 'During the EDA phase, to check for missing values', 'During preprocessing — to fit the scaler on the complete dataset'],
+          answerIndex: 1,
+          explanation: 'Test data is a simulation of future, unseen data. Touching it before evaluation — even just to fit a scaler — contaminates the evaluation and produces optimistic metrics.'
+        },
+        {
+          id: 'ml-b-f-4',
+          type: 'fill-blank',
+          prompt: 'The three main types of Machine Learning are Supervised Learning, Unsupervised Learning, and ______ Learning.',
+          correctAnswers: ['reinforcement', 'Reinforcement'],
+          explanation: 'Supervised = labelled examples. Unsupervised = no labels, find structure. Reinforcement = agent learns from reward/penalty signals through trial and error.'
+        },
+        {
+          id: 'ml-b-f-5',
+          type: 'mcq',
+          prompt: 'You train a model with training accuracy 0.99 and test accuracy 0.71. What is the most likely problem?',
+          options: ['Underfitting — the model is too simple to capture the pattern', 'Overfitting — the model memorised training data but fails to generalise to new examples', 'The dataset is too small to train any model', 'The test/train split was performed incorrectly'],
+          answerIndex: 1,
+          explanation: 'A large gap between train and test accuracy is the hallmark of overfitting. The model learned the training data\'s noise and edge cases so well it cannot transfer those rules to new examples.'
+        },
+
+        // ── Data Preparation (Q6–10) ──────────────────────────────
+        {
+          id: 'ml-b-f-6',
+          type: 'mcq',
+          prompt: 'Which scikit-learn function correctly splits data into training and test sets while preserving the class ratio?',
+          options: ['train_test_split(X, y, stratify=y)', 'split_data(X, y, balanced=True)', 'X.split(0.8, stratified=True)', 'sklearn.split(X, y, class_ratio="preserve")'],
+          answerIndex: 0,
+          explanation: 'train_test_split with stratify=y uses the target column to ensure the same class proportion in both splits. Essential for imbalanced classification datasets.'
+        },
+        {
+          id: 'ml-b-f-7',
+          type: 'mcq',
+          prompt: 'A "Gender" column contains "Male" and "Female". You apply LabelEncoder, producing Male=1, Female=0. Why might this be problematic for a linear model?',
+          options: ['Linear models cannot process any encoded categorical features', 'LabelEncoder implies Male > Female numerically — the model might learn a spurious linear relationship between the numerical encoding and the target', 'The encoding should use 0.5 and 1.5 instead of 0 and 1', 'There is no problem — any numeric encoding works for linear models'],
+          answerIndex: 1,
+          explanation: 'For binary features with no order, LabelEncoder\'s 0/1 encoding is actually fine for most algorithms. For multi-category nominal features, the implied ordering becomes a real problem. OneHotEncoder eliminates this ambiguity entirely.'
+        },
+        {
+          id: 'ml-b-f-8',
+          type: 'mcq',
+          prompt: 'What does SimpleImputer(strategy="median") do to a column with missing values?',
+          options: ['Deletes all rows where the column is missing', 'Replaces each missing value with the median of the non-missing values in that column', 'Replaces missing values with zero', 'Replaces missing values with the most frequent value in the column'],
+          answerIndex: 1,
+          explanation: 'strategy="median" fills NaN with the column median. Median is preferred over mean when the column has outliers (the median is more robust). strategy="most_frequent" is better for categorical columns.'
+        },
+        {
+          id: 'ml-b-f-9',
+          type: 'mcq',
+          prompt: 'Why does K-Nearest Neighbours require StandardScaler but a Random Forest does not?',
+          options: ['Random Forests only work with boolean features', 'KNN computes Euclidean distances — an unscaled large-valued feature dominates. Random Forests split on thresholds and are completely scale-invariant', 'KNN is a linear model; Random Forests are non-linear', 'StandardScaler breaks tree-based algorithms'],
+          answerIndex: 1,
+          explanation: 'Distance-based algorithms (KNN, SVM, Neural Networks) are sensitive to feature scales. Tree-based algorithms (Decision Tree, Random Forest, Gradient Boosting) split on ordered thresholds — the absolute scale is irrelevant.'
+        },
+        {
+          id: 'ml-b-f-10',
+          type: 'fill-blank',
+          prompt: 'The pandas method to count missing values per column is df.______.sum().',
+          correctAnswers: ['isnull()', 'isnull', 'isna()', 'isna'],
+          explanation: '.isnull() (or equivalently .isna()) returns a True/False mask per cell. .sum() then counts the True values per column, giving you missing-value counts.'
+        },
+
+        // ── Linear Regression (Q11–15) ───────────────────────────
+        {
+          id: 'ml-b-f-11',
+          type: 'mcq',
+          prompt: 'After training a Linear Regression model, model.coef_ returns [-0.12, 0.45, 0.03]. What does the 0.45 value mean for its corresponding feature?',
+          options: ['45% of predictions use this feature', 'For each one-unit increase in that feature, the model\'s prediction increases by 0.45', 'The feature has a 45% correlation with the target', 'The feature was assigned index 45 by the algorithm'],
+          answerIndex: 1,
+          explanation: 'Linear Regression coefficients are slopes: each unit increase in the feature produces a coefficient-sized change in the prediction. Negative coefficients reduce the prediction; positive ones increase it.'
+        },
+        {
+          id: 'ml-b-f-12',
+          type: 'mcq',
+          prompt: 'Your regression model has RMSE = 45,000 and MAE = 15,000 when predicting house prices in dollars. What does the large gap between RMSE and MAE indicate?',
+          options: ['The model is performing excellently on all examples', 'The model makes occasional very large errors — squaring amplifies them in RMSE. A few predictions are wildly wrong even though most are close', 'RMSE and MAE should always be equal for a correctly trained model', 'The gap means the model is underfitting'],
+          answerIndex: 1,
+          explanation: 'RMSE >> MAE signals large-error outliers. Average absolute error is $15k (typical prediction), but RMSE-boosting large errors mean some predictions are off by $100k+. Investigate those cases — they reveal model blind spots.'
+        },
+        {
+          id: 'ml-b-f-13',
+          type: 'mcq',
+          prompt: 'Which regularised linear regression variant performs automatic feature selection by driving some coefficients to exactly zero?',
+          options: ['Ridge (L2 regularisation)', 'Lasso (L1 regularisation)', 'ElasticNet (L1 + L2)', 'Standard Linear Regression with cross-validation'],
+          answerIndex: 1,
+          explanation: 'Lasso\'s L1 penalty has a geometric property that produces exactly-zero coefficients. Features with zero coefficients are effectively excluded. Ridge shrinks all coefficients but keeps every feature.'
+        },
+        {
+          id: 'ml-b-f-14',
+          type: 'mcq',
+          prompt: 'What does an R² score of -0.05 tell you about a regression model?',
+          options: ['The model explains 5% of variance — a minor performance', 'The model performs WORSE than simply predicting the mean of y for every example — a sign the model is fundamentally wrong', 'R² cannot be negative — this indicates a calculation error', 'The model has 5% overfitting'],
+          answerIndex: 1,
+          explanation: 'R²=0 = predicting the mean for every example. R²<0 = the model\'s variance in predictions is larger than the variance in y itself — worse than a trivial baseline. Always compare to R²=0 as your floor.'
+        },
+        {
+          id: 'ml-b-f-15',
+          type: 'fill-blank',
+          prompt: 'The scikit-learn class for standard linear regression is ______ from sklearn.linear_model.',
+          correctAnswers: ['LinearRegression', 'LinearRegression()'],
+          explanation: 'from sklearn.linear_model import LinearRegression. model = LinearRegression(); model.fit(X_train, y_train). Two lines to train a complete regression model.'
+        },
+
+        // ── Classification (Q16–20) ───────────────────────────────
+        {
+          id: 'ml-b-f-16',
+          type: 'mcq',
+          prompt: 'model.predict_proba(X_test)[:, 1] returns what for a binary classifier?',
+          options: ['The binary class prediction (0 or 1) for each row', 'The probability that each example belongs to class 1 (the positive class)', 'The feature importance scores for each column', 'The cross-validation scores for each fold'],
+          answerIndex: 1,
+          explanation: 'predict_proba returns [P(class=0), P(class=1)] per row. [:, 1] selects the positive-class probabilities. These are used for ROC curves, threshold tuning, and ranking examples by risk.'
+        },
+        {
+          id: 'ml-b-f-17',
+          type: 'mcq',
+          prompt: 'A Decision Tree trained with no max_depth restriction achieves 100% training accuracy. Is this a good model?',
+          options: ['Yes — 100% accuracy is the best possible result', 'No — an unrestricted tree creates a leaf for each training example, memorising every training row. It will perform far worse on new data (overfitting)', 'It depends on the dataset size', 'Yes, as long as the test accuracy is above 80%'],
+          answerIndex: 1,
+          explanation: 'An unconstrained decision tree partitions training data until each leaf has a single example — 100% training accuracy by memorisation. Setting max_depth, min_samples_leaf, or min_samples_split prevents this.'
+        },
+        {
+          id: 'ml-b-f-18',
+          type: 'mcq',
+          prompt: 'What is the main advantage of Random Forest over a single Decision Tree?',
+          options: ['Random Forests train faster than a single tree', 'Combining hundreds of trees trained on random subsets reduces overfitting — individual tree errors average out, producing more stable and accurate predictions', 'Random Forests can only handle classification, not regression', 'Random Forests do not require a train/test split'],
+          answerIndex: 1,
+          explanation: 'Ensemble methods reduce variance by averaging. Uncorrelated errors cancel out across many diverse trees. The result: a Random Forest is almost always more accurate and less overfit than its best individual tree.'
+        },
+        {
+          id: 'ml-b-f-19',
+          type: 'mcq',
+          prompt: 'In the Titanic dataset, sex, pclass, and fare are the strongest predictors of survival. When a Decision Tree splits on "sex" first, what does this mean?',
+          options: ['Sex has the highest correlation coefficient with survived', 'Sex is the single feature that, when used as the first split, best separates survivors from non-survivors — maximising the purity of each resulting branch', 'The algorithm randomly selected sex as the root node', 'Sex was first alphabetically in the feature list'],
+          answerIndex: 1,
+          explanation: 'Decision Trees select splits using information gain or Gini impurity reduction. The root split is the single feature-threshold combination that most reduces impurity in the data — in Titanic, sex (female vs male) is that feature.'
+        },
+        {
+          id: 'ml-b-f-20',
+          type: 'fill-blank',
+          prompt: 'The scikit-learn class for an ensemble of decision trees that trains on random feature and row subsets is ______.',
+          correctAnswers: ['RandomForestClassifier', 'RandomForestRegressor', 'RandomForest'],
+          explanation: 'sklearn.ensemble.RandomForestClassifier for classification, RandomForestRegressor for regression. Both train n_estimators trees on bootstrapped samples with random feature subsets.'
+        },
+
+        // ── Model Evaluation (Q21–25) ─────────────────────────────
+        {
+          id: 'ml-b-f-21',
+          type: 'mcq',
+          prompt: 'In a confusion matrix, what is a False Positive?',
+          options: ['Correctly predicted a positive example', 'Predicted Positive (e.g., churn), but the example was actually Negative (no churn)', 'Predicted Negative, but the example was actually Positive', 'A prediction that falls outside the valid range'],
+          answerIndex: 1,
+          explanation: 'False Positive = Type I error. Predicted class 1, actual class 0. In churn: the model says the customer will leave, but they stay. In spam: a legitimate email flagged as spam.'
+        },
+        {
+          id: 'ml-b-f-22',
+          type: 'mcq',
+          prompt: 'For a disease screening test, which metric should you prioritise — Precision or Recall?',
+          options: ['Precision — you want to minimise false alarms', 'Recall — you want to catch every actual case, even if it means more false alarms. Missing a real diagnosis is far more costly than an extra follow-up test', 'Always accuracy — it is the most comprehensive metric', 'They are equivalent for medical use cases'],
+          answerIndex: 1,
+          explanation: 'In screening, False Negatives (missed cases) are catastrophic. High Recall minimises FNs. The false positive cost (unnecessary follow-up) is comparatively low. After high-recall screening, a higher-precision confirmatory test is applied.'
+        },
+        {
+          id: 'ml-b-f-23',
+          type: 'mcq',
+          prompt: 'AUC-ROC = 0.50 for your classifier. What does this mean?',
+          options: ['The model correctly classifies 50% of examples', 'The model performs no better than random guessing — it cannot distinguish positive from negative examples at all', 'The model is 50% overfit', 'The model needs 50% more training data'],
+          answerIndex: 1,
+          explanation: 'AUC = 0.5 = the ROC curve is a diagonal line (equivalent to randomly ranking examples). The model has learned nothing. AUC > 0.5 shows discriminative ability; AUC < 0.5 means predictions are worse than random.'
+        },
+        {
+          id: 'ml-b-f-24',
+          type: 'mcq',
+          prompt: 'Why do you use cross_val_score(pipeline, X_train, y_train) rather than cross_val_score(pipeline, X, y) when cross-validating a Pipeline?',
+          options: ['cross_val_score requires smaller datasets', 'To avoid using test set data during model selection — the test set is held out entirely until final evaluation. CV on the full X, y would let CV folds include test examples', 'X_train is always larger, so CV scores are more reliable', 'Pipelines cannot be cross-validated on the full dataset due to a sklearn limitation'],
+          answerIndex: 1,
+          explanation: 'If you cross-validate on the full dataset (X, y), your held-out test set ends up in CV folds, giving it implicit influence on model selection. Always CV on training data only; use the true test set only once at the very end.'
+        },
+        {
+          id: 'ml-b-f-25',
+          type: 'fill-blank',
+          prompt: 'The metric that is the harmonic mean of Precision and Recall is called the ______ score.',
+          correctAnswers: ['f1', 'F1', 'f1-score', 'F1-score'],
+          explanation: 'F1 = 2 * (Precision * Recall) / (Precision + Recall). It gives a single balanced number when you cannot sacrifice either precision or recall, and is especially useful when classes are imbalanced.'
+        },
+
+        // ── Pipelines & Deployment (Q26–30) ──────────────────────
+        {
+          id: 'ml-b-f-26',
+          type: 'mcq',
+          prompt: 'What is the correct order of steps when building a sklearn Pipeline for classification?',
+          options: ['model → scaler → imputer', 'imputer → scaler → model (preprocessing first, model last)', 'scaler → model → imputer', 'The order does not matter in a Pipeline'],
+          answerIndex: 1,
+          explanation: 'Preprocessing must prepare data before the model sees it. Impute missing values first (so the scaler has no NaN), scale next (so the model receives normalized features), model last. Pipeline enforces this order automatically.'
+        },
+        {
+          id: 'ml-b-f-27',
+          type: 'mcq',
+          prompt: 'What does ColumnTransformer allow that a plain Pipeline cannot?',
+          options: ['Running multiple models at the same time', 'Applying different preprocessing steps to different subsets of columns — e.g., StandardScaler on numeric columns and OneHotEncoder on categorical columns simultaneously', 'Automatically detecting the best preprocessing strategy for each column', 'Training the model on GPU instead of CPU'],
+          answerIndex: 1,
+          explanation: 'ColumnTransformer routes column groups through separate transformers in parallel, then concatenates the results. It is the essential tool for datasets with mixed data types.'
+        },
+        {
+          id: 'ml-b-f-28',
+          type: 'mcq',
+          prompt: 'In GridSearchCV, what does the scoring="roc_auc" parameter specify?',
+          options: ['The model family to search (ROC-based models only)', 'The metric used to rank parameter combinations and select the best — combinations producing higher AUC-ROC are preferred', 'The number of cross-validation folds to use', 'The minimum AUC required before the search stops early'],
+          answerIndex: 1,
+          explanation: 'scoring tells GridSearchCV what to optimise. Use "accuracy" for balanced classes, "roc_auc" or "f1" for imbalanced classes. The combination with the highest scoring metric becomes the best_estimator_.'
+        },
+        {
+          id: 'ml-b-f-29',
+          type: 'mcq',
+          prompt: 'You save a trained pipeline with joblib.dump(pipeline, "model.pkl"). What is preserved in the file?',
+          options: ['Only the model weights — preprocessing steps must be refit on new data', 'The complete fitted pipeline: every preprocessor\'s fitted parameters (scaler means/stds, encoder categories) and the trained model — predict() on the loaded pipeline works end-to-end', 'A text description of the pipeline structure only', 'The original training data compressed for future re-training'],
+          answerIndex: 1,
+          explanation: 'joblib serialises the entire Python object including its state. For a fitted Pipeline, that includes the StandardScaler\'s learned mean and std, the OneHotEncoder\'s learned categories, and all model weights — everything needed to make predictions on new data.'
+        },
+        {
+          id: 'ml-b-f-30',
+          type: 'mcq',
+          prompt: 'Across this entire beginner ML course — data prep, regression, classification, evaluation, Pipelines — what is the single most important practice to master?',
+          options: ['Memorising every scikit-learn class and its parameters', 'The discipline of strict train/test separation: all preprocessing fits on training data only, all evaluation happens on held-out test data only — this is what makes ML results trustworthy', 'Choosing the most complex model available to maximise accuracy', 'Always using cross-validation instead of a fixed test set'],
+          answerIndex: 1,
+          explanation: 'Every other skill builds on this foundation. Correct train/test separation is what separates a trustworthy model from a misleading one. Get this wrong and no amount of algorithmic sophistication will compensate.'
+        }
+      ]
+    }
+  },
   sql: {
     beginner: {
       title: 'SQL Beginner Final Assessment',
@@ -3077,6 +3331,757 @@ export const COURSE_QUIZZES = {
           options: ['They are all features exclusive to Power BI Desktop, with no Service involvement', 'Each one addresses a challenge that only emerges once Power BI moves beyond one person\'s individual report, toward a real organisation\'s shared, governed, externally-facing BI system', 'They only matter for companies with fewer than 10 employees', 'They are unrelated topics with no shared theme'],
           answerIndex: 1,
           explanation: 'Every Advanced-track topic is a response to the same underlying shift: from one analyst\'s report to a multi-stakeholder, organisation-scale BI system.'
+        }
+      ]
+    }
+  },
+  tableau: {
+    beginner: {
+      title: 'Tableau Beginner Final Assessment',
+      intro: 'Test your knowledge across all 5 Tableau beginner modules — what Tableau is, loading data, building your first chart, filters and groups, and your first dashboard. Built around Tableau\'s own real teaching dataset, Sample Superstore.',
+      questions: [
+        {
+          id: 'tb-b-f-1',
+          type: 'mcq',
+          prompt: 'What is the fundamental difference in how Tableau builds charts compared to Excel?',
+          options: ['Tableau requires writing code for every chart', 'In Tableau, dragging fields onto shelves automatically generates an appropriate chart; Excel typically requires manually choosing a chart type first', 'Tableau can only build pie charts', 'There is no real difference between them'],
+          answerIndex: 1,
+          explanation: 'Tableau infers a suitable visualisation from the fields and shelves used, rather than requiring a chart type to be picked first.'
+        },
+        {
+          id: 'tb-b-f-2',
+          type: 'mcq',
+          prompt: 'In Tableau terminology, what is a Measure?',
+          options: ['A category used to group or slice data, like Region or Category', 'A numerical field that can be aggregated (summed, averaged), like Sales or Profit', 'The physical size of the dashboard canvas', 'A type of map visual'],
+          answerIndex: 1,
+          explanation: 'Measures are quantitative fields Tableau aggregates by default when dragged into a view.'
+        },
+        {
+          id: 'tb-b-f-3',
+          type: 'mcq',
+          prompt: 'What is the main catch with using Tableau Public for free?',
+          options: ['It expires after 7 days', 'Any workbook you save is publicly visible on the internet by default, often downloadable by others', 'It limits you to 10 rows of data', 'It cannot connect to Excel files'],
+          answerIndex: 1,
+          explanation: 'Tableau Public is genuinely public — it should never be used for sensitive or confidential business data.'
+        },
+        {
+          id: 'tb-b-f-4',
+          type: 'mcq',
+          prompt: 'Why is "Sample Superstore" used as the dataset throughout the Tableau Beginner track?',
+          options: ['It is the only dataset format Tableau accepts', 'It is Tableau\'s own long-standing teaching dataset, so skills practised on it transfer directly to countless real tutorials and sample workbooks', 'It contains no numeric data at all', 'It is required for a Tableau Public account specifically'],
+          answerIndex: 1,
+          explanation: 'Using the same dataset Tableau itself teaches with means learned skills carry over directly to outside resources.'
+        },
+        {
+          id: 'tb-b-f-5',
+          type: 'mcq',
+          prompt: 'What does the Data Source page let you check right after connecting to a file, before building any charts?',
+          options: ['The final published dashboard URL', 'Each column\'s detected data type, shown by an icon — catching a wrongly-typed date or number before it breaks a chart later', 'Your Tableau Public account password', 'The number of sheets in the workbook'],
+          answerIndex: 1,
+          explanation: 'Confirming data types immediately after connecting is a habit worth building, the same one emphasised in the Excel and Power BI tracks.'
+        },
+        {
+          id: 'tb-b-f-6',
+          type: 'mcq',
+          prompt: 'A simple test for telling Dimensions and Measures apart: a question starting with "which" or "what kind" usually points to which one?',
+          options: ['Dimension', 'Measure', 'Neither — text fields are never categorised this way', 'It depends only on the field\'s data type icon colour'],
+          answerIndex: 0,
+          explanation: '"Which State" or "what Category" are categorising/grouping questions, which is exactly what a Dimension represents.'
+        },
+        {
+          id: 'tb-b-f-7',
+          type: 'mcq',
+          prompt: 'Why might a numeric Order ID column need to be manually moved from Measures to Dimensions?',
+          options: ['Order ID cannot be displayed in Tableau at all', 'An ID-like numeric field should be grouped or categorised by, not summed or averaged, which is what Dimensions are for', 'Dimensions always load faster regardless of the field', 'All numeric fields must always be Dimensions by Tableau\'s rules'],
+          answerIndex: 1,
+          explanation: 'You would never want to SUM an Order ID — numeric ID-like fields are the classic exception to "numbers are Measures."'
+        },
+        {
+          id: 'tb-b-f-8',
+          type: 'mcq',
+          prompt: 'What is the key tradeoff between a Live connection and an Extract in Tableau?',
+          options: ['They behave identically with no difference', 'Live queries the original source on every interaction (always current, but as fast as the source); Extract copies a fast internal snapshot (faster, but needs explicit refreshing)', 'Extract only supports Excel files, never CSV', 'Live connections are not supported by Tableau Public'],
+          answerIndex: 1,
+          explanation: 'This is conceptually the same tradeoff as Power BI\'s Import vs DirectQuery, under different names.'
+        },
+        {
+          id: 'tb-b-f-9',
+          type: 'mcq',
+          prompt: 'You drag Category onto Columns and Sales onto Rows. What happens?',
+          options: ['Nothing, until a chart type is manually chosen', 'Tableau automatically draws a bar chart, one bar per category, sized by total Sales', 'An error appears, since two fields cannot combine this way', 'Only the first row of data displays'],
+          answerIndex: 1,
+          explanation: 'Tableau infers an appropriate chart type automatically from what is dragged onto which shelf.'
+        },
+        {
+          id: 'tb-b-f-10',
+          type: 'mcq',
+          prompt: 'What does the "Show Me" panel do?',
+          options: ['Permanently locks the current chart type forever', 'Highlights every chart type compatible with the currently selected fields, letting you switch visualisations instantly', 'Publishes the workbook to Tableau Public', 'Deletes any unused fields from the dataset'],
+          answerIndex: 1,
+          explanation: 'Show Me suggests valid alternative chart types for the fields currently in use.'
+        },
+        {
+          id: 'tb-b-f-11',
+          type: 'mcq',
+          prompt: 'Right-clicking SUM(Sales) on a shelf and switching it to Average changes what?',
+          options: ['It deletes the Sales field from the dataset entirely', 'It changes the aggregation shown — total Sales per category becomes average Sales per category — answering a different question from the same data', 'It converts Sales into a Dimension', 'It has no effect on the chart at all'],
+          answerIndex: 1,
+          explanation: 'Switching aggregation type changes what each mark represents without rebuilding the chart from scratch.'
+        },
+        {
+          id: 'tb-b-f-12',
+          type: 'mcq',
+          prompt: 'Dragging Profit onto the "Color" box in the Marks card does what to an existing chart?',
+          options: ['Removes the Sales data already on the chart', 'Shades each mark according to its Profit value, layering a second insight onto the existing chart', 'Deletes the Profit field from the dataset', 'Converts the chart into a map automatically'],
+          answerIndex: 1,
+          explanation: 'The Marks card lets you encode an additional Measure visually (colour, size, label) onto an existing chart.'
+        },
+        {
+          id: 'tb-b-f-13',
+          type: 'mcq',
+          prompt: 'Why does dragging a field like State directly onto the canvas automatically produce a map?',
+          options: ['It does not — maps must always be built manually in Tableau', 'Tableau recognises geographic fields automatically and generates a corresponding map, with no chart type chosen manually', 'Maps require a separate paid add-on', 'Geographic fields must first be converted into numbers'],
+          answerIndex: 1,
+          explanation: 'Tableau\'s built-in geographic role recognition is one of its most distinctive beginner-friendly features.'
+        },
+        {
+          id: 'tb-b-f-14',
+          type: 'mcq',
+          prompt: 'Why is renaming a sheet from the default "Sheet 1" to something meaningful, like "Sales by Category," worth doing?',
+          options: ['Tableau requires unique sheet names to function at all', 'A finished workbook with several generically-named sheets is unusable to anyone but the person who built it minutes ago', 'It changes how the underlying data is stored', 'It is purely cosmetic with no practical benefit'],
+          answerIndex: 1,
+          explanation: 'Clear sheet names matter for anyone returning to or sharing a workbook later, including the original builder after some time has passed.'
+        },
+        {
+          id: 'tb-b-f-15',
+          type: 'mcq',
+          prompt: 'What happens when you drag Profit onto the Filters shelf and set a range of "less than 0"?',
+          options: ['Every loss-making order is permanently deleted from the source data', 'The current sheet recalculates to show only orders with negative Profit, surfacing loss-making orders instantly', 'Profit is converted into a Dimension', 'Nothing changes until the workbook is published'],
+          answerIndex: 1,
+          explanation: 'A Filters shelf entry restricts what a sheet displays and recalculates from, without altering the underlying source data.'
+        },
+        {
+          id: 'tb-b-f-16',
+          type: 'mcq',
+          prompt: 'What is the key difference between a plain filter on the Filters shelf and a Quick Filter (Show Filter)?',
+          options: ['They are identical in every respect', 'A plain filter is fixed and invisible to the viewer; a Quick Filter adds a visible, interactive control the viewer can change themselves', 'Quick Filters only support numeric fields', 'Plain filters only work with date fields'],
+          answerIndex: 1,
+          explanation: 'This mirrors the Filter-vs-Slicer distinction from the Power BI track, just under a different name.'
+        },
+        {
+          id: 'tb-b-f-17',
+          type: 'mcq',
+          prompt: 'What does a "Relative Date" filter (e.g., "last 3 months") do that a fixed date range does not?',
+          options: ['It permanently deletes older rows from the dataset', 'It automatically updates its window as time passes, useful for a dashboard meant to be reused indefinitely', 'It only works inside Tableau Public, not Desktop', 'It disables every other filter on the sheet'],
+          answerIndex: 1,
+          explanation: 'A relative date filter recalculates going forward automatically, unlike a fixed range needing manual updates.'
+        },
+        {
+          id: 'tb-b-f-18',
+          type: 'mcq',
+          prompt: 'What does creating a Group from several Sub-Category values achieve?',
+          options: ['It permanently deletes the original individual values from the source data', 'It creates a new combined field treating the selected values as one category, without altering the underlying data', 'It converts the field into a Measure', 'It automatically builds a full dashboard'],
+          answerIndex: 1,
+          explanation: 'Groups let an analyst define a custom, simplified level of detail layered on top of the original data.'
+        },
+        {
+          id: 'tb-b-f-19',
+          type: 'mcq',
+          prompt: 'A retail analyst wants to find which specific product lines are losing money. What is the most direct approach using tools from this track?',
+          options: ['Manually scroll through every row of raw data looking for negative numbers', 'Filter to Profit < 0, then break the filtered view down by Sub-Category', 'Delete all rows with positive Profit from the source file', 'Rename every Sub-Category value'],
+          answerIndex: 1,
+          explanation: 'Combining a Measure filter with a Dimension breakdown directly answers "which specific things are the problem."'
+        },
+        {
+          id: 'tb-b-f-20',
+          type: 'mcq',
+          prompt: 'What is a Dashboard in Tableau, structurally?',
+          options: ['A single chart with extra colours', 'A separate canvas where existing sheets (not raw data) are dragged in and arranged together', 'A type of data connection', 'A built-in AI chat feature'],
+          answerIndex: 1,
+          explanation: 'A Dashboard combines previously built sheets into one arranged view, rather than being built directly from raw data itself.'
+        },
+        {
+          id: 'tb-b-f-21',
+          type: 'mcq',
+          prompt: 'What does a Dashboard Action (Filter, set to "On Select") let a viewer do?',
+          options: ['Permanently delete a sheet from the dashboard', 'Click a mark on one sheet (like a category bar) and have another sheet on the same dashboard (like a map) filter automatically in response', 'Change the dashboard\'s underlying data source', 'Export the dashboard as a PDF automatically'],
+          answerIndex: 1,
+          explanation: 'Dashboard Actions wire up cross-sheet interactivity, turning separate sheets into one connected, explorable tool.'
+        },
+        {
+          id: 'tb-b-f-22',
+          type: 'mcq',
+          prompt: 'Why is it specifically risky to publish a workbook containing real customer names or financial figures to Tableau Public?',
+          options: ['Tableau Public cannot technically handle that kind of data', 'Tableau Public is genuinely public by default — anyone with the link, and often the public gallery, can view and sometimes download the underlying workbook and data', 'It would make the dashboard load more slowly', 'Tableau Public requires a paid license for any real data'],
+          answerIndex: 1,
+          explanation: 'The free tier\'s public-by-default nature makes it unsuitable for any sensitive or confidential information.'
+        },
+        {
+          id: 'tb-b-f-23',
+          type: 'mcq',
+          prompt: 'What is the "Tiled" vs "Floating" choice in dashboard layout used for?',
+          options: ['Choosing the colour palette for the whole dashboard', 'Controlling whether sheets snap to a grid layout or can overlap and be positioned freely', 'Switching between Live and Extract connections', 'Deciding which fields are Dimensions vs Measures'],
+          answerIndex: 1,
+          explanation: 'Tiled and Floating are the two layout modes for arranging dashboard objects, each suited to different design needs.'
+        },
+        {
+          id: 'tb-b-f-24',
+          type: 'mcq',
+          prompt: 'Why does a finished dashboard benefit from a Text title object placed at the top?',
+          options: ['Tableau requires a title to publish at all', 'It immediately tells a first-time viewer what they are looking at, without needing a separate explanation', 'It changes how the underlying measures are calculated', 'It is the only way to add a Quick Filter'],
+          answerIndex: 1,
+          explanation: 'A clear title makes a dashboard self-explanatory to anyone opening it for the first time.'
+        },
+        {
+          id: 'tb-b-f-25',
+          type: 'mcq',
+          prompt: 'How does publishing to Tableau Public compare conceptually to Power BI\'s publish-to-Service step?',
+          options: ['They are completely unrelated concepts', 'Both make a finished report/workbook viewable in a browser without the viewer needing the authoring software installed, though Tableau Public\'s result is public by default while Power BI\'s Service can be kept private', 'Tableau Public requires a paid license, unlike Power BI\'s Service', 'Publishing is only possible in Power BI, not Tableau'],
+          answerIndex: 1,
+          explanation: 'Both tools separate authoring (Desktop) from viewing (a published, browser-accessible version), but with different default privacy.'
+        },
+        {
+          id: 'tb-b-f-26',
+          type: 'fill-blank',
+          prompt: 'In Tableau, which sample dataset (used throughout this beginner track) does Tableau itself ship with for teaching purposes?',
+          correctAnswers: ['sample superstore', 'superstore'],
+          explanation: 'Sample Superstore is Tableau\'s long-standing built-in teaching dataset, used in countless official and community tutorials.'
+        },
+        {
+          id: 'tb-b-f-27',
+          type: 'fill-blank',
+          prompt: 'Which card on the left of the canvas lets you add Color, Size, and Label to an existing chart by dragging a field onto it?',
+          correctAnswers: ['marks', 'marks card'],
+          explanation: 'The Marks card is where additional Measures or Dimensions get encoded visually onto an existing chart, via Color, Size, Label, and similar properties.'
+        },
+        {
+          id: 'tb-b-f-28',
+          type: 'mcq',
+          prompt: 'A chart shows total Sales per Category. Which field is acting as the Dimension, and which as the Measure?',
+          options: ['Category is the Measure; Sales is the Dimension', 'Category is the Dimension; Sales is the Measure', 'Both are Dimensions', 'Both are Measures'],
+          answerIndex: 1,
+          explanation: 'Category groups/categorises the data (Dimension); Sales is the number being aggregated (Measure).'
+        },
+        {
+          id: 'tb-b-f-29',
+          type: 'mcq',
+          prompt: 'Why might switching a numeric field\'s aggregation from Sum to Average reveal a different business insight on the exact same chart?',
+          options: ['It does not — the chart always looks identical regardless of aggregation', 'Sum shows total volume per category, while Average shows typical order size per category — two genuinely different, equally valid questions about the same underlying data', 'Average always produces a larger number than Sum', 'Switching aggregation requires rebuilding the chart from scratch'],
+          answerIndex: 1,
+          explanation: 'The same fields can answer different business questions depending on which aggregation is applied, without any new chart needed.'
+        },
+        {
+          id: 'tb-b-f-30',
+          type: 'mcq',
+          prompt: 'Across this whole Beginner track — connecting data, building charts, filtering/grouping, and dashboards — what is the overall workflow this track teaches?',
+          options: ['Writing SQL queries to manually generate every chart', 'Connect to data, visualise it by dragging fields rather than choosing chart types first, narrow and group it meaningfully, then combine multiple views into one connected, publishable dashboard', 'Only building maps, since that is Tableau\'s sole real use case', 'Memorising every possible chart type before touching real data'],
+          answerIndex: 1,
+          explanation: 'Connect, visualise, filter, combine, publish is the core repeatable workflow this entire track builds toward.'
+        }
+      ]
+    },
+
+    intermediate: {
+      title: 'Tableau Intermediate — Final Assessment',
+      intro: 'You have completed all 6 Tableau Intermediate modules: calculated fields, parameters, maps, LOD expressions, a mini project, and Story Points. These 30 questions test whether you can apply these tools to real analytical problems — not just recall definitions.',
+      questions: [
+        // ── Calculated Fields (Q1–8) ─────────────────────────────
+        {
+          id: 'tb-i-f-1',
+          type: 'mcq',
+          prompt: 'What does IIF([Sales]=0, 0, [Profit]/[Sales]) protect against that a plain [Profit]/[Sales] does not?',
+          options: ['Negative profit values', 'Division-by-zero errors on rows where Sales is zero', 'Text fields being used as numbers', 'Null values in the Profit column'],
+          answerIndex: 1,
+          explanation: 'IIF checks the condition first; only when Sales ≠ 0 does it attempt the division. Plain division would produce NULL or an error on zero-sales rows.'
+        },
+        {
+          id: 'tb-i-f-2',
+          type: 'mcq',
+          prompt: 'You want to flag any order shipped more than 5 days after it was placed. Which calculated field formula correctly creates this Boolean flag?',
+          options: ['[Ship Date] - [Order Date] > 5', 'DATEDIFF("day", [Order Date], [Ship Date]) > 5', 'DATEPART("day", [Ship Date]) > 5', 'LEFT([Ship Date], 2) > 5'],
+          answerIndex: 1,
+          explanation: 'DATEDIFF("day", start, end) returns the integer number of days between two dates — the right tool for elapsed-time comparisons.'
+        },
+        {
+          id: 'tb-i-f-3',
+          type: 'mcq',
+          prompt: 'A CASE statement in a calculated field matches one field against several known values. What is CASE most readable for compared to IF/ELSEIF?',
+          options: ['CASE is faster to compute than IF', 'CASE is cleaner when one field maps to several discrete values — like converting a Ship Mode name to a priority number', 'CASE can handle ranges like >100, while IF cannot', 'CASE only works with numeric fields'],
+          answerIndex: 1,
+          explanation: 'CASE is semantically clearer when you are mapping one value to another — IF/ELSEIF is more flexible but more verbose for simple discrete mappings.'
+        },
+        {
+          id: 'tb-i-f-4',
+          type: 'mcq',
+          prompt: 'What is RUNNING_SUM(SUM([Sales])) used for?',
+          options: ['Computing the grand total of all Sales across the entire dataset', 'A cumulative (running) total that increases as you move across the axis — useful for YTD or cumulative revenue charts', 'Averaging Sales over a rolling window', 'Ranking each row from highest to lowest Sales'],
+          answerIndex: 1,
+          explanation: 'RUNNING_SUM is a table calculation that accumulates the aggregated value as it moves along the table — producing a typical cumulative line chart.'
+        },
+        {
+          id: 'tb-i-f-5',
+          type: 'fill-blank',
+          prompt: 'The Tableau function that returns the number of days between two date fields is called ______.',
+          correctAnswers: ['datediff', 'DATEDIFF'],
+          explanation: 'DATEDIFF("day", start_date, end_date) is the standard function for computing elapsed time in Tableau.'
+        },
+        {
+          id: 'tb-i-f-6',
+          type: 'mcq',
+          prompt: 'Where do you go to create a new calculated field in Tableau?',
+          options: ['Analysis menu → Calculated Field', 'Right-click blank space in the Data pane → "Create Calculated Field"', 'Format menu → Calculations', 'File menu → New Calculation'],
+          answerIndex: 1,
+          explanation: 'Right-clicking blank space in the Data pane is the standard entry point for the calculated field dialog.'
+        },
+        {
+          id: 'tb-i-f-7',
+          type: 'mcq',
+          prompt: 'In a table calculation like RANK(SUM([Profit])), what does "Compute Using" control?',
+          options: ['Which data source the calculation reads from', 'The direction the table calculation traverses the view — across, down, or within a pane', 'Which color palette ranks use', 'Whether the calculation runs on published or draft workbooks only'],
+          answerIndex: 1,
+          explanation: '"Compute Using" tells Tableau the dimension over which RANK iterates. Getting this wrong (e.g., "Table Across" when you need "Table Down") produces incorrect rank values.'
+        },
+        {
+          id: 'tb-i-f-8',
+          type: 'mcq',
+          prompt: 'You use CONTAINS([Product Name], "Chair") in a calculated field. What data type does this return?',
+          options: ['Integer (0 or 1)', 'Boolean (True or False)', 'String ("Chair" or empty)', 'Float (0.0 or 1.0)'],
+          answerIndex: 1,
+          explanation: 'CONTAINS returns a Boolean — True if the string includes the search term, False otherwise. You can use Boolean fields directly on Color or Filters.'
+        },
+
+        // ── Parameters (Q9–15) ────────────────────────────────────
+        {
+          id: 'tb-i-f-9',
+          type: 'mcq',
+          prompt: 'A parameter on its own — with no calculated field or reference line referencing it — produces what visible effect on the dashboard?',
+          options: ['It automatically filters the data to rows matching the parameter value', 'Nothing — a parameter is just a named variable; it does nothing until referenced in a calc, filter, or reference line', 'It updates the dashboard title automatically', 'It removes null values from the view'],
+          answerIndex: 1,
+          explanation: 'Parameters store a value. Only when another object (a calc or reference line) reads that value does the parameter influence the view.'
+        },
+        {
+          id: 'tb-i-f-10',
+          type: 'mcq',
+          prompt: 'To build a "Top N Products" bar chart where the user picks N with a slider, what must you place on the Filters shelf?',
+          options: ['The parameter itself, set to "True"', 'A calculated field like RANK(SUM([Sales])) <= [Top N], filtered to True', 'A date range filter limiting rows to the top N dates', 'A dimension filter selecting the first N product names alphabetically'],
+          answerIndex: 1,
+          explanation: 'RANK computes the position of each product. Filtering to RANK <= [Top N] keeps exactly the top-N rows — fewer or more as the user moves the slider.'
+        },
+        {
+          id: 'tb-i-f-11',
+          type: 'mcq',
+          prompt: 'How do you make a parameter control interactive for dashboard viewers?',
+          options: ['Parameters are always visible once created', 'Right-click the parameter in the Data pane → "Show Parameter"', 'Drag the parameter onto the Columns shelf', 'Add the parameter to the Filters shelf'],
+          answerIndex: 1,
+          explanation: '"Show Parameter" adds a visible UI control (slider or dropdown) to the canvas that viewers can interact with.'
+        },
+        {
+          id: 'tb-i-f-12',
+          type: 'fill-blank',
+          prompt: 'To let users choose which measure to display (Sales, Profit, or Quantity), the calculated field that reads the parameter and returns the right aggregation uses a ______ statement.',
+          correctAnswers: ['case', 'CASE', 'case statement', 'CASE statement'],
+          explanation: 'CASE [Metric Selector] WHEN "Sales" THEN SUM([Sales]) … END maps each string option to its corresponding aggregation cleanly.'
+        },
+        {
+          id: 'tb-i-f-13',
+          type: 'mcq',
+          prompt: 'A product manager wants a reference line on a monthly sales chart that moves as she drags a "Sales Target" slider. What is the correct setup?',
+          options: ['Hardcode the reference line value to the current target in the reference line dialog', 'Create a Float parameter "Sales Target", then configure Analytics → Reference Line → set value to the parameter', 'Reference lines cannot be connected to parameters', 'Use a calculated field placed on Rows — reference lines are only for formatting'],
+          answerIndex: 1,
+          explanation: 'In the Reference Line dialog, set the value source to "Parameter" and choose your parameter. The line repositions live as the user changes the slider.'
+        },
+        {
+          id: 'tb-i-f-14',
+          type: 'mcq',
+          prompt: 'What allowable values setting would you use for a parameter where users must choose from exactly three named options ("East", "West", "Central")?',
+          options: ['All — so they can type anything', 'List — define the exact three string values; a dropdown or radio buttons will appear', 'Range — min 1, max 3, step 1', 'Boolean — True/False only'],
+          answerIndex: 1,
+          explanation: '"List" creates a discrete dropdown of exactly the values you define. Range is for numeric sliding. All allows free text input.'
+        },
+        {
+          id: 'tb-i-f-15',
+          type: 'mcq',
+          prompt: 'Why is a parameter-driven measure switcher preferable to duplicating the same chart three times for Sales, Profit, and Quantity separately?',
+          options: ['Duplicate charts are not allowed in Tableau', 'One chart with a measure switcher is smaller, easier to maintain, and keeps the dashboard layout cleaner — changing the metric requires zero layout changes', 'Parameters load data faster than three separate charts', 'Duplicate charts break when published to Tableau Public'],
+          answerIndex: 1,
+          explanation: 'Maintainability is the main argument — one calc to update instead of three charts. Keeping the layout simple is an added dashboard design benefit.'
+        },
+
+        // ── Maps (Q16–21) ────────────────────────────────────────
+        {
+          id: 'tb-i-f-16',
+          type: 'mcq',
+          prompt: 'Why might a state show as a grey "unknown" patch on a Tableau filled map?',
+          options: ['Tableau cannot render more than 48 states at once', 'The value in the data does not match Tableau\'s internal spelling — use Map → Edit Locations to manually remap it', 'Grey means the state has zero revenue', 'Grey patches indicate the filter is excluding those states'],
+          answerIndex: 1,
+          explanation: 'Tableau\'s geocoding matches on exact string values. A mismatch (e.g., "Calif." vs "California") leaves the state unmatched and renders it grey.'
+        },
+        {
+          id: 'tb-i-f-17',
+          type: 'mcq',
+          prompt: 'On a symbol map, you put Sales on Size and Profit on Color with a red-white-green diverging palette centred at 0. A large red bubble represents what?',
+          options: ['A location with low sales and high profit', 'A location with high sales volume and negative profit — high-revenue but loss-making', 'A location with old data that has not refreshed', 'A location that has been manually flagged for deletion'],
+          answerIndex: 1,
+          explanation: 'Large = high Sales. Red = negative Profit. Together they identify your highest-revenue loss-making locations — the most urgent intervention targets.'
+        },
+        {
+          id: 'tb-i-f-18',
+          type: 'mcq',
+          prompt: 'What technique allows you to show both filled state polygons AND city-level circles on the same Tableau map simultaneously?',
+          options: ['Creating two separate map sheets and linking them with a dashboard action', 'A dual-axis map — duplicating the Latitude pill and setting "Dual Axis" on the second copy, giving two independent Marks layers on one map', 'Using the Map Layers panel to toggle polygon fills on and off', 'Tableau cannot overlay two mark types on the same map'],
+          answerIndex: 1,
+          explanation: 'Dual-axis maps merge two map layers into one canvas. Each layer has its own Marks card, allowing polygon fills and circle marks to coexist on the same geographic view.'
+        },
+        {
+          id: 'tb-i-f-19',
+          type: 'mcq',
+          prompt: 'Your data contains the exact GPS coordinates of 300 delivery depots not in Tableau\'s geocoding database. How do you plot them?',
+          options: ['You cannot plot non-standard locations in Tableau', 'Include Latitude and Longitude as numeric columns, assign each the Geographic Role of Latitude/Longitude, then drag them to Rows/Columns', 'Use the Custom Territories feature under Map menu', 'Import a KML shapefile for each depot'],
+          answerIndex: 1,
+          explanation: 'Explicit lat/long columns are Tableau\'s universal escape hatch for any location not in the built-in geocoding database. Assign the roles, drag to shelves, done.'
+        },
+        {
+          id: 'tb-i-f-20',
+          type: 'fill-blank',
+          prompt: 'The two primary map types in Tableau are symbol maps (circles at geographic points) and ______ maps (shaded polygons at country/state level).',
+          correctAnswers: ['filled', 'filled map', 'choropleth'],
+          explanation: 'Filled maps shade entire geographic polygons — they work best at country and state level where polygon boundaries exist in Tableau\'s geocoding database.'
+        },
+        {
+          id: 'tb-i-f-21',
+          type: 'mcq',
+          prompt: 'You want to add an interactive country filter so viewers can click a country on a map and filter all other sheets on the dashboard. What is the correct mechanism?',
+          options: ['Drag Country to the Filters shelf on every sheet individually', 'Create a Dashboard Action: Filter → source sheet (the map) → target sheets (all others) → filtering field: Country', 'Right-click the Country field → "Apply to all sheets"', 'Dashboard Actions only work with bar charts, not maps'],
+          answerIndex: 1,
+          explanation: 'Dashboard Actions connect sheets — a Filter Action on the map triggers a filter on all specified target sheets whenever the user clicks a mark.'
+        },
+
+        // ── LOD Expressions (Q22–28) ─────────────────────────────
+        {
+          id: 'tb-i-f-22',
+          type: 'mcq',
+          prompt: 'What does { FIXED [Region] : SUM([Sales]) } return?',
+          options: ['The average sales per Region', 'The total Sales per Region, computed independently of whatever other dimensions are currently in the view', 'The sales for whichever Region is currently filtered to', 'The running total of sales ordered by Region'],
+          answerIndex: 1,
+          explanation: 'FIXED pins the aggregation to the specified dimensions. Even if your view also has Category, the FIXED expression still returns the Region total — not the Region-Category subtotal.'
+        },
+        {
+          id: 'tb-i-f-23',
+          type: 'mcq',
+          prompt: 'You want to compute % share of each Sub-Category within its own Category. Which LOD correctly calculates the Category subtotal to use as the denominator?',
+          options: ['{ FIXED [Sub-Category] : SUM([Sales]) }', '{ EXCLUDE [Sub-Category] : SUM([Sales]) }', '{ INCLUDE [Category] : SUM([Sales]) }', 'SUM([Sales]) / TOTAL(SUM([Sales]))'],
+          answerIndex: 1,
+          explanation: 'EXCLUDE [Sub-Category] removes Sub-Category from the aggregation while keeping Category — producing exactly the Category subtotal needed for a within-category % calculation.'
+        },
+        {
+          id: 'tb-i-f-24',
+          type: 'mcq',
+          prompt: 'Why is AVG({ INCLUDE [Customer ID] : SUM([Sales]) }) the correct formula for "average spend per customer" rather than AVG([Sales])?',
+          options: ['AVG() cannot be used directly on Sales', 'AVG([Sales]) averages individual order rows; the INCLUDE version sums each customer\'s total first, then averages those per-customer sums — giving true average customer value', 'INCLUDE automatically applies to every dimension in the view', 'AVG([Sales]) and the INCLUDE formula always produce the same result'],
+          answerIndex: 1,
+          explanation: 'The distinction is sum-then-average vs. average-directly. A customer with 10 small orders vs. 1 large order should not be weighted the same — the INCLUDE approach computes the correct per-customer total before averaging.'
+        },
+        {
+          id: 'tb-i-f-25',
+          type: 'mcq',
+          prompt: 'In Tableau\'s order of operations, when is a FIXED LOD expression computed relative to dimension filters on the Filters shelf?',
+          options: ['After all dimension filters — so filters always affect FIXED LODs', 'Before dimension filters — so a dimension filter on the Filters shelf does NOT affect a FIXED LOD by default', 'At exactly the same time as dimension filters', 'Only after the workbook is published'],
+          answerIndex: 1,
+          explanation: 'FIXED LODs are computed at step 4 in Tableau\'s pipeline; dimension filters apply at step 5. To make a dimension filter affect a FIXED LOD, you must promote it to a Context Filter.'
+        },
+        {
+          id: 'tb-i-f-26',
+          type: 'mcq',
+          prompt: 'What does { FIXED : SUM([Sales]) } compute? (Note: no dimension specified inside FIXED.)',
+          options: ['An error — FIXED requires at least one dimension', 'The grand total of all Sales across the entire dataset — a blank FIXED aggregates over everything', 'The average Sales per row', 'The maximum Sales value in the dataset'],
+          answerIndex: 1,
+          explanation: 'An empty FIXED collapses to a single value for the whole dataset — useful as the denominator in "% of grand total" calculations: SUM([Sales]) / { FIXED : SUM([Sales]) }.'
+        },
+        {
+          id: 'tb-i-f-27',
+          type: 'mcq',
+          prompt: 'You apply a dimension filter for Region = "West" on the Filters shelf. Your FIXED LOD uses [Region]. The FIXED value looks wrong. What should you check?',
+          options: ['Rebuild the LOD from scratch — FIXED does not support Region', 'Promote the Region filter to a Context Filter (right-click → Add to Context) so it executes before the FIXED LOD', 'Change FIXED to INCLUDE', 'Clear the filter and use a table calculation instead'],
+          answerIndex: 1,
+          explanation: 'Context Filters execute before FIXED LODs. Without Context status, the dimension filter applies after FIXED and cannot narrow what FIXED aggregates over.'
+        },
+        {
+          id: 'tb-i-f-28',
+          type: 'fill-blank',
+          prompt: 'The LOD type that adds an extra dimension to the aggregation on top of what is already in the view is called ______.',
+          correctAnswers: ['include', 'INCLUDE'],
+          explanation: 'INCLUDE adds dimensions, EXCLUDE removes them, FIXED ignores the view entirely. INCLUDE is used when you need a finer-grained sub-aggregate (like per-customer sums) as input to a further calculation.'
+        },
+
+        // ── Story Points + Integration (Q29–30) ──────────────────
+        {
+          id: 'tb-i-f-29',
+          type: 'mcq',
+          prompt: 'What is the key structural difference between a Tableau Dashboard and a Tableau Story?',
+          options: ['Dashboards can only have one sheet; Stories can have many', 'A Dashboard shows multiple views spatially (everything at once); a Story is sequential — one view per story point with a caption, guiding the audience through a narrative', 'Stories can only be viewed on Tableau Server', 'Dashboards cannot be published to Tableau Public, but Stories can'],
+          answerIndex: 1,
+          explanation: 'Dashboards are spatial (parallel views for simultaneous comparison); Stories are sequential (guided slide-by-slide narratives). Each serves a different communication goal.'
+        },
+        {
+          id: 'tb-i-f-30',
+          type: 'mcq',
+          prompt: 'Across this entire Tableau Intermediate track — calculated fields, parameters, maps, LOD expressions — what is the common capability they all share?',
+          options: ['They all require a connection to Tableau Server to function', 'They all let you go beyond what the raw source data directly provides — creating new logic, user controls, geographic context, and custom aggregation levels that answer more precise business questions', 'They are all exclusively for visual formatting with no analytical value', 'They all require writing SQL before Tableau can use them'],
+          answerIndex: 1,
+          explanation: 'The intermediate track is about extending Tableau\'s reach: calcs add logic, parameters add interactivity, maps add geographic context, LODs add aggregation control — together they unlock answers the raw data alone cannot give.'
+        }
+      ]
+    },
+
+    advanced: {
+      title: 'Tableau Advanced — Final Assessment',
+      intro: 'You have completed all 6 Tableau Advanced modules: advanced LOD patterns, table calculations, Sets and Set Actions, performance tuning, a retention analytics mini project, and Tableau Cloud/Server deployment. These 30 questions test whether you can apply these tools to real enterprise-level problems.',
+      questions: [
+        // ── Advanced LOD (Q1–8) ──────────────────────────────────
+        {
+          id: 'tb-a-f-1',
+          type: 'mcq',
+          prompt: 'In cohort retention analysis, what does "Cohort Age = 0" represent for a customer?',
+          options: ['The customer has been inactive for 0 months', 'The customer\'s acquisition month — their first order month, when distance from first purchase to current date is zero', 'The customer placed 0 orders this month', 'A placeholder for customers with no assigned cohort'],
+          answerIndex: 1,
+          explanation: 'Cohort Age = DATEDIFF("month", First Order Month, current month). At Age 0, the current month equals the first order month — the acquisition period. Every customer appears at Age 0 exactly once.'
+        },
+        {
+          id: 'tb-a-f-2',
+          type: 'mcq',
+          prompt: 'What does LOOKUP(COUNTD([Customer ID]), FIRST()) compute when used as a retention % denominator?',
+          options: ['The total distinct customers in the entire dataset', 'The count of distinct customers in the first column of the current partition — the cohort\'s starting size at Cohort Age 0', 'The customer count in the last row of the view', 'The average customer count across all cohort ages'],
+          answerIndex: 1,
+          explanation: 'FIRST() returns the distance to the first position in the partition. LOOKUP(…, FIRST()) fetches the value from that first position — the Age-0 (acquisition) count for this cohort row.'
+        },
+        {
+          id: 'tb-a-f-3',
+          type: 'mcq',
+          prompt: 'You compute Customer Revenue = { FIXED [Customer ID] : SUM([Sales]) } and then write RANK_UNIQUE([Customer Revenue]). What is this pattern called?',
+          options: ['A parameter expression', 'A nested LOD — the output of a FIXED LOD used as the input to a rank function, composing two computation levels', 'A combined set expression', 'A table calculation referencing a dimension'],
+          answerIndex: 1,
+          explanation: 'Nesting means one LOD\'s output feeds into another computation. FIXED produces per-customer totals; RANK_UNIQUE then ranks those totals — two-layer composition.'
+        },
+        {
+          id: 'tb-a-f-4',
+          type: 'fill-blank',
+          prompt: 'An empty FIXED LOD — { FIXED : SUM([Sales]) } — returns the ______ of Sales across the entire dataset.',
+          correctAnswers: ['grand total', 'total', 'sum'],
+          explanation: 'With no dimension specified, FIXED aggregates over everything — producing a single grand total value stamped on every row.'
+        },
+        {
+          id: 'tb-a-f-5',
+          type: 'mcq',
+          prompt: 'You apply a Region filter on the Filters shelf and your FIXED LOD still shows the full-dataset total instead of the filtered total. What is the correct fix?',
+          options: ['Change FIXED to INCLUDE', 'Promote the Region filter to a Context Filter — FIXED LODs execute before dimension filters, but after Context Filters', 'Delete and recreate the LOD after applying the filter', 'FIXED LODs cannot be used with dimension filters at all'],
+          answerIndex: 1,
+          explanation: 'In Tableau\'s order of operations, FIXED runs before dimension filters. Promoting to Context moves the filter earlier in the pipeline, so FIXED sees only the filtered rows.'
+        },
+        {
+          id: 'tb-a-f-6',
+          type: 'mcq',
+          prompt: 'For a "Top 10% of customers by revenue" flag, you need the total distinct customer count. Which LOD gives the full count independent of any dimension in the view?',
+          options: ['{ INCLUDE [Customer ID] : COUNTD([Customer ID]) }', '{ FIXED : COUNTD([Customer ID]) }', 'TOTAL(COUNTD([Customer ID]))', 'WINDOW_COUNT(COUNTD([Customer ID]), FIRST(), LAST())'],
+          answerIndex: 1,
+          explanation: 'Empty FIXED collapses across the full dataset. TOTAL() is view-dependent and changes with filters. The 10% threshold must use the true total, not the filtered view.'
+        },
+        {
+          id: 'tb-a-f-7',
+          type: 'mcq',
+          prompt: 'What does { FIXED DATETRUNC("month", DATEADD("year", -1, [Order Date])) : SUM([Sales]) } compute?',
+          options: ['The sales for the current month, shifted forward one year', 'The total sales for the same calendar month one year ago — the prior-year equivalent for each row\'s date', 'The average monthly sales across all years', 'The maximum sales in any single prior-year month'],
+          answerIndex: 1,
+          explanation: 'DATEADD("year",-1,…) shifts each date back one year. DATETRUNC("month",…) truncates to month start. FIXED on that result = prior-year monthly total.'
+        },
+        {
+          id: 'tb-a-f-8',
+          type: 'mcq',
+          prompt: 'A cohort retention heatmap shows Retention % exceeding 100% in some cells. What is the most likely cause?',
+          options: ['Retention can legitimately exceed 100% when new customers join the cohort later', 'The LOOKUP(…, FIRST()) denominator is offset incorrectly, pulling a smaller number than the true Age-0 count', 'Retention % should be multiplied by 100 before display', 'The cohort age calculation uses DATEADD instead of DATEDIFF'],
+          answerIndex: 1,
+          explanation: 'If FIRST() is misapplied (wrong partition direction), LOOKUP fetches a smaller number than the true starting cohort size, making later ages appear to exceed 100%. Fix partitioning and addressing.'
+        },
+
+        // ── Advanced Table Calculations (Q9–15) ──────────────────
+        {
+          id: 'tb-a-f-9',
+          type: 'mcq',
+          prompt: 'WINDOW_AVG(SUM([Sales]), -2, 0) on a monthly bar chart computes what?',
+          options: ['The total sales over all months', 'A 3-month moving average — averaging the current month plus the two months before it', 'A 2-month forecast of future sales', 'A running cumulative average from the first month to the current one'],
+          answerIndex: 1,
+          explanation: '-2 means 2 positions before the current row; 0 means the current row. WINDOW_AVG across those 3 positions = trailing 3-month moving average.'
+        },
+        {
+          id: 'tb-a-f-10',
+          type: 'mcq',
+          prompt: 'What does LOOKUP(SUM([Sales]), -1) return for the very first row in a table partition?',
+          options: ['0 — LOOKUP defaults to zero when no prior row exists', 'NULL — there is no row at offset -1 from the first row', 'The grand total Sales value', 'The same value as the current row'],
+          answerIndex: 1,
+          explanation: 'No row exists one position before the first row. LOOKUP returns NULL. Always handle this with ISNULL() or ZN() in MoM % change calculations.'
+        },
+        {
+          id: 'tb-a-f-11',
+          type: 'mcq',
+          prompt: 'You want to label only the last data point on a line chart with its value. Which calculated field achieves this?',
+          options: ['IF FIRST() = 0 THEN SUM([Sales]) END', 'IF LAST() = 0 THEN SUM([Sales]) END', 'IF INDEX() = 1 THEN SUM([Sales]) END', 'LOOKUP(SUM([Sales]), LAST())'],
+          answerIndex: 1,
+          explanation: 'LAST() = 0 is true only at the final row in the partition. Placing this calc on the Label shelf produces a label exclusively on the last chart point.'
+        },
+        {
+          id: 'tb-a-f-12',
+          type: 'fill-blank',
+          prompt: 'In a table calculation, the dimension the calculation moves along (e.g., Month) is called the ______ dimension.',
+          correctAnswers: ['addressing', 'address'],
+          explanation: 'Addressing is the direction of travel. The partitioning dimension restarts the calculation. "Compute Using → Specific Dimensions" lets you control both precisely.'
+        },
+        {
+          id: 'tb-a-f-13',
+          type: 'mcq',
+          prompt: 'Why does SUM([Sales]) / TOTAL(SUM([Sales])) change when a quick filter is applied, while SUM([Sales]) / { FIXED : SUM([Sales]) } does not?',
+          options: ['TOTAL() is a calculated field; FIXED is a measure — different computation types', 'TOTAL() sums what is currently visible in the view (respects filters); FIXED was computed before the filter was applied and does not change unless the filter is a Context Filter', 'The formulas use different rounding methods', 'They are always identical — there is no difference'],
+          answerIndex: 1,
+          explanation: 'TOTAL() is a table calc running on the visible aggregated values — it changes as filters change. FIXED LODs execute earlier in the pipeline, before dimension filters.'
+        },
+        {
+          id: 'tb-a-f-14',
+          type: 'mcq',
+          prompt: 'What does INDEX() % 2 = 0 produce when dragged onto Color in a text table?',
+          options: ['Highlights every row where Sales is even', 'Alternating True/False values as rows increase — creating a zebra-stripe row colour effect', 'A filter removing every other row from the view', 'A percentage of every-other-row\'s share of total'],
+          answerIndex: 1,
+          explanation: 'INDEX() gives the 1-based row position. Modulo 2 alternates between 1 and 0. As a Boolean on Color, this creates the classic alternating-row readability pattern.'
+        },
+        {
+          id: 'tb-a-f-15',
+          type: 'mcq',
+          prompt: 'What does SIZE() return inside a table calculation?',
+          options: ['The number of marks on the entire canvas', 'The total number of rows in the current table partition', 'The file size of the workbook in megabytes', 'The number of distinct values in the Dimension on Color'],
+          answerIndex: 1,
+          explanation: 'SIZE() counts rows in the current partition. Combined with INDEX(), it enables midpoint labelling: INDEX() = INT(SIZE()/2).'
+        },
+
+        // ── Sets and Set Actions (Q16–21) ────────────────────────
+        {
+          id: 'tb-a-f-16',
+          type: 'mcq',
+          prompt: 'A condition-based Set uses SUM([Sales]) >= 5000. When the extract is refreshed with new data, what happens to the set membership?',
+          options: ['The set keeps the same members as when it was first created', 'The set re-evaluates the condition against the new data — membership updates automatically to reflect which customers now exceed the threshold', 'You must manually recreate the set after each refresh', 'The set membership is locked for 30 days after creation'],
+          answerIndex: 1,
+          explanation: 'Condition-based Sets are dynamic — they re-evaluate on each extract refresh. This is the key advantage over Groups, which are permanently static once defined.'
+        },
+        {
+          id: 'tb-a-f-17',
+          type: 'mcq',
+          prompt: 'A Set Action is configured with "Clearing the selection: Keep set values." What happens when the user clicks on empty canvas?',
+          options: ['The set empties and downstream charts show all data', 'The set retains the last selected member(s) — no automatic reset occurs', 'The entire dashboard resets to its default state', 'The workbook closes and must be reopened'],
+          answerIndex: 1,
+          explanation: '"Keep set values" persists the last selection. Users must click a different mark or use a dedicated Reset button to change the set. Contrast with "Remove all values," which auto-resets on deselection.'
+        },
+        {
+          id: 'tb-a-f-18',
+          type: 'mcq',
+          prompt: 'Combined Set: "Top 10 by Sales" EXCEPT "Top 10 by Profit." Which products appear?',
+          options: ['Products in the top 10 by both Sales and Profit', 'Products with high revenue (top-10 Sales) but NOT in the top-10 Profit — margin-problem candidates', 'Products outside both top-10 lists entirely', 'The bottom 10 products by both metrics'],
+          answerIndex: 1,
+          explanation: 'Set A EXCEPT Set B = members of A not in B. High-revenue products outside the profit top-10 are the ones generating revenue without generating equivalent profit.'
+        },
+        {
+          id: 'tb-a-f-19',
+          type: 'mcq',
+          prompt: 'Why is a Set Action with Opacity encoding preferable to a Filter Action for a "compare this sub-category to all others" use case?',
+          options: ['Set Actions load faster than Filter Actions on large datasets', 'Set Actions dim non-selected marks (keeping them visible for comparison); Filter Actions remove non-selected marks entirely, hiding the comparison baseline', 'Filter Actions do not support Sub-Category as a field', 'Set Actions apply globally; Filter Actions only apply to one sheet'],
+          answerIndex: 1,
+          explanation: 'Comparing requires seeing both the selected item and the rest. Dimming keeps the full picture visible. Hiding (Filter Action) removes the context needed for meaningful comparison.'
+        },
+        {
+          id: 'tb-a-f-20',
+          type: 'fill-blank',
+          prompt: 'To create a Set that automatically includes only customers whose total lifetime sales exceed $5000, you use the ______ tab in the Set creation dialog.',
+          correctAnswers: ['condition', 'Condition'],
+          explanation: 'The Condition tab accepts a formula or field-level aggregation (SUM([Sales]) >= 5000). General is for manual member selection; Top is for ranking-based selection.'
+        },
+        {
+          id: 'tb-a-f-21',
+          type: 'mcq',
+          prompt: 'You configure a Set Action and test it on the individual source sheet — it does not appear to do anything. What is the issue?',
+          options: ['The Set Action needs to be published to Tableau Cloud before it activates', 'Set Actions only fire in dashboard context — they are dashboard-level features and will not trigger on individual sheet previews', 'The Set Action requires a LOD expression to be wired up before it works', 'Set Actions are only supported in Tableau Server, not Tableau Desktop or Public'],
+          answerIndex: 1,
+          explanation: 'Set Actions are defined in Dashboard → Actions and only execute when a user interacts with a mark on a dashboard. Sheet-level preview does not trigger dashboard actions.'
+        },
+
+        // ── Performance, Custom SQL, Prep (Q22–27) ───────────────
+        {
+          id: 'tb-a-f-22',
+          type: 'mcq',
+          prompt: 'Performance Recording shows "Querying" accounts for 85% of load time. What is the most effective first fix?',
+          options: ['Reduce the number of colour shades in the workbook', 'Switch from Live to Extract — eliminating repeated database round-trips on each user interaction', 'Move all sheets from dashboards to individual tabs', 'Add more calculated fields to pre-compute values'],
+          answerIndex: 1,
+          explanation: 'Querying bottleneck = the database (or network) is the slowest component. An Extract caches data in a local Hyper column-store. Subsequent interactions read from the fast cache, not the database.'
+        },
+        {
+          id: 'tb-a-f-23',
+          type: 'mcq',
+          prompt: 'A Custom SQL is used as a Live data source. Every filter takes 6 seconds. What is the root cause?',
+          options: ['Custom SQL is unsupported as a Live data source', 'The Custom SQL query re-executes against the database on every user interaction — the full query fires each time a filter changes', 'Tableau cannot display more than 10,000 rows from Custom SQL', 'The SQL WHERE clause is missing'],
+          answerIndex: 1,
+          explanation: 'Custom SQL on Live fires a full DB query on every interaction. Switching to Extract: the SQL runs once at refresh time, then all interactions read from local Hyper cache.'
+        },
+        {
+          id: 'tb-a-f-24',
+          type: 'mcq',
+          prompt: 'What does an Incremental Refresh do for a large extract on Tableau Cloud?',
+          options: ['Refreshes only specific sheets instead of all sheets', 'Fetches only rows added since the last refresh, appending them to the existing extract without re-downloading the full table', 'Reduces the colour palette to speed up visual refresh', 'Automatically deletes rows older than 12 months from the extract'],
+          answerIndex: 1,
+          explanation: 'Incremental Refresh uses a date/ID column to identify new rows and appends only those. For tables with millions of rows that grow daily, this is dramatically faster than a full refresh.'
+        },
+        {
+          id: 'tb-a-f-25',
+          type: 'mcq',
+          prompt: 'You have 500,000 order lines but the dashboard only shows Region × Category totals (12 combinations). What Tableau Prep node reduces the data to 12 rows before extraction?',
+          options: ['Input filter on Order Date', 'Aggregate node — grouping by Region and Category, summing Sales and Profit', 'Join node combining two input flows', 'Clean node removing null values'],
+          answerIndex: 1,
+          explanation: 'The Aggregate node in Prep collapses the data to a specified group-by grain and applies aggregation functions. 4 regions × 3 categories = 12 rows output — exactly what the dashboard needs.'
+        },
+        {
+          id: 'tb-a-f-26',
+          type: 'mcq',
+          prompt: 'What does Density mark type solve on a scatter plot with 200,000 data points?',
+          options: ['It converts the scatter to a bar chart automatically', 'It aggregates overlapping points into a heatmap — showing where clusters concentrate without reducing the underlying data', 'It increases the rendering speed by hiding marks behind the axis', 'It converts the data source to a smaller extract automatically'],
+          answerIndex: 1,
+          explanation: 'Density marks bin and visually aggregate overlapping points. 200K points becomes a smooth heatmap — readable, performant, and showing cluster structure instead of a black blob.'
+        },
+        {
+          id: 'tb-a-f-27',
+          type: 'mcq',
+          prompt: 'What is the primary purpose of a data source filter?',
+          options: ['To add visual filter controls to every sheet automatically', 'To remove rows from what Tableau processes at connection time — reducing data volume before any sheet-level query, calc, or render step', 'To convert the connection from Live to Extract', 'To restrict certain users from accessing specific columns'],
+          answerIndex: 1,
+          explanation: 'Data source filters execute at connection time — the earliest possible stage. Every downstream operation works on fewer rows, compounding the performance benefit across every sheet and dashboard.'
+        },
+
+        // ── Deployment and Embedding (Q28–30) ────────────────────
+        {
+          id: 'tb-a-f-28',
+          type: 'mcq',
+          prompt: '2 people publish workbooks, 10 explore data, 200 only view. What is the correct Tableau Cloud licence mix?',
+          options: ['212 Creator licences', '2 Creator + 10 Explorer + 200 Viewer licences', '2 Creator + 210 Viewer licences', '212 Viewer licences — cheapest option'],
+          answerIndex: 1,
+          explanation: 'Creators: publish and build data sources. Explorers: create ad-hoc views from existing published data sources. Viewers: view-only. Matching role to licence minimises cost while preserving capability.'
+        },
+        {
+          id: 'tb-a-f-29',
+          type: 'mcq',
+          prompt: 'What does USERNAME() enable when used in a Row Level Security calculated field on Tableau Cloud?',
+          options: ['It displays the Tableau version number in the view', 'It returns the logged-in viewer\'s email address, enabling dynamic RLS where each user automatically sees only rows matching their identity — without manual user-to-data mapping in Tableau', 'It auto-fills the dashboard title with the user\'s name', 'It restricts PDF export access to specific users'],
+          answerIndex: 1,
+          explanation: 'USERNAME() on Tableau Cloud = the viewer\'s email. Filter [Allowed Email] = USERNAME() and each user sees only their rows. Adding new users means updating the data, not reconfiguring Tableau.'
+        },
+        {
+          id: 'tb-a-f-30',
+          type: 'mcq',
+          prompt: 'Across this entire Tableau Advanced track — LODs, table calcs, Sets, performance, deployment — what unifying capability do they all extend?',
+          options: ['They all require Tableau Server to function — none work in Tableau Public', 'Each removes a different ceiling: LODs and table calcs deepen analytical power; Sets enable live interactivity; performance tuning makes it scale; Cloud/Server/API makes it organisational — together they complete Tableau as an enterprise platform', 'The advanced track focuses solely on visual design and colour theory', 'Advanced features are only needed for workbooks exceeding 1 million rows'],
+          answerIndex: 1,
+          explanation: 'Advanced Tableau is about removing limits at every layer: analytical depth, interactive dynamism, performance at scale, and enterprise reach. Each module lifts a ceiling the previous track left in place.'
         }
       ]
     }

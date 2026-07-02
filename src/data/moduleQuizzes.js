@@ -3861,6 +3861,723 @@ const QUIZ_BANK = {
     ]
   },
 
+  'tb-b-2': {
+    title: 'Check your understanding: Installing Tableau Public and loading data',
+    intro: 'Test your knowledge of connecting Tableau to real data.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'Why is "Sample Superstore" used as the dataset throughout this Tableau track?',
+        options: ['It is the only dataset Tableau can open', 'It is the same dataset Tableau itself ships with for teaching, so skills practised on it transfer directly to countless real tutorials and sample workbooks', 'It contains no numeric data, only text', 'It is required for Tableau Public accounts specifically'],
+        answerIndex: 1,
+        explanation: 'Sample Superstore is Tableau\'s own long-standing teaching dataset, making it the most transferable choice for a beginner to practise on.'
+      },
+      {
+        id: 'q2',
+        prompt: 'What does the Data Source page show right after connecting to a file?',
+        options: ['A list of every Tableau Public profile', 'A preview of the full table, with each column\'s detected data type shown by an icon above it', 'The finished dashboard', 'A billing summary'],
+        answerIndex: 1,
+        explanation: 'The Data Source page lets you confirm column types are correct before building any charts, the same habit emphasised in the Excel and Power BI tracks.'
+      },
+      {
+        id: 'q3',
+        prompt: 'A simple test for telling Dimensions and Measures apart: a question starting with "how much" or "how many" usually points to which one?',
+        options: ['Dimension', 'Measure', 'Neither — that distinction does not apply to numeric questions', 'It depends only on the field\'s colour'],
+        answerIndex: 1,
+        explanation: '"How much Sales" or "how many units" are aggregation questions, which is exactly what a Measure represents.'
+      },
+      {
+        id: 'q4',
+        prompt: 'A numeric Order ID column is automatically treated as a Measure by Tableau. Why might you manually move it to Dimensions instead?',
+        options: ['Order ID cannot be displayed in Tableau at all', 'An ID-like numeric field should usually be grouped/categorised rather than summed or averaged, which is what a Dimension is for', 'Dimensions load faster than Measures in every case', 'Tableau requires all numeric fields to be Dimensions'],
+        answerIndex: 1,
+        explanation: 'Numeric ID-like fields are the classic exception to "numbers are Measures" — you would never want to SUM an Order ID.'
+      },
+      {
+        id: 'q5',
+        prompt: 'What is the key difference between a Live connection and an Extract?',
+        options: ['They are identical in every way', 'Live queries the original source every interaction (always current, but as fast as the source); Extract copies a compressed snapshot into Tableau\'s fast internal engine (faster, but needs explicit refreshing)', 'Extract only works with CSV files', 'Live connections cannot be used with Tableau Public'],
+        answerIndex: 1,
+        explanation: 'This is conceptually the same Import vs DirectQuery tradeoff covered in the Power BI track, under different names.'
+      }
+    ]
+  },
+
+  'tb-b-3': {
+    title: 'Check your understanding: Your first chart in 5 minutes',
+    intro: 'Test your knowledge of building charts by dragging fields onto shelves.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'You drag Category onto Columns and Sales onto Rows. What does Tableau do?',
+        options: ['Nothing happens until a chart type is manually selected', 'It automatically draws a bar chart, with one bar per category, sized by total Sales — chosen automatically based on what was dragged where', 'It throws an error, since two fields cannot be combined this way', 'It only shows the first row of data'],
+        answerIndex: 1,
+        explanation: 'Tableau infers an appropriate chart type from the fields placed on the shelves, rather than requiring a chart type to be chosen first.'
+      },
+      {
+        id: 'q2',
+        prompt: 'What does the "Show Me" panel do?',
+        options: ['Permanently locks the current chart type', 'Highlights every chart type compatible with your currently selected fields, letting you switch to an alternative visualisation instantly', 'Publishes the workbook to Tableau Public', 'Deletes unused fields from the dataset'],
+        answerIndex: 1,
+        explanation: 'Show Me suggests valid alternative chart types for the fields currently in use, greying out ones that would not fit.'
+      },
+      {
+        id: 'q3',
+        prompt: 'Right-clicking SUM(Sales) on the Rows shelf and switching it to Average changes what, exactly?',
+        options: ['It deletes the Sales field entirely', 'It changes the aggregation shown — from total Sales per category to average Sales per category — answering a different business question from the same data', 'It converts Sales into a Dimension', 'It has no visible effect on the chart'],
+        answerIndex: 1,
+        explanation: 'Switching aggregation type changes what number each bar represents, without needing to rebuild the chart from scratch.'
+      },
+      {
+        id: 'q4',
+        prompt: 'Dragging Profit onto the "Color" box in the Marks card does what to an existing Sales-by-Category bar chart?',
+        options: ['It removes the Sales data from the chart', 'It shades each bar according to its Profit value, layering a second insight onto the same chart without building a separate one', 'It deletes the Profit field from the dataset', 'It converts the bar chart into a map'],
+        answerIndex: 1,
+        explanation: 'The Marks card lets you encode an additional Measure visually (via colour, size, or label) directly onto an existing chart.'
+      },
+      {
+        id: 'q5',
+        prompt: 'Why does dragging State directly onto the canvas automatically produce a map, with no chart type chosen manually?',
+        options: ['It does not — a map must always be built manually', 'Tableau recognises "State" as a geographic field and automatically generates a map, one of its most distinctive beginner-friendly features', 'Maps require a separate paid Tableau license', 'Geographic fields must first be converted to numbers'],
+        answerIndex: 1,
+        explanation: 'Tableau\'s built-in geographic role recognition is what allows fields like State, City, or Country to instantly become map visuals.'
+      }
+    ]
+  },
+
+  'tb-b-4': {
+    title: 'Check your understanding: Filters and groups',
+    intro: 'Test your knowledge of narrowing and combining data within a sheet.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What happens when you drag Profit onto the Filters shelf and set a range of "less than 0"?',
+        options: ['It deletes every loss-making order from the underlying data', 'The current sheet recalculates to show only orders where Profit is negative, instantly surfacing loss-making orders', 'It converts Profit into a Dimension', 'Nothing visible changes until the workbook is published'],
+        answerIndex: 1,
+        explanation: 'A Filters shelf entry restricts what the sheet displays and recalculates from, without altering the underlying source data.'
+      },
+      {
+        id: 'q2',
+        prompt: 'What is the key difference between a filter set directly on the Filters shelf and a "Quick Filter" (Show Filter)?',
+        options: ['They behave identically in every way', 'A plain Filters shelf entry is fixed and invisible to the viewer; a Quick Filter adds a visible, interactive control the viewer can change themselves', 'Quick Filters only work with numeric fields', 'Plain filters can only be applied to dates'],
+        answerIndex: 1,
+        explanation: 'This mirrors the Filter-vs-Slicer distinction from the Power BI track — one is builder-controlled and fixed, the other is viewer-facing and interactive.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What does a "Relative Date" filter (like "last 3 months") do that a fixed date range filter does not?',
+        options: ['It permanently deletes older data', 'It automatically updates as time passes, useful for a dashboard meant to be reused indefinitely without manual adjustment', 'It only works with Tableau Public, not Desktop', 'It disables all other filters on the sheet'],
+        answerIndex: 1,
+        explanation: 'A relative date filter recalculates its window automatically going forward, unlike a fixed range that would need manual updating.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What does creating a Group from several Sub-Category values (like combining "Chairs" and "Bookcases") achieve?',
+        options: ['It permanently deletes the original sub-category values from the dataset', 'It creates a new combined field treating the selected values as one single category, without changing the underlying source data', 'It converts the field into a Measure', 'It automatically builds a dashboard'],
+        answerIndex: 1,
+        explanation: 'Groups let an analyst define a custom level of detail for a specific audience, layered on top of the original data rather than replacing it.'
+      },
+      {
+        id: 'q5',
+        prompt: 'A retail analyst wants to find which specific product lines are losing money. What is the most direct way to do this with the tools from this lesson?',
+        options: ['Manually scroll through every row of raw data', 'Filter to Profit < 0, then break the filtered view down by Sub-Category', 'Delete all rows with positive Profit from the source file', 'Rename every Sub-Category field'],
+        answerIndex: 1,
+        explanation: 'Combining a Measure filter (Profit < 0) with a Dimension breakdown (Sub-Category) directly answers "which specific things are the problem," rather than requiring manual inspection.'
+      }
+    ]
+  },
+
+  // Tableau Advanced
+  'tb-a-1': {
+    title: 'Check your understanding: Advanced LOD patterns',
+    intro: 'Test your knowledge of nested LODs, cohort analysis, and advanced aggregation.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'In a cohort retention analysis, what does the calculated field { FIXED [Customer ID] : MIN(DATETRUNC("month", [Order Date])) } represent?',
+        options: ['The average order month across all customers', 'The first (earliest) calendar month in which each customer placed an order — their acquisition cohort', 'The most recent order month per customer', 'The total number of months a customer has been active'],
+        answerIndex: 1,
+        explanation: 'MIN with DATETRUNC("month") truncates all order dates to the start of their month, then takes the earliest — giving you the month the customer first appeared.'
+      },
+      {
+        id: 'q2',
+        prompt: 'What does "Cohort Age" (DATEDIFF("month", [First Order Month], DATETRUNC("month", [Order Date]))) equal for a customer\'s very first order?',
+        options: ['1 — the first month is counted as month 1', '0 — the distance from the first order month to itself is zero', '-1 — representing the month before acquisition', 'It varies by customer'],
+        answerIndex: 1,
+        explanation: 'DATEDIFF from a date to itself is always 0. Cohort Age 0 means "the acquisition month" — every customer appears in their own cohort at age 0.'
+      },
+      {
+        id: 'q3',
+        prompt: 'You want to compute "% of grand total" where the denominator is the true dataset total — completely unaffected by any quick filter the user applies. Which formula is correct?',
+        options: ['SUM([Sales]) / TOTAL(SUM([Sales]))', 'SUM([Sales]) / { FIXED : SUM([Sales]) }', 'WINDOW_SUM(SUM([Sales]), FIRST(), LAST())', 'SUM([Sales]) / AVG([Sales])'],
+        answerIndex: 1,
+        explanation: 'An empty FIXED collapses to the full dataset total. Regular filters do not affect FIXED (unless promoted to Context Filters), making it the correct denominator for a view-independent % of total.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What does a "nested LOD" mean in practice?',
+        options: ['A LOD expression placed inside a table calculation', 'One LOD whose output is referenced as the input to another LOD — such as computing per-customer totals first, then ranking those totals', 'A LOD expression applied to more than three dimensions simultaneously', 'LODs cannot be nested — this is not a valid Tableau pattern'],
+        answerIndex: 1,
+        explanation: 'Nested LODs compose — e.g., Customer Revenue = { FIXED [Customer ID] : SUM([Sales]) } is then used inside RANK_UNIQUE([Customer Revenue]) to rank customers by their individual total.'
+      },
+      {
+        id: 'q5',
+        prompt: 'In a cohort retention table, LOOKUP(COUNTD([Customer ID]), FIRST()) is used as the denominator for Retention %. What does FIRST() do here?',
+        options: ['Returns the value from the very last column in the table', 'Fetches the value from the first column of the current row — the cohort\'s starting customer count at Age 0', 'Returns the first row of the entire table regardless of partitioning', 'Counts the first occurrence of each Customer ID'],
+        answerIndex: 1,
+        explanation: 'LOOKUP(expression, FIRST()) retrieves the value from the position FIRST() rows away — which is the first column in the current partition (the acquisition month column, Age 0). That gives you the cohort\'s starting size for the denominator.'
+      }
+    ]
+  },
+
+  'tb-a-2': {
+    title: 'Check your understanding: Advanced table calculations',
+    intro: 'Test your knowledge of WINDOW functions, LOOKUP, INDEX, and partitioning.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What does WINDOW_AVG(SUM([Sales]), -2, 0) compute on a monthly bar chart?',
+        options: ['The total sales over all time', 'A 3-month moving average: the average of the current month and the two months before it', 'The average sales for the next 2 months', 'The running total of sales from the start of the chart'],
+        answerIndex: 1,
+        explanation: '-2 = two rows before the current row; 0 = the current row. WINDOW_AVG across those three positions = 3-month moving average.'
+      },
+      {
+        id: 'q2',
+        prompt: 'You want to show the month-over-month Sales change. Which table calculation retrieves the previous month\'s value?',
+        options: ['RUNNING_SUM(SUM([Sales]), -1)', 'LOOKUP(SUM([Sales]), -1)', 'INDEX() - 1', 'WINDOW_SUM(SUM([Sales]), -1, -1)'],
+        answerIndex: 1,
+        explanation: 'LOOKUP(expression, offset) retrieves a value offset rows away. -1 means one row behind the current row — the previous month when months are on the axis.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What does LAST() = 0 evaluate to true for?',
+        options: ['Every row in the view', 'Only the last row in the current table partition', 'Only rows where Sales = 0', 'The first row in the current partition'],
+        answerIndex: 1,
+        explanation: 'LAST() returns the distance to the last row. At the last row itself, LAST() = 0. This is commonly used to label only the final data point on a line chart.'
+      },
+      {
+        id: 'q4',
+        prompt: 'Your RUNNING_SUM resets unexpectedly at each Sub-Category instead of running continuously across the full date axis. What is the most likely cause?',
+        options: ['RUNNING_SUM does not work with date fields', 'The Compute Using setting is set to "Table (Down)" when it should be "Table (Across)" or to the specific Date dimension', 'You need to convert the field to a Measure first', 'Sub-Category must be removed from the view entirely'],
+        answerIndex: 1,
+        explanation: '"Compute Using" controls what direction the table calc traverses. If it moves Down (across Sub-Category) instead of Across (along the Date axis), it resets at each Sub-Category.'
+      },
+      {
+        id: 'q5',
+        prompt: 'When is SUM([Sales]) / TOTAL(SUM([Sales])) preferable to SUM([Sales]) / { FIXED : SUM([Sales]) } for a % of total?',
+        options: ['Never — FIXED is always more accurate', 'When you want the "total" to respect whatever filters the user applies — the view-based total changes dynamically with quick filters', 'When you need the percentage to always sum to more than 100%', 'TOTAL() and FIXED produce identical results in all cases'],
+        answerIndex: 1,
+        explanation: 'TOTAL() is a table calc that sums whatever is visible in the view. Quick filters change what is visible, so TOTAL() changes too — giving you a percentage within the filtered set. FIXED ignores view filters (unless promoted to Context).'
+      }
+    ]
+  },
+
+  'tb-a-3': {
+    title: 'Check your understanding: Sets and set actions',
+    intro: 'Test your knowledge of dynamic segmentation and interactive set-based filtering.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What is the key difference between a Tableau Group and a Tableau Set?',
+        options: ['Groups are for Measures; Sets are for Dimensions', 'Groups are static user-defined labels; Sets can be dynamic (condition or Top-N based) and can change interactivity via Set Actions', 'Sets can only contain two members; Groups can contain unlimited members', 'There is no functional difference — they are aliases for the same feature'],
+        answerIndex: 1,
+        explanation: 'Groups are static — you pick members manually. Sets can be computed (top N, condition-based) and their membership can change live via Set Actions when users interact with a dashboard.'
+      },
+      {
+        id: 'q2',
+        prompt: 'A Set Action is configured with "Run on: Select" and "Clearing the selection: Remove all values from set." What happens when a user clicks a bar, then clicks away on blank canvas?',
+        options: ['The set retains the last selected member permanently', 'Clicking the bar adds members to the set; clicking away empties the set — reverting all downstream charts to show all data', 'The set is deleted when the selection is cleared', 'Nothing changes when clicking away'],
+        answerIndex: 1,
+        explanation: '"Remove all values from set" empties the set when the selection is cleared. Downstream sheets that filter on the set then show all data again — a natural reset behaviour.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What is the advantage of using Set Actions with Opacity encoding over a Filter Action for comparing a selected item against all others?',
+        options: ['Set Actions are faster to configure than filter actions', 'With Set Actions + Opacity, non-selected marks dim (stay visible for context). With Filter Actions, non-selected marks disappear — hiding the comparison context', 'Filter Actions are deprecated in Tableau and should not be used', 'Set Actions work on sheets; Filter Actions only work on dashboards'],
+        answerIndex: 1,
+        explanation: 'Highlighting-in-context (dim but show) is valuable when you want to see how the selected item compares to the full picture. Filter actions remove context, making comparison impossible.'
+      },
+      {
+        id: 'q4',
+        prompt: 'You create a "Top 10 by Sales" set and a "Top 10 by Profit" set, then create a Combined Set for "Set A except Set B." What does this combined set contain?',
+        options: ['Products in the top 10 by both Sales AND Profit', 'Products in the top 10 by Sales but NOT in the top 10 by Profit — high-revenue, low-margin products', 'Products in neither the Sales nor the Profit top 10', 'Products in the top 10 by Profit but not by Sales'],
+        answerIndex: 1,
+        explanation: '"Set A except Set B" = members of A that are not in B. Top-10-Sales minus Top-10-Profit = products with high revenue but relatively low profit — exactly the margin problem candidates.'
+      },
+      {
+        id: 'q5',
+        prompt: 'Where can you test whether a Set Action is working correctly?',
+        options: ['In the individual sheet preview — set actions work the same on sheets and dashboards', 'Only on the actual dashboard — Set Actions are dashboard-only features and will not work on individual sheet previews', 'In the Data Source page, under the Sets panel', 'Using the Performance Recorder only'],
+        answerIndex: 1,
+        explanation: 'Set Actions are defined at the dashboard level and only execute in dashboard context. Always test them on the assembled dashboard, not on the source sheets.'
+      }
+    ]
+  },
+
+  'tb-a-4': {
+    title: 'Check your understanding: Performance tuning and Custom SQL',
+    intro: 'Test your knowledge of diagnosing slow workbooks and optimising Tableau deployments.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What does Tableau\'s Performance Recording show?',
+        options: ['Only the total workbook load time as a single number', 'A detailed Gantt-style breakdown of every operation — Querying, Geocoding, Computing, Rendering, Layout — with timing for each', 'A list of all calculations sorted by complexity', 'Only errors and warnings, not timing data'],
+        answerIndex: 1,
+        explanation: 'Performance Recording captures every operation in a workbook interaction and shows a flame chart per operation type. This tells you whether the bottleneck is database querying, calc computation, or mark rendering.'
+      },
+      {
+        id: 'q2',
+        prompt: 'When is a Live connection preferable to an Extract in Tableau?',
+        options: ['Always — live connections are always faster because they use the database\'s native query engine', 'When you genuinely need real-time or near-real-time data (stock prices, live dashboards) that cannot tolerate a refresh delay', 'When the workbook has more than 10 sheets', 'When the data source is an Excel file'],
+        answerIndex: 1,
+        explanation: 'Extracts are almost always faster for interactive work. The main justification for Live is a hard requirement for data freshness — dashboards that must show the latest minute\'s data, for example.'
+      },
+      {
+        id: 'q3',
+        prompt: 'A Custom SQL query is used as a Live data source for a workbook with 5 dashboards. Users report that every filter interaction takes 8 seconds. What is the most likely cause and fix?',
+        options: ['The workbook has too many colours — remove all colour encoding', 'The Custom SQL re-executes against the database on every user interaction in Live mode. Fix: switch to an Extract so the query runs once and results are cached locally', 'Increase the monitor resolution', 'Delete half the dashboards'],
+        answerIndex: 1,
+        explanation: 'Custom SQL on a Live connection fires on every interaction. Pre-aggregate in the SQL, then switch to Extract — the query runs at refresh time, and every user interaction reads from the fast local Hyper cache.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What is the primary purpose of a data source filter in Tableau?',
+        options: ['To add colour formatting to the data before it loads', 'To permanently remove rows from what Tableau sees at connection time — reducing data volume before any sheet-level processing begins', 'To prevent viewers from applying their own filters', 'To convert a Live connection into an Extract automatically'],
+        answerIndex: 1,
+        explanation: 'Data source filters are the broadest reduction tool — they cut rows before any query, calc, or rendering stage. If the dashboard only ever shows 2 years of a 10-year table, filter at source and eliminate 80% of the data volume immediately.'
+      },
+      {
+        id: 'q5',
+        prompt: 'What is Tableau Prep Builder used for?',
+        options: ['Building dashboards with more templates than Tableau Desktop', 'Visually cleaning, reshaping, and preparing data before it reaches Tableau Desktop — using a flow-diagram interface with Input, Clean, Join, Aggregate, and Output nodes', 'Writing and testing LOD expressions interactively', 'Managing user licences on Tableau Cloud'],
+        answerIndex: 1,
+        explanation: 'Tableau Prep is a dedicated ETL tool with a visual flow interface. It sits upstream of Tableau Desktop — you clean and shape data in Prep, output a clean extract, and then build the viz in Desktop.'
+      }
+    ]
+  },
+
+  // Tableau Intermediate
+  'tb-i-1': {
+    title: 'Check your understanding: Calculated fields',
+    intro: 'Test your knowledge of creating formulas inside Tableau.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'Where do calculated fields appear in the Tableau interface after you create them?',
+        options: ['On the Columns shelf automatically', 'In the Data pane, marked with a small "=" icon, ready to drag like any other field', 'Only in the Format menu', 'They appear only when the workbook is published'],
+        answerIndex: 1,
+        explanation: 'Calculated fields are first-class citizens in the Data pane — you treat them identically to any sourced column once created.'
+      },
+      {
+        id: 'q2',
+        prompt: 'You want to compute profit margin as Profit divided by Sales. What safety check should you add?',
+        options: ['Nothing — division always works in Tableau', 'Wrap with IIF([Sales]=0, 0, [Profit]/[Sales]) to avoid a division-by-zero error on rows where Sales is zero', 'Add a TRIM() around the result', 'Use a table calculation instead'],
+        answerIndex: 1,
+        explanation: 'Dividing by a field that can be zero produces NULL or an error. IIF checks for zero first and returns a safe default of 0.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What is the key difference between a regular calculated field and a table calculation like RUNNING_SUM?',
+        options: ['There is no difference — they compute identically', 'A regular calc runs on raw data rows; a table calculation runs on the already-aggregated values visible in the current view', 'Table calculations can only be used in maps', 'Regular calcs cannot use IF statements'],
+        answerIndex: 1,
+        explanation: 'Table calcs (RUNNING_SUM, RANK, WINDOW_AVG) operate on the numbers already in the view, not on the underlying row-level data.'
+      },
+      {
+        id: 'q4',
+        prompt: 'Which function would correctly extract just the year from an Order Date field?',
+        options: ['YEAR([Order Date])', 'DATEPART("year", [Order Date])', 'LEFT([Order Date], 4)', 'Both A and B are correct — YEAR() is an alias for DATEPART("year",…)'],
+        answerIndex: 3,
+        explanation: 'Tableau supports both YEAR() as a shorthand and DATEPART("year",…) as the explicit form. Both produce the same integer year value.'
+      },
+      {
+        id: 'q5',
+        prompt: 'You need to categorise orders into "Small" (<$100), "Medium" ($100–$499), and "Large" (≥$500). Which Tableau construct handles multi-branch conditional logic like this?',
+        options: ['TRIM()', 'IF / ELSEIF / ELSE / END', 'RUNNING_SUM()', 'DATEDIFF()'],
+        answerIndex: 1,
+        explanation: 'IF … ELSEIF … ELSE … END evaluates conditions in sequence and returns the value for the first branch that is true.'
+      }
+    ]
+  },
+
+  'tb-i-2': {
+    title: 'Check your understanding: Parameters',
+    intro: 'Test your knowledge of building dynamic, user-controlled views with parameters.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What is the fundamental difference between a Tableau parameter and a Tableau filter?',
+        options: ['There is no difference — they both remove rows from the data', 'A filter removes rows from the view; a parameter is a user-controlled variable that feeds into calculated fields or reference lines', 'Parameters can only be used with date fields', 'Filters are only available to published workbooks'],
+        answerIndex: 1,
+        explanation: 'Parameters are named variables — they do nothing on their own. Only when referenced in a calc, filter condition, or reference line do they produce visible effects.'
+      },
+      {
+        id: 'q2',
+        prompt: 'You build a "Top N Products" feature with a parameter set to 10. The user moves the slider to 5. What actually controls how many bars appear in the bar chart?',
+        options: ['The parameter alone automatically limits the number of bars', 'A calculated field like RANK(SUM([Sales])) <= [Top N] placed on the Filters shelf keeps only the rows where this is TRUE', 'The parameter modifies the database query directly', 'Nothing — parameters cannot affect the number of marks shown'],
+        answerIndex: 1,
+        explanation: 'A parameter only stores the number the user picked. A RANK-based calculated field on the Filters shelf uses that number to decide which rows to show.'
+      },
+      {
+        id: 'q3',
+        prompt: 'How do you make a parameter control visible and interactive to dashboard viewers?',
+        options: ['Parameters are always visible automatically', 'Right-click the parameter in the Data pane → "Show Parameter" to add its control (slider/dropdown) to the sheet or dashboard', 'Parameters can only be changed by editing the workbook in Tableau Desktop', 'You must publish to Tableau Server — parameters are not interactive in Tableau Public'],
+        answerIndex: 1,
+        explanation: '"Show Parameter" adds the control to the canvas. Without this step the parameter exists but the user has no way to change its value.'
+      },
+      {
+        id: 'q4',
+        prompt: 'A "Metric Selector" parameter lets users choose between Sales, Profit, and Quantity. What calculated field pattern correctly wires the parameter to the chart axis?',
+        options: ['SUM([Sales]) + SUM([Profit]) + SUM([Quantity])', 'CASE [Metric Selector] WHEN "Sales" THEN SUM([Sales]) WHEN "Profit" THEN SUM([Profit]) WHEN "Quantity" THEN SUM([Quantity]) END', 'IF [Metric Selector] = ALL THEN SUM([Sales]) END', 'Parameters cannot be used inside CASE statements'],
+        answerIndex: 1,
+        explanation: 'A CASE statement matches the current string value of the parameter and returns the corresponding aggregation — clean, readable, and maintainable.'
+      },
+      {
+        id: 'q5',
+        prompt: 'Where can you visually place a parameter control so dashboard viewers can easily find and use it?',
+        options: ['Only at the very bottom of the screen, permanently', 'Directly on the dashboard canvas, positioned wherever is most useful — typically near the chart it controls', 'Parameters can only appear in a separate pop-up window', 'Parameters are only accessible from the top menu bar'],
+        answerIndex: 1,
+        explanation: 'On a dashboard, a parameter control is just another object you drag and position. Placing it near its associated chart is best practice for usability.'
+      }
+    ]
+  },
+
+  'tb-i-3': {
+    title: 'Check your understanding: Maps and geographic data',
+    intro: 'Test your knowledge of building geographic visualisations in Tableau.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What does Tableau use to automatically convert a "State" column into map coordinates, without any external API?',
+        options: ['A live connection to Google Maps', 'Tableau\'s built-in geocoding database, which covers countries, states, cities, zip codes, and more', 'A manual latitude/longitude import every time', 'Tableau cannot handle geographic data without a paid add-on'],
+        answerIndex: 1,
+        explanation: 'Tableau ships with a built-in geocoding engine. Assigning the correct Geographic Role to a field is all it takes for standard administrative geographies.'
+      },
+      {
+        id: 'q2',
+        prompt: 'When should you use a symbol map instead of a filled map?',
+        options: ['Always — symbol maps are strictly better than filled maps', 'When plotting city-level or point-level data (stores, events), because Tableau cannot fill polygons at sub-state granularity', 'Only when your data has negative values', 'When the data has more than 1000 rows'],
+        answerIndex: 1,
+        explanation: 'Filled maps shade polygons (country, state) — they break down at city or store level where polygon boundaries are not in Tableau\'s geocoding database. Symbol maps plot a circle at any geographic point.'
+      },
+      {
+        id: 'q3',
+        prompt: 'On a symbol map, you put Sales on Size and Profit on Color. What does a large red bubble tell you?',
+        options: ['This location has many customers but is very old', 'This location has high sales volume (large bubble) but is unprofitable (red color) — a high-priority problem area', 'This location has low sales and high profit', 'The color is just a formatting choice with no data meaning'],
+        answerIndex: 1,
+        explanation: 'Encoding two measures on Size and Color simultaneously lets you see both dimensions at a glance — identifying the high-revenue, loss-making locations is a classic use of this pattern.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What is the purpose of a dual-axis map in Tableau?',
+        options: ['To display two entirely separate maps side by side', 'To overlay two mark layers — for example, filled state polygons AND city-level circles — on a single map', 'To show a before-and-after comparison', 'To connect two different data sources on one canvas'],
+        answerIndex: 1,
+        explanation: 'A dual-axis map merges two Latitude pills into a single map canvas with two independent Marks card layers, allowing polygon fills and point symbols to coexist on the same geographic view.'
+      },
+      {
+        id: 'q5',
+        prompt: 'Your dataset contains coordinates for 500 delivery hubs that are not in Tableau\'s geocoding database. How do you plot them on a map?',
+        options: ['You cannot — Tableau only supports standard administrative boundaries', 'Include Latitude and Longitude as numeric columns in the data, assign each the correct Geographic Role, and drag both to the Columns/Rows shelves', 'You must purchase a custom geocoding plugin', 'Use the Map menu → Download Custom Geographies for all non-standard locations'],
+        answerIndex: 1,
+        explanation: 'Tableau accepts explicit latitude and longitude columns for any custom geography. This is the universal escape hatch for locations not in Tableau\'s built-in geocoding database.'
+      }
+    ]
+  },
+
+  'tb-i-4': {
+    title: 'Check your understanding: LOD expressions',
+    intro: 'Test your knowledge of controlling aggregation granularity with FIXED, INCLUDE, and EXCLUDE.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What problem does a LOD (Level of Detail) expression solve that a regular SUM() cannot?',
+        options: ['LOD expressions load data faster', 'They let you compute an aggregation at a specific granularity — independent of whatever dimensions currently appear in the view', 'LOD expressions replace the need for calculated fields', 'They automatically create geographic maps'],
+        answerIndex: 1,
+        explanation: 'Without LOD, every aggregation respects the view granularity. LOD expressions let you pin an aggregation to a different level, such as "always give me the region total regardless of which sub-categories are visible."'
+      },
+      {
+        id: 'q2',
+        prompt: 'What does { FIXED [Region] : SUM([Sales]) } compute?',
+        options: ['The total sales filtered to whatever Region is selected', 'The total sales summed separately for each Region, regardless of any other dimensions in the view', 'The average sales across all Regions', 'The rank of each Region by sales'],
+        answerIndex: 1,
+        explanation: 'FIXED [Region] : SUM([Sales]) computes one value per Region and stamps it on every row belonging to that region — it does not change if you also have Category or Sub-Category in the view.'
+      },
+      {
+        id: 'q3',
+        prompt: 'You want "average sales per customer" — the average of each customer\'s total spend. Why is AVG([Sales]) wrong for this?',
+        options: ['AVG() does not work on numeric fields', 'AVG([Sales]) averages every individual order line, not the per-customer total — you need INCLUDE [Customer ID] : SUM([Sales]) first, then average those sums', 'There is no difference — AVG produces the same number as INCLUDE in this case', 'You should use EXCLUDE instead of INCLUDE for per-customer averages'],
+        answerIndex: 1,
+        explanation: 'AVG([Sales]) averages row-level values. To get the average of per-customer totals, you must first SUM per customer (INCLUDE), then AVG those sums — giving true average customer value.'
+      },
+      {
+        id: 'q4',
+        prompt: 'Your view has Region and Category on Rows. You want each Category\'s share of its own Region total (not grand total). Which LOD correctly computes the Region subtotal?',
+        options: ['{ FIXED [Category] : SUM([Sales]) }', '{ EXCLUDE [Category] : SUM([Sales]) }', '{ INCLUDE [Region] : SUM([Sales]) }', 'SUM([Sales]) / TOTAL(SUM([Sales]))'],
+        answerIndex: 1,
+        explanation: 'EXCLUDE [Category] removes Category from the aggregation while keeping the Region dimension that IS in the view — giving the Region subtotal regardless of Category breakdown.'
+      },
+      {
+        id: 'q5',
+        prompt: 'A FIXED LOD expression is giving you unexpected results even after you apply a dimension filter on the Filters shelf. What is the most likely explanation?',
+        options: ['FIXED LODs are always wrong and should be avoided', 'FIXED LODs are computed BEFORE dimension filters on the Filters shelf; the filter does not affect the FIXED value unless you make it a Context Filter', 'FIXED LODs only respect numeric filters, not dimension filters', 'The FIXED expression needs to be wrapped in AVG() to respect filters'],
+        answerIndex: 1,
+        explanation: 'In Tableau\'s order of operations, FIXED LODs are computed before dimension filters. To force a dimension filter to affect a FIXED LOD, right-click the filter → "Add to Context."'
+      }
+    ]
+  },
+
+  // Machine Learning Beginner
+  'ml-b-1': {
+    title: 'Check your understanding: What is Machine Learning?',
+    intro: 'Test your knowledge of ML types, vocabulary, and the core workflow.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What is the fundamental difference between traditional programming and Machine Learning?',
+        options: ['Traditional programming is slower; ML is faster', 'Traditional programming requires a human to write every rule; ML shows the algorithm labelled examples and lets it discover the rules itself', 'ML always requires internet access; traditional programming does not', 'Traditional programming only works on numbers; ML works on all data types'],
+        answerIndex: 1,
+        explanation: 'The paradigm shift: instead of writing IF-THEN rules, you show examples. The algorithm infers the rules from the patterns in those examples.'
+      },
+      {
+        id: 'q2',
+        prompt: 'Predicting whether a patient will be readmitted to hospital within 30 days (Yes/No) is an example of which type of ML problem?',
+        options: ['Regression, because it involves medical numbers', 'Binary Classification, because the output is one of two discrete categories', 'Unsupervised Learning, because patient data is complex', 'Reinforcement Learning, because doctors learn from feedback'],
+        answerIndex: 1,
+        explanation: 'Yes/No outputs are binary classification. Regression produces a continuous number. The output type determines the problem type, not the domain.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What is "overfitting" in Machine Learning?',
+        options: ['The model trains for too many epochs and runs out of memory', 'The model memorised the training data so well it fails to generalise to new, unseen examples — it learned noise instead of pattern', 'The model has too few features to make accurate predictions', 'The model takes too long to make a single prediction'],
+        answerIndex: 1,
+        explanation: 'Overfitting = excellent training performance, poor test performance. The gap between training and test scores is the diagnostic signal.'
+      },
+      {
+        id: 'q4',
+        prompt: 'In supervised learning, what is the "label" (y)?',
+        options: ['The column names in a CSV file', 'The correct output value that the algorithm is trying to learn to predict', 'A category assigned to training data by the algorithm itself', 'The name of the algorithm being used'],
+        answerIndex: 1,
+        explanation: 'Labels are the ground-truth answers in training data. The algorithm adjusts itself until its predictions match the labels as closely as possible.'
+      },
+      {
+        id: 'q5',
+        prompt: 'Why must you set aside a test set that the model never sees during training?',
+        options: ['Test data is used to make the model faster', 'To measure how well the trained model generalises to genuinely new data — if you evaluated on training data, the score would be optimistically inflated', 'Test data is required by scikit-learn to run at all', 'Test sets are only needed for classification, not regression'],
+        answerIndex: 1,
+        explanation: 'Evaluating on training data tells you how well the model memorised what it studied. Evaluating on held-out test data tells you whether it can handle examples it has never seen — which is what matters in production.'
+      }
+    ]
+  },
+
+  'ml-b-2': {
+    title: 'Check your understanding: Data preparation',
+    intro: 'Test your knowledge of EDA, missing values, encoding, scaling, and train/test splits.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'Why is it critical to fit a StandardScaler only on the training set, then use transform() on the test set?',
+        options: ['Training data is always larger so the scaler works better on it', 'Fitting on the full dataset leaks test statistics (mean, std) into training — producing artificially optimistic test scores because the model indirectly "saw" the test set', 'StandardScaler produces errors when fit on test data', 'The test set does not need scaling — only training data does'],
+        answerIndex: 1,
+        explanation: 'This is data leakage. If the scaler learns from test data, the model has indirect information about the test set during training. The result: test metrics look better than they will be in production.'
+      },
+      {
+        id: 'q2',
+        prompt: 'You have a "Ship Mode" column with values "First Class", "Second Class", "Standard Class". The correct encoding for a linear model is:',
+        options: ['LabelEncoder (converts to 1, 2, 3)', 'OneHotEncoder — creates one binary column per category, avoiding false ordinal relationships', 'No encoding needed — linear models handle text', 'Convert each unique value to its string length'],
+        answerIndex: 1,
+        explanation: 'LabelEncoder implies an order (2 > 1). For nominal categories with no meaningful order, OneHotEncoder creates independent binary columns — no false ordering is implied.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What does train_test_split(X, y, stratify=y) do that the plain split does not?',
+        options: ['It splits the data alphabetically instead of randomly', 'It ensures both the train and test sets contain the same proportion of each class as the original dataset — crucial for imbalanced classification problems', 'It makes the split deterministic even without random_state', 'It automatically handles missing values before splitting'],
+        answerIndex: 1,
+        explanation: 'Without stratify, a random split could put 90% of minority-class examples in training by chance, making test evaluation misleading. Stratify preserves the ratio.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What does df.isnull().sum() tell you?',
+        options: ['The total sum of all numeric columns in the DataFrame', 'The count of missing (NaN) values per column — your starting point for deciding how to handle incomplete data', 'Whether the DataFrame has any duplicate rows', 'The number of unique values per column'],
+        answerIndex: 1,
+        explanation: '.isnull() produces a True/False mask per cell. .sum() counts the Trues per column. The result tells you exactly how many missing values exist in each feature.'
+      },
+      {
+        id: 'q5',
+        prompt: 'A house price column is strongly right-skewed with many high outliers. Which transformation makes the distribution more normal for linear modelling?',
+        options: ['StandardScaler', 'np.log1p() — log transformation compresses large values, pulling in the right tail', 'OneHotEncoder', 'Label encoding'],
+        answerIndex: 1,
+        explanation: 'Log transformation is particularly effective for right-skewed targets like price, salary, and revenue. log1p (log(1+x)) handles zero values gracefully. Linear models assume normally-distributed errors, which log transformation helps achieve.'
+      }
+    ]
+  },
+
+  'ml-b-3': {
+    title: 'Check your understanding: Linear Regression',
+    intro: 'Test your knowledge of regression concepts, evaluation metrics, and regularisation.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'In a trained Linear Regression model, a coefficient of 0.42 for MedInc means:',
+        options: ['42% of house prices are explained by income', 'For each one-unit increase in median income, the predicted house value increases by 0.42 (in the same units as y)', 'The model is 42% accurate', 'MedInc is the 42nd most important feature'],
+        answerIndex: 1,
+        explanation: 'Coefficients in linear regression have a direct interpretation: each unit increase in the feature produces a change of β in the prediction. This interpretability is a key advantage of linear models.'
+      },
+      {
+        id: 'q2',
+        prompt: 'RMSE penalises large prediction errors more than MAE does. Why?',
+        options: ['RMSE divides by a larger number than MAE', 'RMSE squares the errors before averaging — squaring amplifies large errors disproportionately, making RMSE more sensitive to outlier predictions', 'MAE does not work on datasets with more than 1000 rows', 'RMSE only measures positive errors; MAE measures both positive and negative'],
+        answerIndex: 1,
+        explanation: 'Squaring a large error (e.g., 10² = 100) produces a much larger penalty than squaring a small one (1² = 1). RMSE prioritises minimising large errors, which is often the right business objective.'
+      },
+      {
+        id: 'q3',
+        prompt: 'An R² score of 0.72 means:',
+        options: ['The model is correct 72% of the time', 'The model explains 72% of the variance in the target variable — a measure of how well the features collectively account for the variation in y', 'The RMSE is 0.72', 'The model overfits by 72%'],
+        answerIndex: 1,
+        explanation: 'R² is a relative measure: 1.0 is perfect, 0.0 means the model does no better than predicting the mean every time. 0.72 means 72% of y\'s variance is explained by the features.'
+      },
+      {
+        id: 'q4',
+        prompt: 'What is the key difference between Ridge (L2) and Lasso (L1) regularisation?',
+        options: ['Ridge is for regression; Lasso is for classification only', 'Ridge shrinks all coefficients toward zero but keeps them all; Lasso can shrink some coefficients to exactly zero — performing automatic feature selection', 'Lasso uses a squared penalty; Ridge uses an absolute value penalty', 'There is no practical difference — both produce identical results'],
+        answerIndex: 1,
+        explanation: 'Lasso\'s L1 penalty (absolute value) has a geometric property that drives coefficients to exactly zero. Ridge\'s L2 (squared) keeps all features but with smaller coefficients. Lasso is effectively a feature selection tool.'
+      },
+      {
+        id: 'q5',
+        prompt: 'A residual plot shows a clear U-shaped curve (not random scatter) around the zero line. What does this indicate?',
+        options: ['The model is performing perfectly', 'The relationship between features and target is non-linear — Linear Regression\'s assumption of linearity is violated, and a more complex model or polynomial features are needed', 'The training data had too many missing values', 'The RMSE is too high and needs normalisation'],
+        answerIndex: 1,
+        explanation: 'A random residual plot = good fit. A patterned residual plot (curve, fan, clusters) = the model is missing some structure in the data. The U-shape specifically indicates a quadratic (non-linear) relationship.'
+      }
+    ]
+  },
+
+  'ml-b-4': {
+    title: 'Check your understanding: Classification',
+    intro: 'Test your knowledge of Logistic Regression, Decision Trees, and Random Forests.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'Despite its name, Logistic Regression is a classification algorithm. What does it actually model?',
+        options: ['The best linear boundary between classes', 'The probability that an example belongs to the positive class — using a sigmoid function to map any number to the [0, 1] range', 'The distance between each data point and the class centroid', 'The number of features that predict each class'],
+        answerIndex: 1,
+        explanation: 'Logistic Regression outputs P(class=1|features). The sigmoid function constrains this to [0,1]. Thresholding at 0.5 produces the binary class prediction, but the raw probability is more informative for business decisions.'
+      },
+      {
+        id: 'q2',
+        prompt: 'A Decision Tree with max_depth=1 achieves 78% training accuracy and 77% test accuracy. The same tree with max_depth=20 achieves 99% training and 74% test accuracy. What is happening?',
+        options: ['max_depth=20 is underfitting — the tree is too shallow', 'max_depth=20 is overfitting — the tree memorised the training data so well it performs worse on new examples', 'Both models are performing identically', 'max_depth=20 has a bug in the implementation'],
+        answerIndex: 1,
+        explanation: 'The telltale overfitting signature: training score far higher than test score. max_depth=20 allows the tree to create very specific rules that match training noise perfectly but generalise poorly.'
+      },
+      {
+        id: 'q3',
+        prompt: 'Why does a Random Forest typically outperform a single Decision Tree?',
+        options: ['Random Forests are programmed to never make mistakes', 'It builds hundreds of trees on random subsets of data and features, then combines their votes — individual errors average out and bias reduces', 'Random Forests use better data preprocessing automatically', 'Single Decision Trees cannot handle numeric features'],
+        answerIndex: 1,
+        explanation: 'Ensemble averaging reduces variance. Each tree makes different mistakes (because they see different subsets). When hundreds of trees vote, individual errors cancel out — the majority is much more likely to be correct than any single tree.'
+      },
+      {
+        id: 'q4',
+        prompt: 'Why does K-Nearest Neighbours require feature scaling while a Decision Tree does not?',
+        options: ['KNN does not support categorical features; trees do', 'KNN computes distances between points — an unscaled large-valued feature (like salary) will dominate the distance calculation. Trees split on thresholds and do not use distance, so scale is irrelevant to them', 'Decision Trees are always more accurate, making scaling unnecessary', 'KNN requires more memory, and scaling reduces memory usage'],
+        answerIndex: 1,
+        explanation: 'Distance-based algorithms (KNN, SVM, K-Means, Neural Networks) are scale-sensitive. Tree-based algorithms (Decision Tree, Random Forest, Gradient Boosting) are scale-invariant — they split on ranked thresholds.'
+      },
+      {
+        id: 'q5',
+        prompt: 'model.predict_proba(X_test)[:, 1] returns what?',
+        options: ['The predicted class label (0 or 1) for each row', 'The probability that each example belongs to class 1 (the positive class)', 'The model\'s confidence score between -1 and +1', 'The number of features that contributed to each prediction'],
+        answerIndex: 1,
+        explanation: 'predict_proba returns a 2-column array: [P(class=0), P(class=1)] per row. Indexing [:, 1] extracts the positive-class probability for all rows — used for ROC curves, threshold tuning, and ranking.'
+      }
+    ]
+  },
+
+  'ml-b-5': {
+    title: 'Check your understanding: Model evaluation',
+    intro: 'Test your knowledge of confusion matrices, precision/recall, AUC, and cross-validation.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'A fraud detection model achieves 99.5% accuracy on a dataset where only 0.5% of transactions are fraud. Is this a good model?',
+        options: ['Yes — 99.5% accuracy is excellent by any measure', 'Not necessarily — a model that always predicts "not fraud" also achieves 99.5% accuracy without learning anything. Precision and Recall for the fraud class would reveal the model is useless.', 'It depends on whether the model used cross-validation', 'Yes, as long as the RMSE is below 0.01'],
+        answerIndex: 1,
+        explanation: 'This is the class imbalance trap. Accuracy is useless when classes are heavily skewed. Always check per-class Precision, Recall, and F1 — and consider AUC-ROC for ranking-based evaluation.'
+      },
+      {
+        id: 'q2',
+        prompt: 'A cancer screening model has high Recall (0.95) but low Precision (0.30). What does this mean in practice?',
+        options: ['The model catches 95% of all actual cancer cases, but 70% of its cancer predictions are false alarms (incorrect diagnoses)', 'The model misses 95% of cancer cases — very dangerous', 'The model is 30% more accurate than the previous version', 'Precision and Recall cannot both be reported for the same model'],
+        answerIndex: 1,
+        explanation: 'Recall = TP/(TP+FN) = 0.95 → catches 95% of real cases. Precision = TP/(TP+FP) = 0.30 → 70% of cancer flags are wrong. For screening, high recall (catch everything) is usually the priority — false alarms are followed up with better tests.'
+      },
+      {
+        id: 'q3',
+        prompt: 'What is the AUC-ROC score of a completely random classifier?',
+        options: ['1.0', '0.0', '0.5 — equivalent to random guessing', '-1.0'],
+        answerIndex: 2,
+        explanation: 'A random classifier has equal probability of ranking a positive above a negative — 50% by chance. AUC = 0.5 is the baseline. Values above 0.5 indicate the model is learning something; values below 0.5 mean predictions are worse than random (flip the predictions).'
+      },
+      {
+        id: 'q4',
+        prompt: 'Why is k-fold cross-validation more reliable than a single train/test split for estimating model performance?',
+        options: ['Cross-validation automatically selects the best algorithm', 'Every example is used as both training and test data across k runs — the average score is a more stable estimate than a single split that might be lucky or unlucky', 'Cross-validation removes outliers from the dataset automatically', 'A single split cannot be used with classification problems'],
+        answerIndex: 1,
+        explanation: 'One split can have a fortunate or unfortunate composition by chance. 5-fold CV trains and evaluates 5 times, using all data. The variance in the 5 scores also tells you how stable the model is.'
+      },
+      {
+        id: 'q5',
+        prompt: 'In a confusion matrix for churn prediction, a False Negative means:',
+        options: ['The model correctly predicted a customer would not churn', 'The model predicted a customer would NOT churn, but they actually did churn — a missed intervention opportunity', 'The model predicted churn, but the customer stayed', 'The model made a correct churn prediction'],
+        answerIndex: 1,
+        explanation: 'False Negative = predicted Negative (no churn), actually Positive (churned). In churn use cases, FNs are the most expensive error — the customer left without any retention effort.'
+      }
+    ]
+  },
+
+  'ml-b-6': {
+    title: 'Check your understanding: scikit-learn Pipelines',
+    intro: 'Test your knowledge of Pipelines, ColumnTransformer, and hyperparameter tuning.',
+    questions: [
+      {
+        id: 'q1',
+        prompt: 'What is the primary benefit of wrapping preprocessing and a model in a sklearn Pipeline?',
+        options: ['Pipelines automatically download data from the internet', 'The entire sequence (impute → encode → scale → model) is applied consistently to any new data in one call — eliminating the most common source of data leakage and preprocessing bugs', 'Pipelines make models 10x faster to train', 'Pipelines automatically choose the best algorithm for your data'],
+        answerIndex: 1,
+        explanation: 'Without a Pipeline, you must manually remember and re-apply every preprocessing step in the exact same order on both train and test data. A Pipeline makes this automatic and error-proof.'
+      },
+      {
+        id: 'q2',
+        prompt: 'What does ColumnTransformer allow you to do that a plain Pipeline cannot?',
+        options: ['Apply the same preprocessing step to all columns simultaneously', 'Apply different preprocessing steps to different subsets of columns — e.g., StandardScaler on numeric columns AND OneHotEncoder on categorical columns in the same pipeline', 'Automatically detect which columns are numeric vs categorical', 'Train multiple models simultaneously on the same data'],
+        answerIndex: 1,
+        explanation: 'ColumnTransformer routes each column group through its own sub-pipeline, then concatenates the results. This is essential for datasets with mixed data types.'
+      },
+      {
+        id: 'q3',
+        prompt: 'In GridSearchCV with a Pipeline, the param_grid key "model__max_depth" uses the "model__" prefix. Why?',
+        options: ['It is a Python naming convention for private variables', 'The prefix identifies which Pipeline step the parameter belongs to — "model" is the name given to the classifier step, and "__" separates the step name from the hyperparameter name', 'max_depth is a GridSearchCV built-in parameter that requires this prefix', '"model__" prevents naming conflicts with pandas column names'],
+        answerIndex: 1,
+        explanation: 'sklearn Pipelines use the step_name__parameter_name convention for referencing nested parameters. This allows GridSearchCV to route each parameter to the correct object within the Pipeline.'
+      },
+      {
+        id: 'q4',
+        prompt: 'You save a Pipeline with joblib.dump(pipeline, "model.pkl") and load it in production with joblib.load("model.pkl"). What does the loaded pipeline contain?',
+        options: ['Only the trained model weights — preprocessing must be reapplied manually', 'The complete fitted pipeline: every preprocessing step with its fitted parameters (scaler mean/std, encoder categories) AND the trained model — one call to predict() applies everything', 'The raw training data compressed in pickle format', 'Only the pipeline structure without fitted parameters'],
+        answerIndex: 1,
+        explanation: 'joblib serialises the entire fitted Pipeline object: every transformer\'s fitted state (the StandardScaler\'s learned mean and std, the OneHotEncoder\'s learned categories) plus the model weights. This is what makes pipeline serialisation so powerful for deployment.'
+      },
+      {
+        id: 'q5',
+        prompt: 'When would you use RandomizedSearchCV over GridSearchCV for hyperparameter tuning?',
+        options: ['When you have fewer than 100 training examples', 'When the hyperparameter space is large — GridSearchCV tests every combination (expensive), while RandomizedSearchCV samples a random subset and typically finds near-optimal results in a fraction of the time', 'RandomizedSearchCV always finds better parameters than GridSearchCV', 'When you are using a classification model rather than regression'],
+        answerIndex: 1,
+        explanation: 'GridSearchCV with 5 parameters of 4 values each = 4⁵ = 1024 combinations × k-fold = thousands of model fits. RandomizedSearchCV with n_iter=50 tests only 50 combinations — dramatically faster, with near-equivalent results in most cases.'
+      }
+    ]
+  },
+
   // Statistics
   'st-b-1': {
     title: 'Check your understanding: Statistics Basics',

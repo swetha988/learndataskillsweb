@@ -124,11 +124,11 @@ export const COURSE_CATALOG = [
     careerPaths: ['Tableau Developer', 'Data Viz Engineer', 'Insights Analyst'],
     datasets: ['Sample Superstore', 'Spotify Top Songs', 'Climate Change Data'],
     tracks: {
-      beginner: { modules: 5, hours: 3, label: 'Drag, drop, your first viz' },
-      intermediate: { modules: 5, hours: 5, label: 'Calculated fields, parameters, sets' },
-      advanced: { modules: 5, hours: 6, label: 'LOD expressions, performance, storytelling' }
+      beginner: { modules: 6, hours: 4, label: 'Drag, drop, your first viz, 1 mini project' },
+      intermediate: { modules: 6, hours: 6, label: 'Calculated fields, parameters, maps, LOD expressions, Story Points' },
+      advanced: { modules: 6, hours: 7, label: 'Advanced LOD, table calcs, Sets, performance tuning, Tableau Cloud/Server' }
     },
-    totalModules: 15,
+    totalModules: 18,
   },
   {
     id: 'statistics',
@@ -156,7 +156,6 @@ export const COURSE_CATALOG = [
     totalModules: 12,
   },
 
-  // Coming soon
   {
     id: 'ml',
     slug: 'ml',
@@ -165,11 +164,22 @@ export const COURSE_CATALOG = [
     icon: '🤖',
     color: '#8B5CF6',
     bgColor: '#EDE9FE',
-    status: 'coming-soon',
-    launchEta: 'February 2026',
-    description: 'Linear regression to neural networks. Project-based, with datasets from healthcare, finance, and computer vision.',
-    tracks: { beginner: { modules: 6 }, intermediate: { modules: 6 }, advanced: { modules: 6 } },
-    totalModules: 18,
+    status: 'live',
+    description: 'From your first linear regression to a production-ready churn prediction system. Project-based with California Housing, Titanic, and Telecom Churn datasets. Build with scikit-learn Pipelines the way real ML engineers do.',
+    learningOutcomes: [
+      'Build end-to-end ML pipelines with scikit-learn',
+      'Choose the right algorithm for regression and classification',
+      'Evaluate models with the metrics that matter for the business',
+      'Deploy a trained model that makes real predictions',
+    ],
+    careerPaths: ['ML Engineer', 'Data Scientist', 'AI Developer'],
+    datasets: ['California Housing (US)', 'Titanic (Global)', 'Telecom Churn (IBM)', 'Kaggle Housing'],
+    tracks: {
+      beginner: { modules: 8, hours: 8, label: 'Regression, classification, Pipelines, 2 end-to-end projects' },
+      intermediate: { modules: 6, hours: 8, label: 'SVMs, clustering, PCA, neural networks, NLP, deployment' },
+      advanced: { modules: 6, hours: 10, label: 'Deep learning, CNNs, transformers, RL, MLOps, LLM fine-tuning' },
+    },
+    totalModules: 20,
   },
   {
     id: 'data-eng',

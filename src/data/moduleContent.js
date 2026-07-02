@@ -8610,6 +8610,729 @@ plt.show()
 ]
 
 /* ════════════════════════════════════════════════════════════════
+   TABLEAU — INTERMEDIATE
+   Running scenario: Sample Superstore dataset (Orders sheet)
+   Modules: tb-i-1 … tb-i-4 (lessons), tb-mp-i-1 (mini project),
+            tb-i-5 (capstone — Story Points)
+   ════════════════════════════════════════════════════════════════ */
+const TABLEAU_INTERMEDIATE = [
+  /* ── Module 1: Calculated Fields ─────────────────────────────── */
+  {
+    id: 'tb-i-1',
+    title: 'Calculated fields — the formula layer',
+    duration: '40 min',
+    sections: [
+      { type: 'heading', content: 'Why you need calculated fields' },
+      { type: 'paragraph', content: 'Tableau ships with every column in your source file — but the insight almost never lives in a raw column. You need the profit margin, not just Profit and Sales separately. You need to flag "Late" orders, not just ship dates. Calculated fields let you define new logic directly inside Tableau, applied to every row, without touching the source data.' },
+      { type: 'callout', kind: 'info', content: 'Calculated fields appear in the Data pane with a small "=" icon. They behave exactly like any other field — drag them onto shelves, use them in filters, reference them in other calcs.' },
+
+      { type: 'heading', content: 'Creating your first calculated field' },
+      { type: 'paragraph', content: 'Right-click any blank space in the Data pane → "Create Calculated Field." A formula editor opens with syntax highlighting and autocomplete. Give your field a descriptive name — this name is what everyone else sees on the dashboard.' },
+      { type: 'code', language: 'text', content: '// Profit Margin (%) — a simple ratio\n[Profit] / [Sales]\n\n// Then format the field as Percentage in the field\'s default properties.' },
+
+      { type: 'heading', content: 'String calculations' },
+      { type: 'paragraph', content: 'String functions let you clean, combine, or extract text. These are essential whenever a data export gives you messy, concatenated, or oddly formatted text columns.' },
+      { type: 'code', language: 'text', content: '// Combine first and last name\n[First Name] + " " + [Last Name]\n\n// Extract the first word of a product name (everything before the first space)\nLEFT([Product Name], FIND(" ", [Product Name]) - 1)\n\n// Flag orders from a specific region\nIF CONTAINS([Region], "West") THEN "Western" ELSE "Other" END\n\n// Uppercase for consistent grouping\nUPPER([Category])' },
+      { type: 'list', items: [
+        'LEFT / RIGHT / MID — extract substrings',
+        'FIND — position of a character',
+        'CONTAINS — boolean: does this text include X?',
+        'REPLACE — swap one string for another',
+        'TRIM — remove leading/trailing spaces (crucial for lookup matches)',
+        'LEN — number of characters',
+      ]},
+
+      { type: 'heading', content: 'Number calculations' },
+      { type: 'paragraph', content: 'Number calcs are the most common type. You are almost always deriving a ratio, a difference, a margin, or applying business logic on top of raw values.' },
+      { type: 'code', language: 'text', content: '// Profit margin as a percentage\n[Profit] / [Sales]\n\n// Days to ship\nDATEDIFF("day", [Order Date], [Ship Date])\n\n// Discount impact (lost revenue from discounting)\n[Sales] * [Discount]\n\n// Round to 2 decimal places\nROUND([Profit] / [Sales], 2)\n\n// Absolute value (useful when comparing losses)\nABS([Profit])' },
+
+      { type: 'heading', content: 'Date calculations' },
+      { type: 'paragraph', content: 'Date logic is surprisingly common in real dashboards. Tableau has a full suite of DATEADD, DATEDIFF, DATEPART, and DATETRUNC functions.' },
+      { type: 'code', language: 'text', content: '// Year of order\nDATEPART("year", [Order Date])\n\n// Quarter number (1–4)\nDATEPART("quarter", [Order Date])\n\n// Days since order was placed (age of an order)\nDATEDIFF("day", [Order Date], TODAY())\n\n// Truncate to month start (for month-level grouping)\nDATETRUNC("month", [Order Date])\n\n// Add 30 days to an expected ship date\nDATEADD("day", 30, [Order Date])' },
+
+      { type: 'heading', content: 'Boolean (True/False) calculations' },
+      { type: 'paragraph', content: 'Boolean calcs produce TRUE or FALSE and are most useful as quick filters or as building blocks inside larger IF statements.' },
+      { type: 'code', language: 'text', content: '// Is this a high-value order?\n[Sales] > 500\n\n// Was the order late? (assumed 5-day standard)\nDATEDIFF("day", [Order Date], [Ship Date]) > 5\n\n// Is the customer from a priority segment?\n[Segment] = "Corporate" OR [Segment] = "Home Office"' },
+
+      { type: 'heading', content: 'IF / IIF / CASE — branching logic' },
+      { type: 'paragraph', content: 'Branching calcs are how you translate business rules into Tableau. Use IF for most things, CASE when you are matching one field against a list of known values, and IIF (inline if) for quick two-branch logic.' },
+      { type: 'code', language: 'text', content: '// Profit tier — multi-branch IF\nIF [Profit] < 0 THEN "Loss"\nELSEIF [Profit] < 200 THEN "Low"\nELSEIF [Profit] < 1000 THEN "Medium"\nELSE "High"\nEND\n\n// CASE — cleaner when matching a dimension\nCASE [Ship Mode]\n  WHEN "First Class" THEN 1\n  WHEN "Second Class" THEN 2\n  WHEN "Standard Class" THEN 3\n  ELSE 4\nEND\n\n// IIF — one-liner for two branches\nIIF([Discount] > 0, "Discounted", "Full Price")' },
+
+      { type: 'heading', content: 'Table calculations — running totals, ranks, and moving averages' },
+      { type: 'paragraph', content: 'Table calculations are a second layer of computation — they run not on the raw data, but on the aggregated values already visible in the view. The classic examples are RUNNING_SUM (cumulative), RANK, and WINDOW_AVG (moving average).' },
+      { type: 'code', language: 'text', content: '// Cumulative (running) total of Sales\nRUNNING_SUM(SUM([Sales]))\n\n// Rank each product by total profit (1 = most profitable)\nRANK(SUM([Profit]))\n\n// 3-period moving average of Sales\nWINDOW_AVG(SUM([Sales]), -2, 0)\n\n// Percent of total (each row as share of grand total)\nSUM([Sales]) / TOTAL(SUM([Sales]))' },
+      { type: 'callout', kind: 'tip', content: 'Table calcs compute Along the table, Across, Down, or Pane-level — the "Compute Using" setting controls this. If a RUNNING_SUM resets unexpectedly, check Compute Using and switch from "Table (Across)" to "Table (Down)" or the dimension that makes sense for your view.' },
+
+      { type: 'heading', content: 'Hands-on: build 3 calculated fields on Superstore' },
+      { type: 'list', items: [
+        'Profit Margin %: [Profit] / [Sales] — format as Percentage, 1 decimal',
+        'Days to Ship: DATEDIFF("day", [Order Date], [Ship Date]) — put on a histogram',
+        'Order Size Tier: IF [Sales] < 100 THEN "Small" ELSEIF [Sales] < 500 THEN "Medium" ELSE "Large" END — use on a bar chart coloured by tier',
+      ]},
+      { type: 'callout', kind: 'warning', content: 'A common mistake: dividing by a field that can be zero. [Profit] / [Sales] will error on rows where Sales = 0. Wrap it: IIF([Sales] = 0, 0, [Profit] / [Sales]).' },
+    ],
+  },
+
+  /* ── Module 2: Parameters — Dynamic Controls ─────────────────── */
+  {
+    id: 'tb-i-2',
+    title: 'Parameters — let users control the view',
+    duration: '35 min',
+    sections: [
+      { type: 'heading', content: 'What is a parameter?' },
+      { type: 'paragraph', content: 'A parameter is a user-controllable variable — a slider, a dropdown, or a text box — that lives outside your data but can feed into calculated fields, filters, and reference lines. Where a filter limits what rows appear, a parameter changes how the math works. That distinction is what makes parameters so powerful.' },
+      { type: 'callout', kind: 'info', content: 'Think of a parameter as a named variable you can plug into any calculation. "If [Discount] > [Discount Threshold], highlight red" — the threshold is a parameter the user can slide.' },
+
+      { type: 'heading', content: 'Creating a parameter' },
+      { type: 'paragraph', content: 'Right-click blank space in the Data pane → "Create Parameter." Give it a name, choose its data type (Integer / Float / String / Boolean / Date), and set the allowable values: All, List (choose from options), or Range (a slider with min/max/step).' },
+      { type: 'list', items: [
+        'Name: Profit Threshold',
+        'Data type: Float',
+        'Allowable values: Range — Minimum: -500, Maximum: 2000, Step size: 50',
+        'Current value: 0',
+      ]},
+      { type: 'paragraph', content: 'After creating it, right-click the parameter in the Data pane → "Show Parameter." A control appears on your sheet (slider or dropdown depending on the type). Users can now move it to change the value live.' },
+
+      { type: 'heading', content: 'Wiring a parameter to a calculated field' },
+      { type: 'paragraph', content: 'A parameter on its own does nothing — it has to be referenced in a calc. Create a calculated field "Profit Flag" that returns different labels based on whether Profit exceeds the threshold the user chose.' },
+      { type: 'code', language: 'text', content: '// Calc: Profit Flag (references the parameter)\nIF SUM([Profit]) >= [Profit Threshold]\nTHEN "Above Threshold"\nELSE "Below Threshold"\nEND\n\n// Then drag Profit Flag onto Color on the Marks card.\n// As the user moves the Profit Threshold slider, colors update live.' },
+
+      { type: 'heading', content: 'Top-N filter with a parameter' },
+      { type: 'paragraph', content: 'One of the most common parameter use cases: let the user choose how many top products to show. Instead of a hardcoded Top 10 filter, build a Top N filter the user controls.' },
+      { type: 'list', items: [
+        'Create parameter: "Top N" — Integer — Range 1 to 20, step 1',
+        'Create calculated field: RANK(SUM([Sales])) <= [Top N]',
+        'Drag that field to Filters shelf → keep only TRUE',
+        'Show the parameter → user can now pick Top 5, Top 10, Top 15 live',
+      ]},
+      { type: 'callout', kind: 'tip', content: 'You can put the parameter control directly on a dashboard so it sits visually next to the chart it controls. Users never need to know it is a "parameter" — they just see a helpful slider.' },
+
+      { type: 'heading', content: 'Measure switcher — one chart, multiple metrics' },
+      { type: 'paragraph', content: 'A classic intermediate pattern: one bar chart that shows Sales, Profit, or Quantity depending on what the user picks from a dropdown.' },
+      { type: 'code', language: 'text', content: '// Parameter: Metric Selector\n// Data type: String\n// Allowable values: List → Sales, Profit, Quantity\n\n// Calculated field: Selected Metric\nCASE [Metric Selector]\n  WHEN "Sales" THEN SUM([Sales])\n  WHEN "Profit" THEN SUM([Profit])\n  WHEN "Quantity" THEN SUM([Quantity])\nEND\n\n// Drag [Selected Metric] onto the Rows shelf.\n// One chart. One axis. Three metrics. Zero duplication.' },
+
+      { type: 'heading', content: 'Reference lines driven by parameters' },
+      { type: 'paragraph', content: 'Parameters work beautifully with reference lines. On a bar chart of monthly sales, add Analytics → Reference Line → set the value to the Profit Threshold parameter. The line moves as the user adjusts the slider — perfect for target-vs-actual dashboards.' },
+
+      { type: 'heading', content: 'Hands-on: build a dynamic Superstore dashboard' },
+      { type: 'list', items: [
+        '1. Create a Top N Products bar chart with a "Top N" integer parameter (range 3–20)',
+        '2. Create a metric switcher: one line chart that shows Sales, Profit, or Discount based on a String parameter dropdown',
+        '3. Add a reference line to the line chart using a "Target Sales" Float parameter',
+        '4. Publish to a dashboard and arrange all three parameter controls on the right side panel',
+      ]},
+      { type: 'callout', kind: 'warning', content: 'Parameters are NOT filters — they never remove rows from the underlying data on their own. They are variables that your calcs use. Always pair a parameter with a calculated field or reference line to make it do anything visible.' },
+    ],
+  },
+
+  /* ── Module 3: Maps and Geographic Data ─────────────────────── */
+  {
+    id: 'tb-i-3',
+    title: 'Maps and geographic data',
+    duration: '35 min',
+    sections: [
+      { type: 'heading', content: 'Why Tableau is good at maps' },
+      { type: 'paragraph', content: 'Tableau ships with a geocoding database covering countries, states, cities, zip/post codes, airport codes, and more. When it detects a geographic role on a dimension, it resolves it to coordinates automatically — no API key, no configuration. For most business dashboards, this means maps are three clicks away.' },
+
+      { type: 'heading', content: 'Assigning geographic roles' },
+      { type: 'paragraph', content: 'Tableau tries to auto-detect geographic fields from column names like "State," "Country," "City," "Zip Code," and "Postal Code." If it does not auto-detect, right-click the dimension in the Data pane → Geographic Role → pick the correct type. A small globe icon will appear next to the field.' },
+      { type: 'list', items: [
+        'Country/Region — world map',
+        'State/Province — sub-national polygons',
+        'City — point on a map',
+        'ZIP / Postal Code — more precise than city',
+        'Latitude / Longitude — exact coordinates (overrides geocoding)',
+      ]},
+      { type: 'callout', kind: 'tip', content: 'If a state is showing as "unknown" (grey patch on the map), it is usually because the value in the data does not match Tableau\'s internal spelling. Use the "Edit Locations" dialog (Map menu → Edit Locations) to manually remap ambiguous values.' },
+
+      { type: 'heading', content: 'Symbol maps vs filled maps' },
+      { type: 'paragraph', content: 'There are two primary map types in Tableau. Symbol maps plot a circle (or other shape) at each geographic point, sized and coloured by a measure — great for cities, stores, or events. Filled maps shade entire geographic polygons (states, countries) by a measure — great for regional comparisons, not great for cities.' },
+      { type: 'list', items: [
+        'Symbol map: Drag a city/zip to Detail, drag a measure to Size and another to Color. Marks auto-switch to Circle.',
+        'Filled map: Double-click a country/state field — Tableau switches to a filled polygon automatically. Then drag a measure to Color.',
+        'For Superstore: State → filled map coloured by Profit is a classic one-click insight (you see Texas and Illinois losing money immediately).',
+      ]},
+
+      { type: 'heading', content: 'Layering measures: Size + Color' },
+      { type: 'paragraph', content: 'Symbol maps become very information-dense when you put one measure on Size and another on Color. A common pattern: bubble size = revenue (importance), bubble color = profit (health). A large red bubble is your highest-revenue loss-making location — the most urgent intervention target.' },
+      { type: 'code', language: 'text', content: '// Setup steps for a two-measure symbol map:\n// 1. Double-click [State] → auto-generates Latitude/Longitude on Columns/Rows\n// 2. Drag [Sales] → Size on Marks card\n// 3. Drag [Profit] → Color on Marks card\n// 4. Edit Color → Diverging palette (red-white-green), centered at 0\n// 5. Result: big red circle = high-sales, unprofitable state' },
+
+      { type: 'heading', content: 'Dual-axis maps — two layers on one map' },
+      { type: 'paragraph', content: 'A dual-axis map overlays two separate mark layers on the same map. This is the technique used to show, for example, filled polygons (state-level shading) AND circles (city-level bubbles) simultaneously.' },
+      { type: 'list', items: [
+        'Build a filled map using State on the map.',
+        'Duplicate the Latitude pill on Rows (Ctrl+drag to create a copy). Now you have two map views stacked vertically.',
+        'Right-click the second Latitude → "Dual Axis." The two maps merge into one.',
+        'Change the Marks card for the second layer to Circle, drag City to Detail and Sales to Size.',
+        'You now have state polygons shaded by Profit AND city bubbles sized by Sales — all on one map.',
+      ]},
+      { type: 'callout', kind: 'info', content: 'Dual-axis maps are a Tableau exclusive technique — one of the capabilities that makes Tableau visually stand out. They are worth mastering for portfolio work.' },
+
+      { type: 'heading', content: 'Custom geocoding with latitude and longitude' },
+      { type: 'paragraph', content: 'If your locations are not in Tableau\'s geocoding database — store branches, delivery hubs, field-survey points — bring your own coordinates. Include Latitude and Longitude as numeric columns in your data. Right-click each → Change Data Type → Number (Decimal). Then assign Geographic Role → Latitude / Longitude respectively. Drag both to Rows/Columns and your points plot exactly.' },
+
+      { type: 'heading', content: 'Map filters and spatial filters' },
+      { type: 'paragraph', content: 'You can filter directly on the map. Draw a rectangular or lasso selection on the map (hold Ctrl or Shift while clicking to select multiple areas) and right-click → "Keep Only." This acts as a visual filter. Alternatively, drag [Country] or [State] to the Filters shelf for the standard dropdown approach.' },
+
+      { type: 'heading', content: 'Hands-on: Superstore geography analysis' },
+      { type: 'list', items: [
+        '1. Build a filled map of the US coloured by Profit (use a diverging red-white-green palette, centre at 0)',
+        '2. Build a symbol map of cities — bubble size = Sales, bubble color = Profit Margin % (the calc from Module 1)',
+        '3. Create a dual-axis map overlaying the state-level filled polygons with city bubbles',
+        '4. Add a State quick filter so users can click to zoom into one region',
+        '5. Observation: which states have high sales but negative profit?',
+      ]},
+      { type: 'callout', kind: 'warning', content: 'Filled maps only work reliably down to country/state/province level. At city or postcode level, use symbol maps — Tableau cannot fill irregular polygons at that granularity without custom shapefiles.' },
+    ],
+  },
+
+  /* ── Module 4: LOD Expressions ───────────────────────────────── */
+  {
+    id: 'tb-i-4',
+    title: 'LOD expressions — control what you aggregate',
+    duration: '45 min',
+    sections: [
+      { type: 'heading', content: 'The problem LOD solves' },
+      { type: 'paragraph', content: 'By default, every aggregation in Tableau computes at the granularity of whatever dimensions are in your view. If State and Category are on your chart, SUM([Sales]) gives state-category totals. But what if you need the state total regardless of what category the user has filtered to? Or the percentage each row contributes to its own category subtotal, not the grand total? That is what Level of Detail (LOD) expressions solve.' },
+      { type: 'callout', kind: 'info', content: 'LOD expressions are widely considered the most important advanced concept in Tableau. Mastering them separates analysts who can answer "just show me sales by category" from analysts who can answer "what percentage of each region\'s total comes from each category, holding region constant across category filters?"' },
+
+      { type: 'heading', content: 'FIXED — ignore the view, use only what I say' },
+      { type: 'paragraph', content: 'FIXED computes an aggregation at the level you specify, ignoring whatever dimensions are in the view (though it does NOT ignore dimension filters on the Filter shelf by default — see the callout below).' },
+      { type: 'code', language: 'text', content: '// Total sales per region — regardless of what else is in the view\n{ FIXED [Region] : SUM([Sales]) }\n\n// This always gives the region total — even if you have Category on Rows\n// and the view is "Sales by Category and Region," the FIXED value\n// stays at the region total and does not break down by Category.\n\n// Common use: % of region total\nSUM([Sales]) / { FIXED [Region] : SUM([Sales]) }\n\n// Customer acquisition month (the very first order date per customer)\n{ FIXED [Customer ID] : MIN([Order Date]) }' },
+      { type: 'callout', kind: 'warning', content: 'Context filters (right-click → "Add to Context") DO affect FIXED LODs. Regular dimension filters on the Filter shelf do NOT affect FIXED LODs by default. This distinction trips up almost everyone the first time. If a FIXED value looks wrong after filtering, check whether your filter needs to be a context filter.' },
+
+      { type: 'heading', content: 'INCLUDE — add a dimension to the aggregation' },
+      { type: 'paragraph', content: 'INCLUDE adds an extra dimension to the aggregation on top of whatever is already in the view. Use it when you want a finer-grained sub-aggregate as input to a further calculation — most commonly to get an average of per-customer sums (average order value), which is different from the average of all individual rows.' },
+      { type: 'code', language: 'text', content: '// Average sales per customer — the RIGHT way\n// (NOT AVG([Sales]) which averages individual order rows)\nAVG({ INCLUDE [Customer ID] : SUM([Sales]) })\n\n// How it reads: "for each customer, sum their sales, then average those sums"\n// This gives you average customer spend, not average line-item value\n\n// Monthly sales per customer (to then average or compare)\n{ INCLUDE [Customer ID], [Order Date] : SUM([Sales]) }' },
+
+      { type: 'heading', content: 'EXCLUDE — remove a dimension from the aggregation' },
+      { type: 'paragraph', content: 'EXCLUDE removes a dimension that IS in the view from the aggregation. The most common use is computing a "total excluding one dimension" for a percentage-of-subtotal calculation.' },
+      { type: 'code', language: 'text', content: '// View has Region + Category on rows. You want each Category\'s\n// % share of its own Region (not % of grand total).\n\n// Region subtotal (ignores Category that is in the view)\n{ EXCLUDE [Category] : SUM([Sales]) }\n\n// % of Region total\nSUM([Sales]) / { EXCLUDE [Category] : SUM([Sales]) }\n\n// This will show 100% if you sum down any one Region column —\n// because you are dividing by the region total each time.' },
+
+      { type: 'heading', content: 'The LOD operator precedence chart' },
+      { type: 'paragraph', content: 'Tableau applies LODs in a specific order of operations relative to filters. Getting this wrong produces numbers that look plausible but are subtly wrong — the hardest category of bug to catch.' },
+      { type: 'list', items: [
+        '1. Extract filters (if using an extract) — apply first',
+        '2. Data source filters',
+        '3. Context filters (right-click → "Add to Context") — FIXED LODs computed after these',
+        '4. FIXED LODs are computed here',
+        '5. Dimension filters on the Filters shelf — FIXED values already locked in',
+        '6. INCLUDE and EXCLUDE LODs — computed at view granularity, after dimension filters',
+        '7. Table calculations — computed last, on the already-aggregated numbers in the view',
+      ]},
+
+      { type: 'heading', content: 'Classic LOD patterns you will use repeatedly' },
+      { type: 'code', language: 'text', content: '// ① Cohort analysis: first purchase month per customer\n{ FIXED [Customer ID] : MIN([Order Date]) }\n// Then use DATETRUNC("month", …) on the result\n\n// ② % of total (grand total in view)\nSUM([Sales]) / { FIXED : SUM([Sales]) }\n// Note: empty FIXED means "aggregate over everything"\n\n// ③ Count distinct customers per region (useful when region is already in view)\n{ FIXED [Region] : COUNTD([Customer ID]) }\n\n// ④ Revenue per active customer (excluding customers with 0 orders)\nSUM([Sales]) / { FIXED : COUNTD([Customer ID]) }' },
+
+      { type: 'heading', content: 'Hands-on: three LOD exercises on Superstore' },
+      { type: 'list', items: [
+        '1. Build a bar chart: % of each Sub-Category\'s sales within its own Category. Use EXCLUDE [Sub-Category] : SUM([Sales]) as the denominator.',
+        '2. Calculate average customer spend per region using INCLUDE [Customer ID] : SUM([Sales]) — put Region on Rows, average the LOD on Columns.',
+        '3. Build a cohort table: rows = customer acquisition month (FIXED DATETRUNC), columns = quarters, values = retention count. This is a full cohort analysis in ~4 LODs.',
+      ]},
+      { type: 'callout', kind: 'tip', content: 'When your LOD gives unexpected results, isolate the problem: add the exact dimensions from the LOD to a simple text table and aggregate manually. Compare with what the LOD returns. The discrepancy usually reveals whether you need a context filter or a different LOD type.' },
+    ],
+  },
+
+  /* ── Mini Project ────────────────────────────────────────────── */
+  {
+    id: 'tb-mp-i-1',
+    title: 'Mini Project: Superstore Executive Performance Dashboard',
+    duration: '60 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'Project brief' },
+      { type: 'paragraph', content: 'You are a data analyst at a US retailer. The Head of Sales has asked for a single-page executive dashboard that answers three questions at a glance: (1) Which regions and states are profitable vs loss-making? (2) How does our top-product mix shift when we slide between Top 5, 10, and 20? (3) Is profit margin trending up or down by quarter? This project combines everything from the intermediate track: calculated fields, parameters, and maps.' },
+
+      { type: 'heading', content: 'Dataset' },
+      { type: 'paragraph', content: 'Use the Sample Superstore dataset included with Tableau Public. Connect to Orders sheet. You only need columns: Order Date, Region, State, Category, Sub-Category, Product Name, Sales, Profit, Quantity, Discount.' },
+
+      { type: 'heading', content: 'Step 1 — build the calculated fields' },
+      { type: 'list', items: [
+        'Profit Margin %: IIF([Sales]=0, 0, [Profit]/[Sales]) — format as percentage',
+        'Order Size Tier: IF [Sales]<100 THEN "Small" ELSEIF [Sales]<500 THEN "Medium" ELSE "Large" END',
+        'Days to Ship: DATEDIFF("day",[Order Date],[Ship Date])',
+        'Profit Flag: IIF([Profit]>=0,"Profitable","Loss")',
+      ]},
+
+      { type: 'heading', content: 'Step 2 — create parameters' },
+      { type: 'list', items: [
+        'Top N Products: Integer, Range 3–20, step 1, default 10',
+        'Metric Selector: String, List: Sales / Profit / Profit Margin %',
+      ]},
+      { type: 'paragraph', content: 'Wire Metric Selector to a calc "Selected Metric": CASE [Metric Selector] WHEN "Sales" THEN SUM([Sales]) WHEN "Profit" THEN SUM([Profit]) WHEN "Profit Margin %" THEN AVG([Profit Margin %]) END' },
+
+      { type: 'heading', content: 'Step 3 — build the three sheets' },
+      { type: 'list', items: [
+        'Sheet A — Profit Map: State → filled map, Profit → Color (diverging red-white-green, centre 0). Title: "State-level Profit".',
+        'Sheet B — Top N Products: RANK(SUM([Sales])) <= [Top N] filter, Sub-Category on Rows, Selected Metric on Columns, coloured by Profit Flag. Title: "Top Products by [Metric Selector]".',
+        'Sheet C — Quarterly Trend: DATETRUNC("quarter",[Order Date]) on Columns, Profit Margin % on Rows (AVG), Region on Color. Title: "Profit Margin % by Quarter".',
+      ]},
+
+      { type: 'heading', content: 'Step 4 — assemble the dashboard' },
+      { type: 'list', items: [
+        'Create a new dashboard (1200 × 800 px, Fixed size).',
+        'Left half: Profit Map (Sheet A).',
+        'Top right: Top N Products bar chart (Sheet B).',
+        'Bottom right: Quarterly Trend line chart (Sheet C).',
+        'Add parameter controls for "Top N Products" and "Metric Selector" to the right panel.',
+        'Add a Dashboard Title text box: "Superstore Executive Dashboard".',
+        'Wire a filter action: clicking a Region on the map filters both the bar chart and the line chart.',
+      ]},
+
+      { type: 'heading', content: 'Step 5 — sanity checks before publishing' },
+      { type: 'list', items: [
+        'Move the Top N slider from 3 to 20 — does the bar chart update and always show exactly N bars?',
+        'Switch Metric Selector to "Profit Margin %" — does the bar chart axis relabel and the values shift to percentages?',
+        'Click Texas on the map — do both the bar chart and trend line filter to Texas-only numbers?',
+        'Check for null/unknown states on the map (grey patches) — if any, open Map → Edit Locations and remap them.',
+        'Total profit on the bar chart and trend chart should roughly agree with a quick SUM([Profit]) verification.',
+      ]},
+
+      { type: 'heading', content: 'Stretch goal' },
+      { type: 'paragraph', content: 'Add an LOD-powered KPI: use { FIXED [Region] : SUM([Profit]) } to build a Region-level profit bar (ignoring whatever state is selected via the map click action). This demonstrates that the user can see both the full regional picture AND the filtered state detail simultaneously on the same dashboard.' },
+
+      { type: 'callout', kind: 'tip', content: 'Before publishing to Tableau Public, check that your workbook contains no customer-identifiable information. Superstore is synthetic, so it is safe — but build the habit of verifying this before every publish.' },
+    ],
+  },
+
+  /* ── Module 5: Story Points — Data Narratives (Capstone) ────── */
+  {
+    id: 'tb-i-5',
+    title: 'Story Points — building data narratives (capstone)',
+    duration: '45 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'What is a Tableau Story?' },
+      { type: 'paragraph', content: 'A Tableau Story is a sequence of views (sheets or dashboards) connected by narrative caption boxes. Unlike a dashboard — which is spatial (everything at once) — a Story is sequential (one insight leads to the next). It is the Tableau equivalent of a PowerPoint deck, except every slide is an interactive chart, not a static image.' },
+      { type: 'callout', kind: 'info', content: 'Story Points are often used for board presentations, client deliverables, and end-of-quarter business reviews — any situation where you need to walk a non-technical audience through a set of insights in a guided order.' },
+
+      { type: 'heading', content: 'Story anatomy' },
+      { type: 'list', items: [
+        'Story canvas — the overall container, sized like a dashboard',
+        'Story point — one "slide," containing a single sheet or dashboard',
+        'Caption box — the editable text at the top of each story point ("The West leads on revenue…")',
+        'Navigator bar — the row of story-point tabs at the bottom, which the audience uses to step forward/backward',
+      ]},
+
+      { type: 'heading', content: 'Creating a Story' },
+      { type: 'paragraph', content: 'Click the new Story tab icon at the bottom (looks like a book with a +). Choose the size (match your dashboard size for consistency). The Story builder opens with a blank first story point. On the left you see a list of all sheets and dashboards in the workbook — drag any one of them into the blank canvas to populate the first story point.' },
+      { type: 'list', items: [
+        '1. Drag a sheet or dashboard onto the blank story point canvas.',
+        '2. Edit the caption box (click it) — write one crisp insight sentence, not a title. "The West region drives 32% of revenue but only 18% of profit" beats "West Region Overview."',
+        '3. Click "Add a caption" (or "Blank") in the story panel to add the next story point.',
+        '4. Repeat: drag the next relevant sheet in, write the next caption.',
+        '5. Continue until the narrative is complete.',
+      ]},
+
+      { type: 'heading', content: 'Annotating inside a story point' },
+      { type: 'paragraph', content: 'Each story point can have its own annotations. Right-click a mark in the view → Annotate → Mark / Area / Point. These annotations are story-point-specific — adding one on Story Point 2 does not affect Story Point 1, even if both points use the same underlying sheet. This lets you highlight different things on the same chart across different slides.' },
+      { type: 'code', language: 'text', content: '// Annotation text example for a scatter plot:\n// "California: $457K revenue but -$23K profit — largest loss-maker"\n\n// Annotations are saved per story point — so you can annotate\n// California on slide 2 and Texas on slide 3, both on the same scatter chart.' },
+
+      { type: 'heading', content: 'Best practices for a compelling Story' },
+      { type: 'list', items: [
+        'Lead with the punchline — start with the most important finding, not the methodology',
+        'One finding per story point — resist the urge to cram two insights onto one slide',
+        'Write captions as sentences with a subject and a number: "The Furniture category lost $18K in 2023" beats "Furniture analysis"',
+        'Use consistent colours across the story — if West is blue on slide 1, keep it blue on slide 4',
+        'End with a "so what" slide — a recommendation or a clear next step, not just "thank you"',
+        'Keep it to 5–8 story points — beyond that, audiences lose the thread',
+      ]},
+
+      { type: 'heading', content: 'Capstone project: your Superstore story' },
+      { type: 'paragraph', content: 'Build a 6-slide Story using the sheets and dashboards you built across this track. The narrative arc: context → problem → evidence → pattern → recommendation → next step.' },
+      { type: 'list', items: [
+        'Slide 1 — Context: "We serve 4 regions across 3 categories. Total revenue: $2.3M over 4 years." (Use a KPI text sheet or a summary bar chart.)',
+        'Slide 2 — Problem: "Profit is growing slower than revenue — margin has declined from 13% to 11%." (Quarterly trend line from the mini project.)',
+        'Slide 3 — Geography: "Three states account for the majority of losses: Texas, Ohio, Pennsylvania." (Profit map, annotated.)',
+        'Slide 4 — Root cause: "Furniture drives most losses — it is the only category with a negative margin in every region." (LOD-powered category breakdown.)',
+        'Slide 5 — Recommendation: "Cutting Furniture discounts from 40% to 20% in the South alone would recover an estimated $30K profit." (Manually calculated or parameter-driven estimate.)',
+        'Slide 6 — Next step: "Monitor quarterly Furniture margin in this dashboard. First review: end of Q2." (Link back to the executive dashboard from the mini project.)',
+      ]},
+      { type: 'callout', kind: 'tip', content: 'Publish the Story to Tableau Public and share the link. A Tableau Story with clear captions and real data makes an excellent portfolio piece — it shows you can not only build charts but communicate insights to non-technical stakeholders, which is what most hiring managers actually want to see.' },
+
+      { type: 'heading', content: 'What you have built across this intermediate track' },
+      { type: 'list', items: [
+        'Calculated fields: ratios, date logic, IF/CASE branching, table calcs (RUNNING_SUM, RANK)',
+        'Parameters: Top-N filters, measure switchers, dynamic reference lines',
+        'Maps: filled maps, symbol maps, dual-axis maps, custom lat/long',
+        'LOD expressions: FIXED for cohort analysis and % of total, INCLUDE for per-customer aggregation, EXCLUDE for sub-totals',
+        'Story Points: sequential narrative, per-slide annotations, best-practice caption writing',
+        'Mini project: a full 3-sheet executive dashboard with filter actions, parameter controls, and a clean publish-ready layout',
+      ]},
+    ],
+  },
+]
+
+/* ════════════════════════════════════════════════════════════════
+   TABLEAU — ADVANCED
+   Running scenario: Sample Superstore — executive-level analytics
+   Modules: tb-a-1 … tb-a-4 (lessons), tb-mp-a-1 (mini project),
+            tb-a-5 (capstone — Tableau Server / Cloud / embedding)
+   ════════════════════════════════════════════════════════════════ */
+const TABLEAU_ADVANCED = [
+
+  /* ── Module 1: Advanced LOD — Nested, Cohort, Set-Level ──────── */
+  {
+    id: 'tb-a-1',
+    title: 'Advanced LOD patterns — cohorts, nesting, and fixed totals',
+    duration: '50 min',
+    sections: [
+      { type: 'heading', content: 'Beyond the basics: where advanced LOD lives' },
+      { type: 'paragraph', content: 'At the intermediate level you learned the three LOD types — FIXED, INCLUDE, EXCLUDE — and their order-of-operations rules. Advanced LOD work is about composing those primitives: nesting one LOD inside another, computing cohort retention across time, building set-level aggregations, and solving the hardest class of percentage-of-total problems without touching the underlying data.' },
+
+      { type: 'heading', content: 'Pattern 1: cohort analysis with FIXED' },
+      { type: 'paragraph', content: 'Cohort analysis groups customers by when they first appeared (acquisition cohort) and then tracks their behaviour over subsequent time periods. It is the single most powerful tool for understanding customer retention and long-term value.' },
+      { type: 'code', language: 'text', content: '// Step 1 — First purchase month per customer\nFirst Order Month = { FIXED [Customer ID] : MIN(DATETRUNC("month", [Order Date])) }\n\n// Step 2 — Months since first purchase (cohort age)\nCohort Age (months) = DATEDIFF("month", [First Order Month], DATETRUNC("month", [Order Date]))\n\n// Step 3 — Build the cohort table\n// Rows: First Order Month (the cohort)\n// Columns: Cohort Age (months)\n// Measure: COUNTD([Customer ID]) — how many of the cohort are still buying\n\n// Step 4 — Retention % (optional but recommended)\nRetention % = COUNTD([Customer ID]) / LOOKUP(COUNTD([Customer ID]), FIRST())\n// LOOKUP(…, FIRST()) fetches the value from the first column of each row\n// — i.e., the cohort\'s starting size at Month 0' },
+      { type: 'callout', kind: 'tip', content: 'For Superstore: the cohort table will show you whether customers who first bought in Q1 2020 are still buying in Q3 2022. Typically the top-left cell has the most customers (Month 0 = everyone), and counts fall as cohort age increases. A slow decline = strong retention. A cliff = a churn problem.' },
+
+      { type: 'heading', content: 'Pattern 2: nested LOD expressions' },
+      { type: 'paragraph', content: 'A nested LOD uses the output of one LOD expression as the input to another. The most common use: "average of per-customer totals, then rank customers by that average, then filter to the top decile." Each step is a separate LOD, and later ones reference earlier ones.' },
+      { type: 'code', language: 'text', content: '// Step 1 — Total revenue per customer\nCustomer Revenue = { FIXED [Customer ID] : SUM([Sales]) }\n\n// Step 2 — Customer revenue rank (1 = highest spender)\nCustomer Revenue Rank = RANK_UNIQUE([Customer Revenue])\n// Note: RANK_UNIQUE avoids ties. RANK gives same rank to equal values.\n\n// Step 3 — Top 10% flag\nIs Top Decile = [Customer Revenue Rank] <= { FIXED : COUNTD([Customer ID]) } * 0.10\n// { FIXED : COUNTD([Customer ID]) } = total distinct customers across dataset\n\n// Then filter Is Top Decile = TRUE — or colour by it on a scatter plot.' },
+
+      { type: 'heading', content: 'Pattern 3: % of total with nested FIXED' },
+      { type: 'paragraph', content: 'The percentage-of-grand-total pattern is one of the most requested business calculations. You want each bar in a chart to show not just its value but its share of the overall total — and you want that denominator to be the true grand total, unaffected by any quick filter the user applies.' },
+      { type: 'code', language: 'text', content: '// Denominator: grand total (unaffected by view filters)\nGrand Total Sales = { FIXED : SUM([Sales]) }\n\n// % share for each dimension member\n% of Total = SUM([Sales]) / [Grand Total Sales]\n\n// Important: if you want the denominator to respect dimension filters\n// (e.g., always sum to 100% within the currently filtered set),\n// make the filter a Context Filter — that locks in what "total" means.' },
+
+      { type: 'heading', content: 'Pattern 4: set-level aggregation' },
+      { type: 'paragraph', content: 'Tableau Sets are named groups of dimension members — either static (you pick them manually) or dynamic (computed: top N, condition-based). The power comes from referencing IN vs OUT in LODs: "what is the average order value for customers IN the top-quartile set vs OUT of it?"' },
+      { type: 'code', language: 'text', content: '// Create a Set: right-click [Customer ID] → Create → Set\n// Condition tab: SUM([Sales]) >= 5000 → customers who have spent ≥ $5000\n// Name the set: "High Value Customers"\n\n// Now use it in a calculated field:\nSegment Label = IF [High Value Customers] THEN "High Value" ELSE "Standard" END\n\n// Or use the Set directly on Color — Tableau shows IN/OUT automatically\n\n// LOD combining with Set:\n// Average Sales for High-Value customers only (ignoring current view)\nHV Avg Sales = { FIXED : AVG(IIF([High Value Customers], [Sales], NULL)) }' },
+
+      { type: 'heading', content: 'Pattern 5: year-over-year comparison with FIXED' },
+      { type: 'paragraph', content: 'YoY comparison requires the value for the same period last year alongside the current value. FIXED + DATEADD achieves this cleanly without duplicating data.' },
+      { type: 'code', language: 'text', content: '// Current year total sales per month (the view has Month on Columns)\nCurrent Sales = SUM([Sales])\n\n// Prior year total for the same calendar month\nPrior Year Sales = { FIXED DATETRUNC("month", DATEADD("year", -1, [Order Date])) : SUM([Sales]) }\n\n// YoY growth %\nYoY Growth = (SUM([Sales]) - [Prior Year Sales]) / ABS([Prior Year Sales])\n\n// Note: the FIXED above computes a total for each prior-year month\n// and stamps it on every row in that month — matching it up with\n// the current-year month automatically.' },
+
+      { type: 'heading', content: 'Hands-on: Superstore advanced LOD exercises' },
+      { type: 'list', items: [
+        '1. Build a 4-year cohort retention table using First Order Month and Cohort Age. Format as a heatmap (Color = Retention %).',
+        '2. Create the "Top 10% Customers" set, then build a bar chart comparing average order value for IN vs OUT segments.',
+        '3. Add a % of grand total label to a Category sales bar chart — then make the denominator respect a Region filter by promoting the Region filter to Context.',
+        '4. Build a YoY growth line chart for monthly Sales. Flag months where YoY growth is negative in red using a Profit Flag–style colour calc.',
+      ]},
+      { type: 'callout', kind: 'warning', content: 'LOD nesting depth has practical limits. Beyond two levels of nesting, performance degrades and the logic becomes hard to debug. If you find yourself writing LODs that reference three previous LODs, consider whether the problem can be solved with a pre-aggregated extract or a custom SQL query.' },
+    ],
+  },
+
+  /* ── Module 2: Advanced Table Calculations ───────────────────── */
+  {
+    id: 'tb-a-2',
+    title: 'Advanced table calculations — WINDOW, INDEX, LOOKUP, partitioning',
+    duration: '45 min',
+    sections: [
+      { type: 'heading', content: 'Why table calculations matter at the advanced level' },
+      { type: 'paragraph', content: 'At the intermediate level you used RUNNING_SUM and RANK. Advanced table calculations unlock moving averages, period-over-period comparisons within the view, dynamic reference calculations, and sophisticated percent-of-total patterns that are faster than LODs when the data is already aggregated in the view.' },
+      { type: 'callout', kind: 'info', content: 'Table calculations run after all other computation in Tableau\'s pipeline — they see the final aggregated numbers in the view, not raw rows. This makes them fast (no re-querying the database) but also scope-limited to what is visible.' },
+
+      { type: 'heading', content: 'WINDOW functions — aggregate over a range of the table' },
+      { type: 'paragraph', content: 'WINDOW functions compute an aggregate over a specified range of the table, anchored to the current cell. The syntax is WINDOW_FUNC(expression, start, end) where 0 means the current row, negative numbers mean rows before, positive numbers mean rows after, and FIRST()/LAST() mean the absolute first/last row in the partition.' },
+      { type: 'code', language: 'text', content: '// 3-month moving average of Sales (current + 2 previous months)\nWINDOW_AVG(SUM([Sales]), -2, 0)\n\n// 12-month rolling sum\nWINDOW_SUM(SUM([Sales]), -11, 0)\n\n// Maximum value in the entire table partition (for ratio-to-max)\nWINDOW_MAX(SUM([Sales]), FIRST(), LAST())\n\n// Moving average of the last 4 quarters\nWINDOW_AVG(SUM([Sales]), -3, 0)\n\n// Ratio to max: each month as % of the peak month\nSUM([Sales]) / WINDOW_MAX(SUM([Sales]), FIRST(), LAST())' },
+
+      { type: 'heading', content: 'INDEX — position-based logic' },
+      { type: 'paragraph', content: 'INDEX() returns the integer position of the current row within the table partition (1-based). It is most useful for alternating row formatting, for restricting output to the first N rows, or for labelling.' },
+      { type: 'code', language: 'text', content: '// Alternating row colour (use in a calculated field, drag to Color)\nINDEX() % 2 = 0  // → True/False alternates with each row\n\n// Only show the first 5 rows in a text table\nINDEX() <= 5  // Use on Filters shelf, keep TRUE\n\n// Label only the last point on a line chart\nIF LAST() = 0 THEN SUM([Sales]) END\n// LAST()=0 is TRUE only for the final row in the partition' },
+
+      { type: 'heading', content: 'LOOKUP — fetch a value from another row' },
+      { type: 'paragraph', content: 'LOOKUP(expression, offset) retrieves the value of expression from the row offset positions away from the current row. Negative offset = prior row; positive = future row; 0 = current. This is the table-calculation way to compare a value with the previous period.' },
+      { type: 'code', language: 'text', content: '// Previous month\'s sales (for MoM comparison within the view)\nPrev Month Sales = LOOKUP(SUM([Sales]), -1)\n\n// Month-over-month change\nMoM Change = SUM([Sales]) - LOOKUP(SUM([Sales]), -1)\n\n// MoM % change\nMoM % = (SUM([Sales]) - LOOKUP(SUM([Sales]), -1)) / ABS(LOOKUP(SUM([Sales]), -1))\n\n// Same quarter last year (assuming quarterly view, offset = -4)\nSame Quarter Last Year = LOOKUP(SUM([Sales]), -4)' },
+      { type: 'callout', kind: 'tip', content: 'LOOKUP(SUM([Sales]), -1) on the first row of a partition returns NULL (no prior row exists). Wrap it: IIF(ISNULL(LOOKUP(SUM([Sales]),-1)), 0, MoM % formula) to handle the first period gracefully.' },
+
+      { type: 'heading', content: 'FIRST() and LAST() — anchor calculations to partition edges' },
+      { type: 'paragraph', content: 'FIRST() and LAST() return the distance from the current row to the first/last row of the partition respectively. At the first row: FIRST()=0, LAST()=N-1. At the last row: FIRST()=-(N-1), LAST()=0. Use them inside IF conditions to trigger logic only at the start or end of a partition.' },
+      { type: 'code', language: 'text', content: '// Label only the first data point on a line chart\nIF FIRST() = 0 THEN SUM([Sales]) END\n\n// Label only the last data point (most recent period)\nIF LAST() = 0 THEN SUM([Sales]) END\n\n// Show a value only at the midpoint of a partition\nIF INDEX() = INT(SIZE() / 2) THEN SUM([Sales]) END\n// SIZE() = total number of rows in the current partition' },
+
+      { type: 'heading', content: 'Partitioning and addressing — the most misunderstood setting' },
+      { type: 'paragraph', content: 'Every table calculation has two settings: Addressing (which dimension the calculation moves along — the "direction") and Partitioning (which dimension resets/restarts the calculation — the "grouping"). Getting this wrong produces numbers that look right but are silently incorrect.' },
+      { type: 'list', items: [
+        'Addressing dimension: the one the calc iterates over (e.g., Month). RUNNING_SUM accumulates along this dimension.',
+        'Partitioning dimension: the one that resets the calc (e.g., Region). RUNNING_SUM restarts for each Region.',
+        'In the calc field: right-click → Edit Table Calculation → use "Specific Dimensions" for precise control.',
+        'Example: Monthly running sales total, restarted per Region: Address = Month, Partition = Region.',
+        'Common mistake: "Table (Across)" addressing on a pivoted view merges dimensions unexpectedly — use "Specific Dimensions" instead.',
+      ]},
+
+      { type: 'heading', content: 'PERCENT OF TOTAL with table calcs vs LOD' },
+      { type: 'paragraph', content: 'The table calc version (TOTAL) is often faster than a FIXED LOD for percent-of-total because it never re-queries the database — it just divides by the sum of what is already in the view. The tradeoff: it respects only the current view, so a user applying a quick filter changes what "total" means.' },
+      { type: 'code', language: 'text', content: '// Table calc version — fast, view-dependent\nSUM([Sales]) / TOTAL(SUM([Sales]))\n\n// LOD version — slower, filter-independent (if no Context Filter)\nSUM([Sales]) / { FIXED : SUM([Sales]) }\n\n// When to use which:\n// Table calc: dashboards where the % should respect all applied filters\n// LOD FIXED: when the denominator must be the true dataset total\n//            regardless of what filters the user applies' },
+
+      { type: 'heading', content: 'Hands-on exercises' },
+      { type: 'list', items: [
+        '1. Build a monthly Sales line chart with a 3-month moving average overlay (use a dual axis — one axis raw SUM, one axis WINDOW_AVG).',
+        '2. Create a MoM % change bar chart — bars green if positive, red if negative. Handle the first-month NULL gracefully.',
+        '3. On a text table of Sub-Categories, label only the top-performing sub-category (FIRST() = 0 after sorting by Sales descending) with its exact value.',
+        '4. Build a running total that resets by year (partitioned by Year, addressed by Month) — the classic YTD sales chart.',
+      ]},
+    ],
+  },
+
+  /* ── Module 3: Sets and Set Actions ─────────────────────────── */
+  {
+    id: 'tb-a-3',
+    title: 'Sets and set actions — dynamic audience segmentation',
+    duration: '40 min',
+    sections: [
+      { type: 'heading', content: 'Sets vs groups: what is the difference?' },
+      { type: 'paragraph', content: 'Groups are static: you manually combine dimension members into a new label. Sets are dynamic: the IN condition can be a computed rule (top N, condition-based), and — crucially — set membership can change in real time as the user interacts with the dashboard via Set Actions. That interactivity is what makes Sets uniquely powerful.' },
+      { type: 'callout', kind: 'info', content: 'Think of a Set as a named boolean field: each dimension member is either IN or OUT. Once created, a Set is a field in your Data pane — drag it anywhere like a dimension.' },
+
+      { type: 'heading', content: 'Creating sets' },
+      { type: 'list', items: [
+        'Manual set: right-click a dimension → Create → Set → General tab → select specific members',
+        'Condition-based set: Condition tab → "By formula": SUM([Sales]) >= 5000 → members who meet the condition',
+        'Top N set: Top tab → Top 10 by SUM([Sales]) → the ten highest-revenue customers',
+        'Combined set: right-click two existing sets → Create Combined Set → intersect, union, or difference',
+      ]},
+      { type: 'code', language: 'text', content: '// Example sets for Superstore:\n// "High Value Customers": Condition — { FIXED [Customer ID]: SUM([Sales]) } >= 5000\n// "Top 10 Sub-Categories": Top 10 by SUM([Sales])\n// "Loss-Making Products": Condition — { FIXED [Product ID]: SUM([Profit]) } < 0\n\n// Use in a calculated field to label segments:\nCustomer Tier =\n  IF [High Value Customers] THEN "VIP"\n  ELSE "Standard"\n  END' },
+
+      { type: 'heading', content: 'Set actions — user clicks change set membership' },
+      { type: 'paragraph', content: 'Set Actions connect a user interaction (clicking a mark) to a Set\'s membership. When the user clicks a bar representing "California," the Set updates to contain only California, and every other sheet using that Set recalculates instantly. This is the most powerful interactive pattern in Tableau.' },
+      { type: 'list', items: [
+        'Dashboard → Actions → Add Action → Change Set Values',
+        'Source sheet: the chart the user clicks on',
+        'Target set: the set whose membership should change',
+        'Running: "Select" (on click) is the standard; "Hover" updates on mouse-over',
+        'Clearing the selection: "Keep set values" vs "Remove all values from set" (the latter resets to empty when user clicks away)',
+      ]},
+      { type: 'code', language: 'text', content: '// Scenario: user clicks a Region on a map → the "Selected Region" set updates\n// → all other sheets filter to show only that region\'s data\n\n// Implementation:\n// 1. Create Set "Selected Region" on [Region] — leave empty initially\n// 2. Use [Selected Region] as a filter on all other sheets\n// 3. Dashboard Action: Change Set Values\n//    Source: the map sheet\n//    Target set: Selected Region\n//    When clearing: Remove all values (show all regions again)' },
+
+      { type: 'heading', content: 'Proportional highlighting with set actions' },
+      { type: 'paragraph', content: 'A powerful UI pattern: user clicks a sub-category in a list → the selected sub-category is highlighted (IN) while others dim (OUT) across multiple charts simultaneously. This replaces filter actions in cases where you want to compare the selected item against the full context, not hide everything else.' },
+      { type: 'code', language: 'text', content: '// Calculated field for proportional highlighting:\nOpacity =\n  IF [Selected Sub-Category Set] THEN 1.0\n  ELSE 0.3\n  END\n// Drag Opacity onto Opacity on the Marks card\n// Selected members are fully opaque; non-selected dim to 30%\n\n// Compare this to a Filter Action:\n// Filter action: non-selected marks disappear (good for drill-down)\n// Set action: non-selected marks dim (good for comparison in context)' },
+
+      { type: 'heading', content: 'Combined sets for advanced comparisons' },
+      { type: 'paragraph', content: 'When you have two sets, you can create a Combined Set that computes the intersection (in both), first-only (in Set A but not Set B), second-only (in Set B but not Set A), or union (in either). This is an advanced segmentation technique for questions like "which customers bought both in Q1 and Q4?" or "which products are in our top 10 by Sales but not top 10 by Profit?"' },
+      { type: 'code', language: 'text', content: '// Create: Top 10 Sub-Categories by Sales (Set A)\n// Create: Top 10 Sub-Categories by Profit (Set B)\n// Combined Set: A intersect B → top 10 in BOTH metrics\n// Combined Set: A except B → high revenue but NOT high profit (margin problem)\n\n// Drag the combined set onto Color:\n// IN = top 10 in both → "Star" segment\n// OUT = not in both   → needs investigation' },
+
+      { type: 'heading', content: 'Hands-on: interactive Superstore segmentation' },
+      { type: 'list', items: [
+        '1. Create a "High Value Customers" condition set (total Sales ≥ $5000). Build a bar chart comparing average order value for IN vs OUT.',
+        '2. Create a Top 10 Sub-Categories by Sales set and a Top 10 by Profit set. Build a Combined Set for "high revenue but low profit" — the margin problem products.',
+        '3. Build a two-sheet dashboard (bar chart + map) connected by a Set Action: clicking a Sub-Category bar highlights that sub-category on the map, dimming all others.',
+        '4. Add a "Reset Selection" button that clears the set (Dashboard → Actions → Run Action Now, or a button with a URL action pointing to nothing).',
+      ]},
+      { type: 'callout', kind: 'warning', content: 'Set Actions only work on dashboards, not on individual sheets. Always test them on the actual dashboard, not in the sheet preview.' },
+    ],
+  },
+
+  /* ── Module 4: Performance Tuning and Tableau Prep ───────────── */
+  {
+    id: 'tb-a-4',
+    title: 'Performance tuning, Tableau Prep, and custom SQL',
+    duration: '45 min',
+    sections: [
+      { type: 'heading', content: 'Why Tableau workbooks become slow' },
+      { type: 'paragraph', content: 'A well-built Tableau workbook should feel instant — sub-second filter response, smooth slider movement. A poorly designed workbook on the same data can take 30 seconds to load a filter. Understanding the performance model lets you diagnose and fix slowness systematically.' },
+      { type: 'list', items: [
+        'Data volume: more rows = more to scan. Reduce with extracts and data source filters.',
+        'Query complexity: too many calculated fields evaluated at query time multiply the cost.',
+        'Mark count: Tableau renders every mark individually. A scatter plot with 500K points is slow on any machine.',
+        'Live vs extract: live connections hit the database on every interaction; extracts cache data locally.',
+        'LOD expressions can fire separate queries — each FIXED may be an extra database round-trip.',
+      ]},
+
+      { type: 'heading', content: 'Performance Recording — measure before you optimise' },
+      { type: 'paragraph', content: 'Before guessing what is slow, measure it. Help menu → Settings and Performance → Start Performance Recording. Interact with the workbook normally (apply filters, switch views). Then stop recording — Tableau opens a new workbook showing a Gantt-style breakdown of every operation: Querying, Geocoding, Rendering, Layout, Computing.' },
+      { type: 'list', items: [
+        'Querying: time spent waiting for the database or extract — fix with better indexing, extracts, or aggregate tables',
+        'Computing: time spent on calculated fields and table calcs — simplify calcs or move logic to Prep',
+        'Rendering: time to draw marks on screen — reduce mark count, use vector rendering',
+        'Layout: time to arrange objects — reduce sheet count in a single dashboard',
+      ]},
+      { type: 'callout', kind: 'tip', content: 'The Tableau Performance Recording is your first diagnostic step for any slow workbook. Never optimise based on intuition alone — the bottleneck is often not where you expect.' },
+
+      { type: 'heading', content: 'Extracts vs live connections' },
+      { type: 'paragraph', content: 'An extract is a compressed, column-store snapshot of your data (.hyper file) that Tableau reads directly without touching the original database. Extracts are always faster for interactive exploration. Use live connections only when you need real-time data (stock prices, live IoT feeds) or when the source database is faster than a Hyper file (very rare, only on massive data warehouse queries with pre-built indexes).' },
+      { type: 'code', language: 'text', content: '// Switching to an extract:\n// Data Source page → Extract (top right toggle) → Extract Now\n// Then schedule a Refresh if publishing to Tableau Cloud/Server\n\n// Extract filters (reduce extract size before building it):\n// Add a filter on Order Date = last 3 years before extracting\n// → smaller file, faster load, less memory on Tableau Desktop\n\n// Aggregation (pre-aggregate before extraction):\n// Data Source page → Extract → Aggregation → check "Aggregate data..."\n// Aggregates to the visible level — reduces row count dramatically' },
+
+      { type: 'heading', content: 'Data source filters and aggregate tables' },
+      { type: 'paragraph', content: 'Data source filters run at connection time and permanently remove rows from what Tableau sees. They are the bluntest but most effective performance tool. If your source has 5 years of data and the dashboard only ever shows 2 years, apply a data source filter — Tableau never has to process those extra rows.' },
+      { type: 'list', items: [
+        'Data Source page → Filters (top right) → Add → choose a field → set the condition',
+        'Data source filters affect every sheet in the workbook — use carefully',
+        'Alternatively, use an Aggregate table in the extract: pre-group by Date + Category before extracting → dramatically reduces row count for summary dashboards',
+      ]},
+
+      { type: 'heading', content: 'Reducing mark count' },
+      { type: 'paragraph', content: 'Tableau renders every mark as a separate vector object. A scatter plot with 200,000 points is not just slow — it is unreadable. Techniques to reduce mark count while preserving insight:' },
+      { type: 'list', items: [
+        'Aggregate to a higher grain: instead of one point per order, one point per customer (COUNTD or LOD)',
+        'Bin continuous measures: convert a Sales axis into $100 bins → reduces distinct x-positions from 200K to ~50',
+        'Sample the data: for exploratory analysis, build on a 10% sample extract, then switch to full data before publishing',
+        'Use density marks: Marks card → change type to Density — Tableau automatically aggregates overlapping points into a heatmap',
+      ]},
+
+      { type: 'heading', content: 'Custom SQL — when Tableau\'s drag-and-drop is not enough' },
+      { type: 'paragraph', content: 'Custom SQL lets you write a SELECT statement that Tableau treats as a table. Use it when you need a JOIN that Tableau\'s relationship engine cannot express, a pre-aggregated subquery, or a database-specific function Tableau has no native support for.' },
+      { type: 'code', language: 'text', content: '-- In Data Source page: New Custom SQL\n-- Write a query that returns the exact table you need:\n\nSELECT\n  o.[Order ID],\n  o.[Order Date],\n  o.[Customer ID],\n  c.[Customer Name],\n  c.[Segment],\n  SUM(o.[Sales])   AS Total_Sales,\n  SUM(o.[Profit])  AS Total_Profit,\n  COUNT(*)         AS Order_Lines\nFROM Orders o\nJOIN Customers c ON o.[Customer ID] = c.[Customer ID]\nWHERE o.[Order Date] >= DATEADD(year, -2, GETDATE())\nGROUP BY o.[Order ID], o.[Order Date], o.[Customer ID],\n         c.[Customer Name], c.[Segment]\n\n-- Tableau receives one pre-aggregated row per Order — much faster\n-- than letting Tableau join and aggregate at interaction time.' },
+      { type: 'callout', kind: 'warning', content: 'Custom SQL fires on every interaction with the workbook if you are on a live connection. Pre-aggregate in the SQL as much as possible, or use Custom SQL only on extracts. A Custom SQL live connection to a large table is one of the most common causes of "this workbook is very slow."' },
+
+      { type: 'heading', content: 'Tableau Prep — visual data preparation' },
+      { type: 'paragraph', content: 'Tableau Prep Builder is a separate tool (bundled with Tableau Creator licences) for cleaning and shaping data before it reaches Tableau Desktop. Unlike Power Query in Excel, Prep uses a visual flow diagram: each cleaning step is a node you connect to the next. The output is a clean .hyper extract or a connection to Tableau Cloud.' },
+      { type: 'list', items: [
+        'Input node: connect to any source (CSV, Excel, database, cloud connector)',
+        'Clean node: rename fields, change types, group values, remove nulls, split columns',
+        'Aggregate node: pre-group and sum data before output — reduces row count dramatically',
+        'Join node: combine two input flows on a matching key (like SQL JOIN)',
+        'Union node: stack two inputs vertically (like SQL UNION ALL)',
+        'Output node: write to a .hyper file or publish to Tableau Cloud as a published data source',
+      ]},
+      { type: 'code', language: 'text', content: '// Typical Prep flow for a messy retail export:\n// Input (messy CSV)\n//   → Clean (fix date formats, trim strings, standardise region names)\n//   → Aggregate (group by Region, Category, Month → SUM Sales, Profit)\n//   → Output (.hyper extract)\n\n// The resulting extract has maybe 200 rows instead of 500,000\n// Tableau Desktop opens it in milliseconds\n\n// Scheduling Prep flows:\n// Publish the flow to Tableau Cloud/Server → schedule to run nightly\n// → always-fresh clean data without manual intervention' },
+
+      { type: 'heading', content: 'Hands-on: optimise a slow Superstore workbook' },
+      { type: 'list', items: [
+        '1. Run Performance Recording on a dashboard with 5+ sheets. Identify the top bottleneck (Query vs Rendering vs Computing).',
+        '2. Switch the Superstore connection from Live to Extract. Measure the reload time difference.',
+        '3. Add a data source filter: Order Date is in the last 3 years. Verify that every sheet still works and the workbook file size shrinks.',
+        '4. Write a Custom SQL query that pre-aggregates Orders to Order-level (one row per Order ID, summing Sales/Profit/Quantity). Use it as the data source for a KPI summary dashboard.',
+      ]},
+    ],
+  },
+
+  /* ── Mini Project ────────────────────────────────────────────── */
+  {
+    id: 'tb-mp-a-1',
+    title: 'Mini Project: Superstore Customer Cohort & Retention Dashboard',
+    duration: '75 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'Project brief' },
+      { type: 'paragraph', content: 'The Head of Marketing at a US retailer has asked for a retention analytics dashboard. She wants to know: (1) Are customers coming back after their first purchase? (2) Which acquisition cohorts have the best long-term retention? (3) Which customer segment (Consumer/Corporate/Home Office) generates the highest lifetime value? This project combines advanced LOD expressions, table calculations, and Set Actions into a single polished dashboard.' },
+
+      { type: 'heading', content: 'Dataset' },
+      { type: 'paragraph', content: 'Sample Superstore — Orders sheet. Columns needed: Order ID, Order Date, Customer ID, Customer Name, Segment, Sales, Profit.' },
+
+      { type: 'heading', content: 'Step 1 — build the foundation calculated fields' },
+      { type: 'list', items: [
+        'First Order Month: { FIXED [Customer ID] : MIN(DATETRUNC("month", [Order Date])) }',
+        'Cohort Age (months): DATEDIFF("month", [First Order Month], DATETRUNC("month", [Order Date]))',
+        'Customer Lifetime Value: { FIXED [Customer ID] : SUM([Sales]) }',
+        'Active Customers (count): COUNTD([Customer ID])',
+        'Retention %: COUNTD([Customer ID]) / LOOKUP(COUNTD([Customer ID]), FIRST())',
+      ]},
+
+      { type: 'heading', content: 'Step 2 — create the "VIP Customers" set' },
+      { type: 'list', items: [
+        'Right-click [Customer ID] → Create → Set',
+        'Condition: Customer Lifetime Value >= 2000',
+        'Name: "VIP Customers"',
+        'Create a calculated field: Customer Tier = IF [VIP Customers] THEN "VIP" ELSE "Standard" END',
+      ]},
+
+      { type: 'heading', content: 'Step 3 — build the four sheets' },
+      { type: 'list', items: [
+        'Sheet A — Cohort Retention Heatmap: Rows = First Order Month (YEAR/MONTH), Columns = Cohort Age (0–12), Measure = Retention %, Color = sequential blue (darker = higher retention). Show only cohorts where Cohort Age 0 has ≥ 10 customers.',
+        'Sheet B — Customer Lifetime Value Distribution: Histogram of Customer Lifetime Value (bin size $500). Color = Customer Tier (VIP vs Standard). Title: "Customer Value Distribution".',
+        'Sheet C — Segment Comparison: Segment on Rows, three measures on Columns — AVG(Customer Lifetime Value), COUNTD([Customer ID]), SUM([Profit]) / COUNTD([Customer ID]). Format as a text table with data bars.',
+        'Sheet D — Monthly Acquisition Trend: DATETRUNC("month", First Order Month) on Columns, COUNTD([Customer ID]) on Rows (new customers only — Cohort Age = 0 filter). Color = Segment.',
+      ]},
+
+      { type: 'heading', content: 'Step 4 — assemble the dashboard' },
+      { type: 'list', items: [
+        'Create a new dashboard (1400 × 900 px, Fixed).',
+        'Top half: Cohort Retention Heatmap (Sheet A) — the centrepiece.',
+        'Bottom left: Segment Comparison table (Sheet C).',
+        'Bottom centre: Monthly Acquisition Trend (Sheet D).',
+        'Bottom right: Customer Value Distribution histogram (Sheet B).',
+        'Add a Set Action: clicking a Segment row in Sheet C filters VIP Customers to that segment only (changes set membership). Add "Dashboard: Reset" button using a URL action.',
+        'Add a Title: "Customer Retention & Lifetime Value Dashboard".',
+      ]},
+
+      { type: 'heading', content: 'Step 5 — sanity checks' },
+      { type: 'list', items: [
+        'Cohort Age 0 row: every customer appears exactly once (Retention = 100%). If not, the LOOKUP formula is wrong.',
+        'Retention % should generally decrease as Cohort Age increases — if it goes above 100% at any point, the FIRST() offset in LOOKUP is misapplied.',
+        'VIP Customer count in the histogram should match the Customer Tier = "VIP" count in the Segment table.',
+        'Monthly Acquisition Trend: no month should have more new customers than total customers in the retention heatmap for that cohort.',
+        'Click a Segment in Sheet C — does the histogram update to show only that segment\'s distribution? (Set Action test.)',
+      ]},
+
+      { type: 'heading', content: 'Stretch goal — add a 3-month moving average to the acquisition trend' },
+      { type: 'paragraph', content: 'Overlay a WINDOW_AVG(COUNTD([Customer ID]), -2, 0) line on the Monthly Acquisition Trend using a dual axis. Format it as a thicker dashed line. This shows whether new customer acquisition is trending up or down, smoothed across noise.' },
+
+      { type: 'callout', kind: 'tip', content: 'This retention heatmap pattern — cohort as rows, age as columns, metric as colour — is used by companies like Netflix, Airbnb, and Stripe as a standard tool for understanding their user base. Having a clean, published version in your Tableau Public portfolio signals analytical maturity beyond "I can build a bar chart."' },
+    ],
+  },
+
+  /* ── Module 5: Tableau Server, Cloud, REST API — Capstone ───── */
+  {
+    id: 'tb-a-5',
+    title: 'Tableau Server, Cloud, embedding, and the REST API (capstone)',
+    duration: '55 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'The deployment landscape' },
+      { type: 'paragraph', content: 'Publishing to Tableau Public is fine for portfolio work. Real enterprise deployments use Tableau Server (self-hosted) or Tableau Cloud (SaaS). Understanding the difference, the permissions model, and how to embed visualisations in external applications makes you a complete Tableau professional — not just a chart-builder.' },
+      { type: 'list', items: [
+        'Tableau Public: free, everything is publicly visible, 15 GB storage, no RLS, no scheduled refreshes from databases (CSV/Excel only)',
+        'Tableau Cloud (formerly Online): SaaS, your data is private, scheduled refreshes, Row Level Security, Creator/Explorer/Viewer licence tiers',
+        'Tableau Server: self-hosted on your own infrastructure, full control, used by enterprises with data residency or security requirements',
+      ]},
+
+      { type: 'heading', content: 'Tableau Cloud — key concepts' },
+      { type: 'heading', content: 'Sites and projects' },
+      { type: 'paragraph', content: 'A Tableau Cloud deployment has one or more Sites (logical tenants — useful for isolating different business units or clients). Within a site, content is organised into Projects (folders). Projects nest: a top-level "Finance" project might contain "Revenue," "Costs," and "Budget" sub-projects.' },
+      { type: 'list', items: [
+        'Default project: where content lands if no project is specified',
+        'Locked project: administrators control permissions; owners cannot override',
+        'Nested projects inherit parent permissions unless overridden',
+        'Best practice: create a project per team or domain, not per workbook',
+      ]},
+
+      { type: 'heading', content: 'Licences and content roles' },
+      { type: 'list', items: [
+        'Creator: full access — can publish workbooks, build in web authoring, create data sources. Most expensive licence.',
+        'Explorer: can view and interact with published workbooks, create ad-hoc views from existing published data sources. Cannot publish new data sources.',
+        'Viewer: can only view and interact with published content — no editing. Cheapest licence. Most business users are Viewers.',
+      ]},
+
+      { type: 'heading', content: 'Row Level Security (RLS) on Tableau Cloud/Server' },
+      { type: 'paragraph', content: 'RLS ensures that each viewer sees only the data relevant to them. There are two implementation patterns:' },
+      { type: 'code', language: 'text', content: '// Pattern 1 — User filter (most common)\n// In the data source, add a calculated field:\nUser Region = LOOKUP(MIN([Region]), 0)  // placeholder\n// Then create a User Filter:\n// Server menu → Create User Filter → link each Tableau user to their region\n// → each user sees only rows where Region matches their assignment\n\n// Pattern 2 — USERNAME() function\n// More scalable: include a column in the data that maps user email to region\n// Then filter: [Allowed Email] = USERNAME()\n// USERNAME() returns the logged-in Tableau Cloud user\'s email automatically\n\n// Pattern 2 is better for large orgs:\n// Add/remove users by updating the data — no changes needed in Tableau' },
+
+      { type: 'heading', content: 'Scheduled refresh — keeping dashboards fresh' },
+      { type: 'paragraph', content: 'When you publish an extract-based workbook to Tableau Cloud, you can schedule automatic refreshes. Tableau Cloud connects back to your data source (using saved credentials or a Bridge connector for on-premise data) and re-extracts on the schedule you define.' },
+      { type: 'list', items: [
+        'Tableau Bridge: required when the data source is behind a corporate firewall or VPN (SQL Server, Oracle on-premise)',
+        'Publish → Schedule Refresh → choose frequency (hourly, daily, weekly)',
+        'Incremental refresh (for large tables): only fetch new rows since the last refresh, not the full table',
+        'Monitor refresh status in the Data Sources tab on Tableau Cloud',
+      ]},
+
+      { type: 'heading', content: 'Embedding Tableau in external applications' },
+      { type: 'paragraph', content: 'Embedding shows a Tableau view inside your own web application — the branding is yours, but the analytics engine is Tableau\'s. There are two approaches: Embed Code (simple, no programming) and the Embedding API v3 (full control, JavaScript).' },
+      { type: 'code', language: 'text', content: '<!-- Simple embed: copy from Share → Embed Code on Tableau Cloud -->\n<script type="module"\n  src="https://public.tableau.com/javascripts/api/tableau.embedding.3.latest.min.js">\n</script>\n<tableau-viz\n  id="tableau-viz"\n  src="https://public.tableau.com/views/MySuperstore/ExecutiveDashboard"\n  width="1000"\n  height="840"\n  toolbar="bottom"\n  hide-tabs>\n</tableau-viz>\n\n<!-- With Embedding API v3 — full programmatic control -->\nimport { TableauViz } from "./tableau.embedding.3.latest.js";\n\nconst viz = new TableauViz();\nviz.src = "https://your-server/views/workbook/sheet";\nviz.toolbar = "bottom";\ndocument.getElementById("container").appendChild(viz);\n\n// Then interact programmatically:\nviz.workbook.activeSheet.applyFilterAsync("Region", ["West"], "replace");' },
+      { type: 'callout', kind: 'warning', content: 'Embedding from Tableau Cloud requires the viewer to be authenticated. For public embedding use Tableau Public. For private embedding in an internal tool, use the Embedding API with Connected Apps (JWT-based authentication that signs the user in silently from your app\'s backend).' },
+
+      { type: 'heading', content: 'The Tableau REST API' },
+      { type: 'paragraph', content: 'The REST API lets you automate Tableau Server/Cloud administration: publish workbooks programmatically, download views as images or PDFs, manage users and permissions, trigger extract refreshes, and query content metadata. It is the foundation for building self-service analytics portals and automated reporting pipelines.' },
+      { type: 'code', language: 'text', content: '# Python example: sign in and trigger an extract refresh\nimport tableauserverclient as TSC\n\nserver = TSC.Server("https://your-company.online.tableau.com")\ntoken_auth = TSC.PersonalAccessTokenAuth(\n    "my-token-name", "my-token-secret", site_id="my-site"\n)\n\nwith server.auth.sign_in(token_auth):\n    # Find all published data sources\n    all_datasources, _ = server.datasources.get()\n    print(f"Found {len(all_datasources)} data sources")\n\n    # Trigger refresh on one datasource by ID\n    datasource = server.datasources.get_by_id("abc123")\n    refresh_job = server.datasources.refresh(datasource)\n    print(f"Refresh job started: {refresh_job.id}")\n\n    # Download a view as a PNG\n    view = server.views.get_by_id("def456")\n    server.views.populate_image(view)\n    with open("snapshot.png", "wb") as f:\n        f.write(view.image)' },
+      { type: 'callout', kind: 'tip', content: 'The `tableauserverclient` Python library (TSC) wraps the REST API. Install with pip install tableauserverclient. Use Personal Access Tokens (PATs) not username/password for automation — PATs do not expire on password changes and can be rotated independently.' },
+
+      { type: 'heading', content: 'Capstone: architect a full Tableau deployment' },
+      { type: 'paragraph', content: 'Design (on paper or in a planning doc) the end-to-end Tableau deployment for the Superstore executive dashboard you built in the mini project. Answer each question:' },
+      { type: 'list', items: [
+        '1. Licence types: The Head of Sales needs to publish and edit. 5 regional managers need to view and filter. 100 store managers need view-only access. How many Creator / Explorer / Viewer licences do you buy?',
+        '2. RLS: Regional managers should only see their own region\'s data. Which USERNAME() pattern would you use? What column needs to exist in the data?',
+        '3. Refresh schedule: The source data is updated in a SQL Server database every morning at 6am. The dashboard must be current by 8am. What type of connection, refresh schedule, and tool (Bridge or not) do you configure?',
+        '4. Embedding: The sales portal is a React web app. The CEO wants to see the dashboard embedded on the portal\'s homepage without logging in to Tableau separately. What approach enables silent authentication?',
+        '5. Automation: Every Monday at 7am, download the executive dashboard as a PDF and email it to the board. Write the Python REST API script outline (use TSC library).',
+      ]},
+
+      { type: 'heading', content: 'What you have built across this advanced track' },
+      { type: 'list', items: [
+        'Advanced LOD: cohort analysis, nested LODs, YoY comparison with FIXED, set-level aggregation',
+        'Advanced table calculations: WINDOW moving averages, LOOKUP period comparisons, INDEX/LAST mark labelling, partitioning and addressing',
+        'Sets and Set Actions: dynamic segmentation, combined sets, proportional highlighting vs filter actions',
+        'Performance tuning: Performance Recording, Extract vs Live, data source filters, Custom SQL pre-aggregation, Tableau Prep flows',
+        'Deployment: Tableau Cloud vs Server, licence model, RLS with USERNAME(), scheduled refreshes, Bridge',
+        'Embedding: Embedding API v3, Connected Apps for silent authentication',
+        'Automation: REST API with tableauserverclient, triggering refreshes, downloading views as images/PDFs',
+        'Mini project: cohort retention dashboard with Set Actions, retention heatmap, lifetime value histogram',
+      ]},
+    ],
+  },
+]
+
+/* ════════════════════════════════════════════════════════════════
    TABLEAU — BEGINNER (real intro)
    ════════════════════════════════════════════════════════════════ */
 const TABLEAU_BEGINNER = [
@@ -8646,7 +9369,206 @@ const TABLEAU_BEGINNER = [
       { type: 'callout', kind: 'tip', content: 'A great way to learn Tableau is to copy other people. Visit public.tableau.com and look at the Featured Vizzes. Click any one and you can download the source file. Open it, see how they built it, modify it. This is the fastest path to fluency.' },
 
       { type: 'heading', content: 'Next module' },
-      { type: 'paragraph', content: 'In the next module, you will install Tableau Public, load a sample dataset, and build your first bar chart in under 5 minutes.' },
+      { type: 'paragraph', content: 'In the next module, you will install Tableau Public, load a real sample dataset — the same "Sample Superstore" data Tableau itself ships with — and build your first bar chart in under 5 minutes.' },
+    ],
+  },
+
+  {
+    id: 'tb-b-2',
+    title: 'Installing Tableau Public and loading data',
+    duration: '20 min',
+    sections: [
+      { type: 'heading', content: 'The running dataset for this whole track: Sample Superstore' },
+      { type: 'paragraph', content: '"Sample Superstore" is the dataset Tableau itself has shipped with for years to teach beginners — a fictional US retail chain selling Furniture, Office Supplies, and Technology across every US state. Using it here means every skill you practise transfers directly to countless real Tableau tutorials, forum answers, and sample workbooks you will encounter later, since they almost all use the same dataset.' },
+      { type: 'list', items: [
+        'Order Date | State | City | Category | Sub-Category | Sales | Quantity | Profit',
+        '03-Jan-2024 | California | Los Angeles | Furniture | Chairs | 1850 | 3 | 220',
+        '05-Jan-2024 | New York | New York City | Office Supplies | Paper | 95 | 10 | 40',
+        '08-Jan-2024 | Texas | Houston | Technology | Phones | 2400 | 2 | -150',
+        '12-Jan-2024 | California | San Francisco | Office Supplies | Binders | 180 | 8 | 60',
+        '15-Jan-2024 | Florida | Miami | Furniture | Tables | 3200 | 1 | -400',
+        '18-Jan-2024 | New York | Buffalo | Technology | Accessories | 540 | 4 | 95',
+        '20-Jan-2024 | Texas | Austin | Office Supplies | Storage | 310 | 5 | 70',
+        '(in practice this dataset has thousands of rows across all 50 states — type in 20-30 rows yourself, reusing these states/cities/categories, to follow along)',
+      ]},
+      { type: 'paragraph', content: 'Notice one row already shows a negative Profit (-150, -400) — a deliberately real detail. Real retail data always has some loss-making orders (heavy discounts, returns, expensive shipping), and a good early Tableau exercise is finding exactly which ones.' },
+
+      { type: 'heading', content: 'Installing Tableau Public' },
+      { type: 'paragraph', content: 'Go to public.tableau.com and download Tableau Public Desktop (Windows or Mac, both supported — unlike Power BI Desktop). Installation is a standard next-next-finish installer. The first time you open it, you will be asked to sign in or create a free Tableau Public account — this account is what your saved work publishes to later.' },
+
+      { type: 'heading', content: 'The Start screen and connecting to data' },
+      { type: 'paragraph', content: 'On launch, the left-hand "Connect" pane lists every source Tableau can connect to. For this track, choose "Text file" (for a CSV) or "Microsoft Excel," then browse to your saved Sample Superstore file. A few rows preview automatically so you can confirm you picked the right file before continuing.' },
+
+      { type: 'heading', content: 'The Data Source page' },
+      { type: 'paragraph', content: 'After connecting, Tableau opens the Data Source page — a preview of your full table, with each column\'s data type shown by a small icon above it (Abc for text, # for numbers, a calendar for dates). This is the moment to fix an obviously wrong type, the same habit from the Excel and Power BI tracks: catching a date imported as text here takes seconds; catching it after building five charts does not.' },
+
+      { type: 'heading', content: "Dimensions and Measures: Tableau's most important idea" },
+      { type: 'paragraph', content: 'Click the Sheet 1 tab at the bottom to move into the actual workspace. On the left, every column from your data now appears split into two groups, and understanding this split is the single most important Tableau concept for a beginner:' },
+      { type: 'list', items: [
+        'Dimensions (usually blue) — qualitative, categorical fields you group and slice by: State, City, Category, Sub-Category, Order Date',
+        'Measures (usually green) — quantitative, numeric fields you aggregate: Sales, Quantity, Profit',
+      ]},
+      { type: 'paragraph', content: 'Tableau guesses this split automatically based on data type (text becomes a Dimension, numbers become a Measure), and it guesses correctly most of the time — but not always. A numeric "Order ID" or "Zip Code" column is technically a number, yet should usually behave as a Dimension (you would never want to SUM a zip code), so Tableau lets you drag a field between the two groups manually whenever its automatic guess is wrong.' },
+      { type: 'callout', kind: 'tip', content: 'A simple test that works almost every time: if a question about the field starts with "how much" or "how many" (how much Sales, how many units), it is a Measure. If it starts with "which" or "what kind" (which State, what Category), it is a Dimension. Numeric ID-like fields are the main exception worth double-checking manually.' },
+
+      { type: 'heading', content: 'Live connection vs Extract' },
+      { type: 'paragraph', content: 'Back on the Data Source page, a toggle near the top-right offers "Live" or "Extract." Live queries the original source every single time you interact with the workbook — always current, but only as fast as that source. Extract copies a compressed snapshot of the data into Tableau\'s own fast internal engine, similar in spirit to Power BI\'s Import mode — much faster to work with, but it needs an explicit refresh to reflect new source data. For a file-based dataset like this one, Extract is almost always the right choice.' },
+
+      { type: 'heading', content: 'Try it' },
+      { type: 'paragraph', content: 'Install Tableau Public, build the Sample Superstore data above as a CSV or Excel file (20-30 rows), and connect to it from the Connect pane. On the Data Source page, confirm Order Date shows the calendar icon, and switch the connection to Extract. Move to Sheet 1 and confirm Sales, Quantity, and Profit appear as green Measures, and State, City, Category, Sub-Category as blue Dimensions.' },
+
+      { type: 'heading', content: "What's next" },
+      { type: 'paragraph', content: 'With data connected and understood, the next module covers actually building a chart — dragging your first Dimension and Measure onto the canvas and watching Tableau\'s "Show Me" panel suggest the right visual automatically.' },
+    ],
+  },
+
+  {
+    id: 'tb-b-3',
+    title: 'Your first chart in 5 minutes',
+    duration: '20 min',
+    sections: [
+      { type: 'heading', content: 'The canvas: Rows, Columns, and the Marks card' },
+      { type: 'paragraph', content: 'Sheet 1 is mostly empty space with two narrow shelves at the top — Columns and Rows — and a panel on the left called the Marks card. Building a chart in Tableau, almost always, means dragging fields onto these three areas; there is no separate "insert chart" step like in Excel or Power BI.' },
+
+      { type: 'heading', content: 'Your first bar chart: Sales by Category' },
+      { type: 'paragraph', content: 'Drag Category (a Dimension) onto the Columns shelf, then drag Sales (a Measure) onto the Rows shelf. Tableau immediately draws a bar chart — three bars, one per category, each bar\'s height equal to that category\'s total Sales. No chart type was chosen manually; Tableau picked "bar chart" automatically because of what was dragged where.' },
+      { type: 'callout', kind: 'tip', content: 'This automatic behaviour is genuinely the core of how Tableau is meant to be used: drag a Dimension and a Measure onto the shelves, and let Tableau suggest the visualisation, rather than picking a chart type first and then hunting for where to put your fields, the way Excel and Power BI typically work.' },
+
+      { type: 'heading', content: 'Show Me: letting Tableau suggest other chart types' },
+      { type: 'paragraph', content: 'With both fields still selected (Ctrl+click both Category and Sales in the Data pane, or click the existing chart and check the fields), open the "Show Me" panel (top-right). It highlights every chart type compatible with your currently selected fields, greying out ones that do not fit. Click a different highlighted option — a horizontal bar, a treemap, a packed bubble — and Tableau rebuilds the same data as that new chart type instantly.' },
+
+      { type: 'heading', content: 'Switching the aggregation' },
+      { type: 'paragraph', content: 'Right-click the SUM(Sales) pill on the Rows shelf → Measure (Sum) reveals other options: Average, Median, Count, Minimum, Maximum. Switching to Average instantly redraws the chart showing average order value per category instead of the total — the same underlying data, answering a meaningfully different business question.' },
+
+      { type: 'heading', content: 'The Marks card: colour, size, and labels' },
+      { type: 'paragraph', content: 'Drag Profit onto the "Color" box inside the Marks card. Each bar now shades along a colour gradient based on its profit — a quick visual flag for which categories are actually profitable, layered directly onto the chart you already built, with no second chart needed. Drag SUM(Sales) onto "Label" to show the exact number printed on each bar.' },
+
+      { type: 'heading', content: 'A second chart: the automatic map' },
+      { type: 'paragraph', content: 'Double-click State in the Data pane (or drag it onto the canvas directly). Because Tableau recognises "State" as a geographic field, it automatically generates a map of the US with a dot or shaded region per state, with no chart type chosen manually at all — this geographic auto-detection is one of Tableau\'s most distinctive beginner-friendly features, and a large part of why it excels at the "map of India coloured by pollution level" kind of example from the first lesson.' },
+      { type: 'paragraph', content: 'Drag Sales onto Color on this map sheet to shade each state by its total sales — an instant, genuinely useful geographic view built in under a minute, something that would take noticeably more setup in Excel.' },
+
+      { type: 'heading', content: 'Renaming a sheet' },
+      { type: 'paragraph', content: 'Double-click the "Sheet 1" tab at the bottom and rename it to something meaningful, like "Sales by Category." This matters more than it sounds — a finished workbook with 6 sheets named "Sheet 1" through "Sheet 6" is unusable to anyone but the person who built it five minutes ago.' },
+
+      { type: 'heading', content: 'Try it' },
+      { type: 'paragraph', content: 'Build a Sales-by-Category bar chart, add Profit to Color and Sales to Label. Create a second sheet showing a map of Sales by State. Rename both sheets meaningfully. Try Show Me on the category chart and switch it to at least one alternative chart type to see how the same data looks differently presented.' },
+
+      { type: 'heading', content: "What's next" },
+      { type: 'paragraph', content: 'A quick mini project next puts everything so far — connecting data, building charts, and using the Marks card — together on one realistic analysis. Then the next module covers Filters (narrowing what is shown) and Groups (combining related Dimension values together).' },
+    ],
+  },
+
+  {
+    id: 'tb-mp-1',
+    title: 'Mini Project: Regional Performance Snapshot',
+    duration: '25 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'Quick practice before moving on' },
+      { type: 'paragraph', content: "This is the single most common first request a new Tableau analyst gets: \"here's our sales data, show me how each region is doing.\" This project runs through connecting, exploring, and visually flagging good vs bad performance — using nothing but the chart-building and Marks card skills from the last two lessons, on a slightly bigger slice of Sample Superstore than you have used so far." },
+      { type: 'list', items: [
+        'Concepts used: connecting to data, Dimensions vs Measures, bar charts, maps, the Marks card (Color, Size, Label)',
+      ]},
+
+      { type: 'heading', content: 'The scenario' },
+      { type: 'paragraph', content: 'Extend your Sample Superstore file to include a Region column (a level above State — Sample Superstore\'s real version groups states into Central, East, South, and West) and at least 25-30 rows spanning multiple states and categories:' },
+      { type: 'list', items: [
+        'Order Date | Region | State | City | Category | Sub-Category | Sales | Quantity | Profit',
+        '03-Jan-2024 | West | California | Los Angeles | Furniture | Chairs | 1850 | 3 | 220',
+        '05-Jan-2024 | East | New York | New York City | Office Supplies | Paper | 95 | 10 | 40',
+        '08-Jan-2024 | South | Texas | Houston | Technology | Phones | 2400 | 2 | -150',
+        '12-Jan-2024 | West | California | San Francisco | Office Supplies | Binders | 180 | 8 | 60',
+        '15-Jan-2024 | South | Florida | Miami | Furniture | Tables | 3200 | 1 | -400',
+        '18-Jan-2024 | East | New York | Buffalo | Technology | Accessories | 540 | 4 | 95',
+        '20-Jan-2024 | South | Texas | Austin | Office Supplies | Storage | 310 | 5 | 70',
+        '22-Jan-2024 | Central | Illinois | Chicago | Furniture | Bookcases | 980 | 2 | -60',
+        '25-Jan-2024 | Central | Ohio | Columbus | Technology | Phones | 1750 | 1 | 310',
+        '(extend this further yourself, reusing these regions/states, to reach 25-30 rows)',
+      ]},
+
+      { type: 'heading', content: 'Build these three sheets' },
+      { type: 'list', items: [
+        '"Sales by Region" — a bar chart with Region on Columns and Sales on Rows, Profit dragged onto Color so unprofitable regions visually stand out, and Sales dragged onto Label',
+        '"Profit Map" — a map (drag State directly onto the canvas), with Profit on Color so the whole country\'s profitability is visible in one shaded view, and Sales dragged onto Size so bigger-selling states also appear visually larger',
+        '"Category Breakdown" — a bar chart with Category on Columns, Sales on Rows, and Region on Color, so each bar splits into regional segments',
+      ]},
+      { type: 'callout', kind: 'tip', content: 'Before calling this finished, sanity-check the Profit Map by hand: find your one or two rows with the most negative Profit values, and confirm that exact state actually shows the most "red" (or whatever low end of your color gradient is) on the map. Catching a wrongly-mapped color scale this way, before sharing a chart, is exactly what a careful analyst does on a real job.' },
+
+      { type: 'heading', content: 'Rename every sheet meaningfully' },
+      { type: 'paragraph', content: 'Double-click each "Sheet N" tab and rename it to match the bullet points above. A reviewer opening this workbook later should understand what each tab shows from its name alone, with no need to click through and guess.' },
+
+      { type: 'heading', content: 'Stretch goal' },
+      { type: 'paragraph', content: 'On the "Sales by Region" sheet, use Show Me to try at least one alternative chart type (like a horizontal bar or a packed bubble) for the exact same Region/Sales/Profit fields, and decide for yourself which version actually communicates the regional comparison most clearly.' },
+    ],
+  },
+
+  {
+    id: 'tb-b-4',
+    title: 'Filters and groups',
+    duration: '20 min',
+    sections: [
+      { type: 'heading', content: 'The Filters shelf' },
+      { type: 'paragraph', content: 'Drag any field onto the Filters shelf (just below Columns/Rows) to restrict what the current sheet shows. Drag Category there, and a dialog appears letting you tick which category values to include or exclude — untick "Furniture," and every bar, map shading, and label on that sheet recalculates to exclude Furniture immediately.' },
+
+      { type: 'heading', content: 'Filtering a Measure: only the orders that matter' },
+      { type: 'paragraph', content: 'Drag Profit onto the Filters shelf instead, and Tableau offers a numeric range filter — for example, restricting the sheet to only orders with Profit less than 0, instantly surfacing every loss-making order from the dataset, exactly the kind of "find the problem" question raised back in the data-loading module.' },
+      { type: 'paragraph', content: 'Real-life use: a retail analyst investigating why margins dropped last quarter starts by filtering to Profit < 0 and grouping that filtered view by Sub-Category, immediately seeing which specific product lines are losing money rather than guessing.' },
+
+      { type: 'heading', content: 'Filtering on Order Date' },
+      { type: 'paragraph', content: 'Dragging Order Date onto Filters offers several filtering styles: Range of Dates (a from/to picker), Relative Date ("last 3 months," updating automatically as time passes), or specific Years/Quarters/Months selected individually. Relative Date filters are particularly useful for a dashboard meant to be reused indefinitely without manual updating.' },
+
+      { type: 'heading', content: 'Quick Filters: letting the viewer filter themselves' },
+      { type: 'paragraph', content: 'Right-click a field already on the Filters shelf → "Show Filter" adds an interactive control directly onto the sheet itself (a list of checkboxes, a dropdown, or a slider, depending on the field type) — turning a fixed, builder-controlled filter into something a viewer can change themselves while looking at the sheet, conceptually identical to a Power BI Slicer or an Excel Pivot Table\'s filter dropdown.' },
+      { type: 'callout', kind: 'tip', content: 'A filter you set yourself on the Filters shelf (without "Show Filter") is invisible and fixed for every viewer — useful for permanently excluding test data, say. A Quick Filter is visible and changeable by the viewer — useful for letting them explore. This is the same Filter-vs-Slicer distinction from the Power BI track, just under different names.' },
+
+      { type: 'heading', content: 'Groups: combining related Dimension values' },
+      { type: 'paragraph', content: 'Imagine Sub-Category has values like "Bookcases," "Chairs," "Tables," and you want a simpler "Seating vs Storage vs Surfaces" view without changing the underlying data. In the Data pane, Ctrl+click "Chairs" and any other seating-related sub-categories, right-click → Group, and Tableau creates a new combined field (often named something like "Sub-Category (group)") treating your selected values as one single category from then on, anywhere you use that new grouped field.' },
+      { type: 'paragraph', content: 'Real-life use: 15 individual product sub-categories are too granular for an executive summary chart, but the original 3 top-level Categories feel too broad. A custom Group lets an analyst define exactly the level of detail a specific audience actually needs, without altering the source data.' },
+
+      { type: 'heading', content: 'Try it' },
+      { type: 'paragraph', content: 'On your Sales-by-Category sheet, add a Quick Filter for Category so a viewer can tick/untick categories themselves. Create a new sheet filtered to Profit < 0, broken down by Sub-Category, to find your loss-making product lines. Create a Group combining 2-3 related Sub-Category values into one, and confirm the grouped value appears correctly in a chart.' },
+
+      { type: 'heading', content: "What's next" },
+      { type: 'paragraph', content: 'You now have several individual sheets — a category chart, a map, a loss-making-orders view. The final module covers combining them into a single Dashboard, and publishing the finished result to Tableau Public for anyone to view in a browser.' },
+    ],
+  },
+
+  {
+    id: 'tb-b-5',
+    title: 'Your first dashboard',
+    duration: '25 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'A dashboard is several sheets, arranged on purpose' },
+      { type: 'paragraph', content: 'Click the "New Dashboard" icon at the bottom of the window (next to the sheet tabs). A Dashboard is a separate canvas where existing sheets — not raw data — get dragged in and arranged together, similar in concept to a Power BI Dashboard built from pinned visuals, but assembled directly inside the same Tableau file rather than after publishing.' },
+
+      { type: 'heading', content: 'Building the layout' },
+      { type: 'paragraph', content: 'The left-hand pane lists every sheet you have built. Drag "Sales by Category" onto the dashboard canvas, then drag your Sales-by-State map below or beside it. Tableau\'s layout grid snaps each sheet into place; drag the edges of any sheet to resize it, and use the "Tiled" vs "Floating" layout options (in the Dashboard menu) to control whether sheets snap to a grid or can overlap freely.' },
+      { type: 'paragraph', content: 'Drag a "Text" object from the Objects panel onto the top of the dashboard and type a clear title, like "Superstore Sales Overview — 2024," so a first-time viewer immediately understands what they are looking at, with no separate explanation needed.' },
+
+      { type: 'heading', content: 'Dashboard actions: the real interactivity payoff' },
+      { type: 'paragraph', content: 'Dashboard → Actions → Add Action → Filter lets you wire up cross-sheet interactivity: select "Sales by Category" as the source sheet and "Sales by State" as the target, with the action set to run "On Select." Now, clicking a bar in the category chart filters the map to show only that category\'s geographic spread — the same kind of connected, click-to-filter behaviour that made Power BI\'s slicers feel powerful, here triggered by clicking directly on a chart instead of a separate slicer control.' },
+      { type: 'callout', kind: 'tip', content: 'This single feature — Dashboard Actions — is usually the moment a beginner\'s Tableau dashboard stops feeling like "two separate pictures next to each other" and starts feeling like one connected, explorable tool. It is worth practising deliberately rather than skipping past.' },
+
+      { type: 'heading', content: 'Publishing to Tableau Public' },
+      { type: 'paragraph', content: 'File → Save to Tableau Public (or the equivalent "Save" button if signed in) uploads your finished workbook to your free Tableau Public profile, generating a shareable web link anyone can open in a browser — no Tableau installation required on their end, similar in spirit to Power BI\'s publish-to-Service step, but with the result fully public by default, since that is the nature of the free tier.' },
+      { type: 'callout', kind: 'warning', content: 'Tableau Public is genuinely public — anyone with the link (and often anyone browsing public.tableau.com\'s gallery) can view, and in many cases download, your underlying workbook and data. Never publish a workbook containing real customer names, real financial figures, or any other sensitive information to Tableau Public; it is a learning and portfolio tool, not a private business reporting tool.' },
+
+      { type: 'heading', content: 'Capstone: the complete Superstore beginner dashboard' },
+      { type: 'paragraph', content: 'Bring together everything from this entire track into one finished, publishable dashboard.' },
+      { type: 'list', items: [
+        'A "Sales by Category" bar chart, with Profit on Color and Sales on Label',
+        'A "Sales by State" map, shaded by total Sales',
+        'A "Loss-Making Orders" sheet, filtered to Profit < 0, broken down by Sub-Category',
+        'All three sheets arranged on one Dashboard, with a clear title text object',
+        'A Quick Filter for Category, visible on the dashboard so a viewer can narrow all three sheets themselves',
+        'A Dashboard Action connecting the category chart to the map, so clicking a category filters the map',
+      ]},
+      { type: 'paragraph', content: 'Once arranged and tested, publish the finished dashboard to Tableau Public and open the generated link in a browser to confirm the filter and the dashboard action both still work exactly as they did inside Desktop.' },
+
+      { type: 'heading', content: "You've finished the Tableau Beginner track" },
+      { type: 'paragraph', content: "You can now connect to real data, understand Dimensions versus Measures, build charts by dragging fields rather than picking chart types first, filter and group your data meaningfully, and assemble multiple sheets into one connected, interactive, publishable dashboard. That progression — connect, visualise, filter, combine, publish — is the same core workflow every working Tableau analyst repeats daily, just practised here on the exact sample dataset most real Tableau learning resources also use." },
+      { type: 'paragraph', content: "The Intermediate track goes deeper into what makes Tableau analytically powerful beyond drag-and-drop: Calculated Fields (writing your own formulas), LOD (Level of Detail) expressions for questions that need a different level of granularity than the current view, Parameters for viewer-adjustable what-if scenarios, deeper geographic mapping, and Story Points for presenting a sequence of findings rather than just one static dashboard." },
     ],
   },
 ]
@@ -8710,6 +9632,421 @@ const inProduction = (title, expectedWeeks) => ({
 const productionList = (titles, baseWeeks = 2) =>
   titles.map((t, i) => inProduction(t, baseWeeks + i))
 
+/* ════════════════════════════════════════════════════════════════
+   MACHINE LEARNING ESSENTIALS — BEGINNER
+   Running datasets:
+     Regression modules  → California Housing (sklearn.datasets)
+     Classification       → Titanic (seaborn / CSV)
+   Modules: ml-b-1…ml-b-6 (lessons), ml-mp-b-1 (mini project),
+            ml-b-7 (capstone — churn prediction end-to-end)
+   ════════════════════════════════════════════════════════════════ */
+const ML_BEGINNER = [
+
+  /* ── Module 1: What is Machine Learning? ─────────────────────── */
+  {
+    id: 'ml-b-1',
+    title: 'What is Machine Learning — and how does it actually work?',
+    duration: '30 min',
+    sections: [
+      { type: 'heading', content: 'The one-sentence definition' },
+      { type: 'paragraph', content: 'Machine Learning is the practice of writing programs that learn patterns from data — instead of having a human write every rule by hand. You show the algorithm thousands of examples, it figures out the pattern, and then you use that pattern to make predictions on new data it has never seen before.' },
+      { type: 'callout', kind: 'info', content: 'The key word is "examples." Traditional programming: you write IF-THEN rules. Machine Learning: you show examples and the algorithm discovers the rules itself.' },
+
+      { type: 'heading', content: 'A concrete example before any math' },
+      { type: 'paragraph', content: 'Imagine you want to predict whether an email is spam. The traditional approach: write 10,000 rules (if subject contains "FREE MONEY" → spam, if sender domain is suspicious → spam…). The ML approach: collect 100,000 labelled emails (spam or not spam), feed them to an algorithm, and let it figure out the pattern. It will discover rules you would never have thought of — like "this combination of sender, time, and subject line at 3am from this country = 97% spam."' },
+
+      { type: 'heading', content: 'The three types of Machine Learning' },
+      { type: 'list', items: [
+        'Supervised Learning: you provide labelled examples (input → correct output). The algorithm learns to predict the output for new inputs. Most common type. Examples: spam detection, house price prediction, image classification.',
+        'Unsupervised Learning: you provide data with no labels. The algorithm finds hidden structure — clusters, groups, anomalies. Examples: customer segmentation, anomaly detection, topic modelling.',
+        'Reinforcement Learning: an agent learns by trial and error — it takes actions, receives rewards or penalties, and adjusts. Examples: game-playing AI (AlphaGo, chess), robotics, self-driving car navigation.',
+      ]},
+      { type: 'callout', kind: 'info', content: 'This beginner course focuses almost entirely on Supervised Learning — it is 80% of real-world ML work, and it is where the clearest foundations live.' },
+
+      { type: 'heading', content: 'The ML vocabulary you need immediately' },
+      { type: 'list', items: [
+        'Feature (X): an input variable. In a house price model — square footage, number of bedrooms, location.',
+        'Label / Target (y): what you are trying to predict. In a house price model — the actual sale price.',
+        'Training data: the labelled examples the algorithm learns from.',
+        'Test data: held-out examples used only to measure how well the model generalises to new data.',
+        'Model: the mathematical function the algorithm learned — takes features as input, outputs a prediction.',
+        'Training: the process of fitting the model to the training data.',
+        'Inference / Prediction: using the trained model on new, unseen examples.',
+        'Overfitting: the model memorised the training data so well it fails on new examples — it learned noise, not pattern.',
+        'Underfitting: the model is too simple to capture the real pattern — poor performance on both training and new data.',
+      ]},
+
+      { type: 'heading', content: 'Regression vs Classification — the two main supervised tasks' },
+      { type: 'paragraph', content: 'Every supervised ML problem is either a Regression problem or a Classification problem. The difference is in the output.' },
+      { type: 'list', items: [
+        'Regression: the output is a continuous number. "How much will this house sell for?" → $347,500. "How many units will we sell next week?" → 1,240.',
+        'Classification: the output is a category. "Will this customer churn?" → Yes/No. "Which digit is in this image?" → 0-9. "What species is this flower?" → Setosa/Versicolor/Virginica.',
+      ]},
+
+      { type: 'heading', content: 'Where ML is used in real products right now' },
+      { type: 'list', items: [
+        'Netflix: predicts which shows you will watch (recommendation = classification of preference)',
+        'Gmail: filters spam and drafts Smart Reply suggestions (classification + generation)',
+        'Uber: predicts surge pricing and estimated arrival time (regression)',
+        'Bank fraud detection: flags suspicious transactions in real time (anomaly classification)',
+        'Spotify: identifies your musical taste and generates Discover Weekly (clustering + ranking)',
+        'Hospitals: predict patient readmission risk within 30 days (binary classification)',
+        'Self-driving cars: classify objects (pedestrian / car / sign) in camera frames (image classification)',
+      ]},
+
+      { type: 'heading', content: 'Your toolkit for this course' },
+      { type: 'list', items: [
+        'Python — the dominant language for ML. Everything we write will be Python.',
+        'pandas — loading, cleaning, and exploring data.',
+        'scikit-learn — the go-to ML library. Every algorithm in this beginner course comes from sklearn.',
+        'matplotlib / seaborn — visualising data and model results.',
+        'NumPy — array maths that sits under everything else.',
+      ]},
+      { type: 'code', language: 'python', content: '# Install everything in one command (if starting fresh)\npip install scikit-learn pandas numpy matplotlib seaborn\n\n# Verify installation\nimport sklearn\nimport pandas as pd\nimport numpy as np\nprint(sklearn.__version__)  # should be >= 1.3' },
+      { type: 'callout', kind: 'tip', content: 'All code in this course runs on Google Colab (free, no install needed) or any local Jupyter environment. If you are setting up locally, installing via pip in a virtual environment is recommended.' },
+
+      { type: 'heading', content: 'The standard ML workflow — your roadmap for this entire course' },
+      { type: 'list', items: [
+        '1. Define the problem: regression or classification? What is the target variable?',
+        '2. Collect and explore data: load the dataset, understand each feature, find missing values and outliers.',
+        '3. Prepare data: clean, encode, scale — make it ready for an algorithm.',
+        '4. Split data: set aside a test set the model never sees during training.',
+        '5. Train a model: fit the algorithm on training data.',
+        '6. Evaluate: measure performance on the test set using the right metrics.',
+        '7. Improve: try different algorithms, tune hyperparameters, engineer better features.',
+        '8. Deploy: put the model into production so it can make real predictions.',
+      ]},
+      { type: 'paragraph', content: 'This entire beginner course is one pass through this workflow — first for regression (predicting house prices), then for classification (predicting Titanic survival). By the capstone, you will execute the full 8-step cycle independently.' },
+    ],
+  },
+
+  /* ── Module 2: Data Preparation ──────────────────────────────── */
+  {
+    id: 'ml-b-2',
+    title: 'Data preparation — the work that actually determines success',
+    duration: '45 min',
+    sections: [
+      { type: 'heading', content: 'Why data prep is 80% of the job' },
+      { type: 'paragraph', content: 'No ML algorithm can compensate for bad data. Models learn patterns — but if the data is messy, the "pattern" it learns is noise. Experienced ML engineers spend most of their time on data, not algorithms. This module covers every essential step from raw data to model-ready input.' },
+
+      { type: 'heading', content: 'Loading and first look' },
+      { type: 'code', language: 'python', content: 'import pandas as pd\nimport numpy as np\nimport matplotlib.pyplot as plt\nimport seaborn as sns\nfrom sklearn.datasets import fetch_california_housing\n\n# Load California Housing dataset (20,640 rows, 8 features)\nhousing = fetch_california_housing(as_frame=True)\ndf = housing.frame\n\nprint(df.shape)        # (20640, 9)\nprint(df.head())\nprint(df.info())       # data types, non-null counts\nprint(df.describe())   # count, mean, std, min, quartiles, max' },
+      { type: 'paragraph', content: 'The California Housing dataset has 8 features (MedInc, HouseAge, AveRooms, AveBedrms, Population, AveOccup, Latitude, Longitude) and one target (MedHouseVal — median house value in $100k units). It is clean and well-understood, making it ideal for learning regression.' },
+
+      { type: 'heading', content: 'Exploratory Data Analysis (EDA)' },
+      { type: 'paragraph', content: 'Before any modelling, understand the data visually. EDA answers: what does the distribution of each feature look like? Are there outliers? Which features correlate with the target?' },
+      { type: 'code', language: 'python', content: '# Distribution of the target variable\nplt.figure(figsize=(8, 4))\nsns.histplot(df["MedHouseVal"], bins=50, kde=True)\nplt.title("Distribution of Median House Value")\nplt.xlabel("Median House Value ($100k)")\nplt.show()\n\n# Correlation heatmap — which features correlate with the target?\nplt.figure(figsize=(10, 8))\nsns.heatmap(df.corr(), annot=True, fmt=".2f", cmap="coolwarm")\nplt.title("Feature Correlation Matrix")\nplt.show()\n\n# Scatter: MedInc vs MedHouseVal — the strongest relationship\nplt.scatter(df["MedInc"], df["MedHouseVal"], alpha=0.1)\nplt.xlabel("Median Income (10k USD)")\nplt.ylabel("Median House Value (100k USD)")\nplt.title("Income vs House Value")\nplt.show()' },
+
+      { type: 'heading', content: 'Handling missing values' },
+      { type: 'paragraph', content: 'California Housing has no missing values, but most real datasets do. The three standard strategies:' },
+      { type: 'code', language: 'python', content: '# Check for missing values\nprint(df.isnull().sum())\nprint(df.isnull().mean() * 100)  # percentage missing per column\n\n# Strategy 1: Drop rows with missing values (only when % missing is tiny)\ndf_clean = df.dropna()\n\n# Strategy 2: Fill with mean/median (for numeric columns)\ndf["Age"].fillna(df["Age"].median(), inplace=True)\n\n# Strategy 3: Fill with mode (for categorical columns)\ndf["Embarked"].fillna(df["Embarked"].mode()[0], inplace=True)\n\n# Strategy 4: sklearn SimpleImputer (best for pipelines)\nfrom sklearn.impute import SimpleImputer\nimp = SimpleImputer(strategy="median")\nX_imputed = imp.fit_transform(df[["Age", "Fare"]])' },
+
+      { type: 'heading', content: 'Encoding categorical variables' },
+      { type: 'paragraph', content: 'ML algorithms work with numbers, not text. Categorical columns (like "Male"/"Female" or "Economy"/"Business"/"First") must be converted to numeric form.' },
+      { type: 'code', language: 'python', content: '# One-Hot Encoding (for nominal categories — no order)\n# Creates one binary column per category\npd.get_dummies(df, columns=["Embarked", "Pclass"], drop_first=True)\n\n# sklearn OneHotEncoder (better for pipelines)\nfrom sklearn.preprocessing import OneHotEncoder\nenc = OneHotEncoder(sparse_output=False, drop="first")\nenc.fit_transform(df[["Sex", "Embarked"]])\n\n# Label Encoding (for ordinal categories — there IS an order)\n# e.g., Education: "School" < "Bachelor" < "Masters" < "PhD"\nfrom sklearn.preprocessing import LabelEncoder\nle = LabelEncoder()\ndf["Education_num"] = le.fit_transform(df["Education"])' },
+
+      { type: 'heading', content: 'Feature scaling — why it matters' },
+      { type: 'paragraph', content: 'Many algorithms (Linear Regression, Logistic Regression, KNN, SVM, Neural Networks) are sensitive to the scale of features. A feature with values in thousands (income) will dominate one with values in single digits (number of rooms). Scaling puts all features on a comparable scale.' },
+      { type: 'code', language: 'python', content: 'from sklearn.preprocessing import StandardScaler, MinMaxScaler\n\n# StandardScaler: mean=0, std=1 (most common — works well for most algorithms)\nscaler = StandardScaler()\nX_scaled = scaler.fit_transform(X_train)  # fit on TRAINING data only!\nX_test_scaled = scaler.transform(X_test)  # transform test with training stats\n\n# MinMaxScaler: scales to [0, 1] range\nmm_scaler = MinMaxScaler()\nX_mm = mm_scaler.fit_transform(X_train)\n\n# Golden rule: NEVER fit the scaler on test data\n# Fitting on test data = data leakage — your test metrics will be\n# artificially optimistic because test data influenced the scaler' },
+      { type: 'callout', kind: 'warning', content: 'Data leakage is one of the most common mistakes in ML. Always fit preprocessors (scalers, imputers, encoders) ONLY on training data, then use transform() on test data. Fitting on the full dataset before splitting lets test information "leak" into training, producing optimistic but unrealistic scores.' },
+
+      { type: 'heading', content: 'Train / Test Split — the fundamental ML discipline' },
+      { type: 'paragraph', content: 'You must evaluate your model on data it has never seen during training. The standard practice: split your dataset into a training set (typically 80%) and a test set (20%). Train only on the training set. Evaluate only on the test set.' },
+      { type: 'code', language: 'python', content: 'from sklearn.model_selection import train_test_split\n\n# Separate features (X) from target (y)\nX = df.drop("MedHouseVal", axis=1)\ny = df["MedHouseVal"]\n\n# 80/20 split — random_state ensures reproducibility\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, random_state=42\n)\n\nprint(f"Training samples: {len(X_train)}")  # 16512\nprint(f"Test samples:     {len(X_test)}")   # 4128\n\n# For classification with imbalanced classes: use stratify=y\n# to preserve the class ratio in both splits\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, random_state=42, stratify=y\n)' },
+
+      { type: 'heading', content: 'Outlier detection and treatment' },
+      { type: 'code', language: 'python', content: '# IQR method — values beyond 1.5x IQR from quartiles are outliers\nQ1 = df["MedHouseVal"].quantile(0.25)\nQ3 = df["MedHouseVal"].quantile(0.75)\nIQR = Q3 - Q1\nlower = Q1 - 1.5 * IQR\nupper = Q3 + 1.5 * IQR\n\noutliers = df[(df["MedHouseVal"] < lower) | (df["MedHouseVal"] > upper)]\nprint(f"Outliers: {len(outliers)} rows ({len(outliers)/len(df)*100:.1f}%)")\n\n# Visualise with box plot\nsns.boxplot(x=df["MedHouseVal"])\nplt.show()\n\n# Options: remove, cap (winsorize), or transform (log)\n# Log transform is powerful for right-skewed targets like house prices\ndf["LogHouseVal"] = np.log1p(df["MedHouseVal"])' },
+
+      { type: 'heading', content: 'The complete data prep checklist' },
+      { type: 'list', items: [
+        '☑ Load data and understand shape (rows × columns)',
+        '☑ Check data types (dtypes) — are dates stored as strings?',
+        '☑ Check for missing values (isnull().sum())',
+        '☑ Explore distributions (histplot, describe())',
+        '☑ Explore correlations (heatmap)',
+        '☑ Handle missing values (drop / impute)',
+        '☑ Encode categorical columns (OneHotEncoder / LabelEncoder)',
+        '☑ Train/test split BEFORE fitting any preprocessors',
+        '☑ Scale features (StandardScaler fit on train, transform on both)',
+        '☑ Spot-check the processed arrays (shape, no NaN, sensible ranges)',
+      ]},
+    ],
+  },
+
+  /* ── Module 3: Linear Regression ─────────────────────────────── */
+  {
+    id: 'ml-b-3',
+    title: 'Linear Regression — predicting continuous values',
+    duration: '40 min',
+    sections: [
+      { type: 'heading', content: 'The intuition behind Linear Regression' },
+      { type: 'paragraph', content: 'Linear Regression finds the best straight line through a set of data points — where "best" means the line that minimises the total squared distance between the actual values and the line\'s predictions. If you have ever drawn a trend line through a scatter plot in Excel, you have done linear regression by hand.' },
+      { type: 'paragraph', content: 'The equation: ŷ = β₀ + β₁x₁ + β₂x₂ + … + βₙxₙ. Each β (coefficient) tells you how much the prediction changes when that feature increases by 1 unit. The algorithm\'s job is to find the coefficient values that minimise prediction error.' },
+
+      { type: 'heading', content: 'Simple Linear Regression — one feature' },
+      { type: 'code', language: 'python', content: 'from sklearn.linear_model import LinearRegression\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.metrics import mean_squared_error, r2_score\nimport numpy as np\n\n# Simple example: predict house price from median income alone\nX_simple = df[["MedInc"]]\ny = df["MedHouseVal"]\n\nX_train, X_test, y_train, y_test = train_test_split(\n    X_simple, y, test_size=0.2, random_state=42\n)\n\n# Create and train the model — 2 lines of sklearn\nmodel = LinearRegression()\nmodel.fit(X_train, y_train)\n\n# Inspect what the model learned\nprint(f"Intercept (β₀): {model.intercept_:.3f}")\nprint(f"Coefficient (β₁): {model.coef_[0]:.3f}")\n# β₁ ≈ 0.42 → for each $10k increase in median income,\n# predicted house value increases by $42k' },
+
+      { type: 'heading', content: 'Multiple Linear Regression — all features' },
+      { type: 'code', language: 'python', content: 'from sklearn.datasets import fetch_california_housing\nfrom sklearn.preprocessing import StandardScaler\n\nhousing = fetch_california_housing(as_frame=True)\nX = housing.data\ny = housing.target\n\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, random_state=42\n)\n\n# Scale features (important for linear models)\nscaler = StandardScaler()\nX_train_scaled = scaler.fit_transform(X_train)\nX_test_scaled  = scaler.transform(X_test)\n\n# Train\nmodel = LinearRegression()\nmodel.fit(X_train_scaled, y_train)\n\n# Predict\ny_pred = model.predict(X_test_scaled)\n\n# First 5 predictions vs actual\nfor actual, predicted in zip(y_test[:5], y_pred[:5]):\n    print(f"Actual: ${actual*100:.0f}k   Predicted: ${predicted*100:.0f}k")' },
+
+      { type: 'heading', content: 'Evaluating a regression model' },
+      { type: 'paragraph', content: 'Accuracy does not apply to regression. Instead we use error-based metrics that measure how far predictions are from actual values.' },
+      { type: 'code', language: 'python', content: 'from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score\n\n# MAE — Mean Absolute Error\n# Average of |actual - predicted|. Easy to interpret: in the same units as y.\nmae = mean_absolute_error(y_test, y_pred)\nprint(f"MAE: ${mae*100:.0f}k")  # "On average, off by $Xk"\n\n# RMSE — Root Mean Squared Error\n# Punishes large errors more than small ones (due to squaring)\n# Most commonly reported metric for regression\nrmse = np.sqrt(mean_squared_error(y_test, y_pred))\nprint(f"RMSE: ${rmse*100:.0f}k")\n\n# R² — Coefficient of Determination\n# How much of the variance in y does the model explain?\n# 1.0 = perfect, 0.0 = as good as predicting the mean, negative = worse\nr2 = r2_score(y_test, y_pred)\nprint(f"R²: {r2:.3f}")  # 0.6 means model explains 60% of variance in house prices\n\n# Residual plot — should look like random scatter around zero\nresiduals = y_test - y_pred\nplt.scatter(y_pred, residuals, alpha=0.1)\nplt.axhline(0, color="red", linestyle="--")\nplt.xlabel("Predicted")\nplt.ylabel("Residual (Actual - Predicted)")\nplt.title("Residual Plot")\nplt.show()' },
+      { type: 'callout', kind: 'tip', content: 'A good residual plot shows random scatter around zero with no visible pattern. If you see a curve or a fan shape, linear regression may not be the right model — the relationship may be non-linear.' },
+
+      { type: 'heading', content: 'Ridge and Lasso — regularised regression' },
+      { type: 'paragraph', content: 'Standard linear regression can overfit when there are many features or features are highly correlated. Ridge and Lasso add a penalty term that keeps coefficients small, reducing overfitting. Ridge shrinks all coefficients; Lasso can shrink some coefficients all the way to zero (performing automatic feature selection).' },
+      { type: 'code', language: 'python', content: 'from sklearn.linear_model import Ridge, Lasso\n\n# Ridge Regression (L2 penalty)\nridge = Ridge(alpha=1.0)  # alpha controls regularisation strength\nridge.fit(X_train_scaled, y_train)\nridge_pred = ridge.predict(X_test_scaled)\nprint(f"Ridge RMSE: {np.sqrt(mean_squared_error(y_test, ridge_pred)):.3f}")\n\n# Lasso Regression (L1 penalty — can zero out features)\nlasso = Lasso(alpha=0.01)\nlasso.fit(X_train_scaled, y_train)\nprint(f"Lasso non-zero features: {(lasso.coef_ != 0).sum()}")  # feature selection\nprint(f"Lasso RMSE: {np.sqrt(mean_squared_error(y_test, lasso.predict(X_test_scaled))):.3f}")' },
+
+      { type: 'heading', content: 'Visualising predictions' },
+      { type: 'code', language: 'python', content: '# Predicted vs Actual scatter — perfect model = 45° diagonal line\nplt.figure(figsize=(8, 6))\nplt.scatter(y_test, y_pred, alpha=0.1)\nplt.plot([y_test.min(), y_test.max()],\n         [y_test.min(), y_test.max()], "r--", lw=2)\nplt.xlabel("Actual House Value ($100k)")\nplt.ylabel("Predicted House Value ($100k)")\nplt.title(f"Linear Regression: R² = {r2:.3f}")\nplt.show()\n\n# Feature importance (coefficient magnitude after scaling)\ncoef_df = pd.DataFrame({\n    "Feature": X.columns,\n    "Coefficient": model.coef_\n}).sort_values("Coefficient", key=abs, ascending=False)\nprint(coef_df)  # MedInc should be the most important feature' },
+
+      { type: 'heading', content: 'When to use Linear Regression' },
+      { type: 'list', items: [
+        '✓ The target is a continuous number (price, sales, temperature)',
+        '✓ You need an interpretable model — coefficients explain each feature\'s contribution',
+        '✓ You have limited data and need a simple baseline before trying complex models',
+        '✗ The relationship between features and target is non-linear (use polynomial features or tree-based models)',
+        '✗ The target is a category (use Logistic Regression or Decision Trees instead)',
+      ]},
+    ],
+  },
+
+  /* ── Module 4: Classification ─────────────────────────────────── */
+  {
+    id: 'ml-b-4',
+    title: 'Classification — Logistic Regression and Decision Trees',
+    duration: '45 min',
+    sections: [
+      { type: 'heading', content: 'The classification problem' },
+      { type: 'paragraph', content: 'Classification predicts which category an input belongs to. The most common case is binary classification: yes/no, spam/not spam, survived/died, churn/stay. Multi-class classification handles three or more categories: cat/dog/bird, digit 0–9, disease A/B/C.' },
+      { type: 'paragraph', content: 'For this module we use the Titanic dataset — 891 passengers, each labelled as Survived (1) or Died (0). Features: passenger class, age, sex, number of siblings/spouses aboard, fare paid. A clean, well-understood dataset perfect for learning binary classification.' },
+
+      { type: 'heading', content: 'Loading and preparing the Titanic dataset' },
+      { type: 'code', language: 'python', content: 'import pandas as pd\nimport numpy as np\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.preprocessing import StandardScaler, LabelEncoder\n\n# Load Titanic (available via seaborn\'s built-in datasets)\nimport seaborn as sns\ntitanic = sns.load_dataset("titanic")\n\n# Select and clean columns\ndf = titanic[["survived", "pclass", "sex", "age", "sibsp", "parch", "fare"]].copy()\ndf["age"].fillna(df["age"].median(), inplace=True)\ndf["sex"] = LabelEncoder().fit_transform(df["sex"])  # female=0, male=1\n\nX = df.drop("survived", axis=1)\ny = df["survived"]\n\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, random_state=42, stratify=y\n)\n\nscaler = StandardScaler()\nX_train_s = scaler.fit_transform(X_train)\nX_test_s  = scaler.transform(X_test)\n\nprint(f"Training: {len(X_train)} rows — {y_train.mean():.1%} survived")\nprint(f"Test:     {len(X_test)} rows — {y_test.mean():.1%} survived")' },
+
+      { type: 'heading', content: 'Logistic Regression — classification with probabilities' },
+      { type: 'paragraph', content: 'Despite the name, Logistic Regression is a classification algorithm. It models the probability that an example belongs to the positive class (1), using a sigmoid function that maps any number to the range [0, 1]. If the predicted probability ≥ 0.5, the model predicts class 1 (survived); otherwise class 0.' },
+      { type: 'code', language: 'python', content: 'from sklearn.linear_model import LogisticRegression\nfrom sklearn.metrics import accuracy_score, classification_report\n\n# Train Logistic Regression\nlr = LogisticRegression(max_iter=1000, random_state=42)\nlr.fit(X_train_s, y_train)\n\n# Predict classes\ny_pred = lr.predict(X_test_s)\n\n# Predict probabilities (more useful than raw class predictions)\ny_prob = lr.predict_proba(X_test_s)[:, 1]  # probability of class 1 (survived)\nprint("First 5 survival probabilities:", y_prob[:5].round(3))\n\n# Accuracy — simplest metric: % of predictions that are correct\nprint(f"Accuracy: {accuracy_score(y_test, y_pred):.3f}")\n\n# Classification report — precision, recall, F1 per class\nprint(classification_report(y_test, y_pred, target_names=["Died", "Survived"]))' },
+
+      { type: 'heading', content: 'Decision Trees — how humans actually make decisions' },
+      { type: 'paragraph', content: 'A Decision Tree splits the data on one feature at a time, creating a tree of if-then rules. At each split, it chooses the feature and threshold that best separates the classes. The result is interpretable — you can read the tree as a flowchart: "If sex=male AND pclass=3 → predict Died."' },
+      { type: 'code', language: 'python', content: 'from sklearn.tree import DecisionTreeClassifier, plot_tree\nimport matplotlib.pyplot as plt\n\n# Train a Decision Tree (max_depth prevents overfitting)\ndt = DecisionTreeClassifier(max_depth=4, random_state=42)\ndt.fit(X_train, y_train)  # Trees do not need scaling\n\n# Evaluate\ny_pred_dt = dt.predict(X_test)\nprint(f"Decision Tree Accuracy: {accuracy_score(y_test, y_pred_dt):.3f}")\n\n# Visualise the tree (readable at max_depth ≤ 4)\nplt.figure(figsize=(20, 8))\nplot_tree(\n    dt,\n    feature_names=X.columns,\n    class_names=["Died", "Survived"],\n    filled=True,\n    rounded=True,\n    fontsize=10\n)\nplt.title("Titanic Decision Tree (max_depth=4)")\nplt.show()\n\n# Feature importance — which features does the tree rely on most?\nimportances = pd.Series(dt.feature_importances_, index=X.columns)\nimportances.sort_values(ascending=False).plot(kind="bar")\nplt.title("Feature Importances")\nplt.show()' },
+
+      { type: 'heading', content: 'Random Forest — decision trees that vote as a team' },
+      { type: 'paragraph', content: 'A single Decision Tree tends to overfit — it memorises training data. A Random Forest builds hundreds of trees, each trained on a random subset of rows and features, and combines their predictions by majority vote. More trees = more stable predictions = less overfitting. This is one of the most effective "off-the-shelf" ML algorithms.' },
+      { type: 'code', language: 'python', content: 'from sklearn.ensemble import RandomForestClassifier\n\nrf = RandomForestClassifier(\n    n_estimators=100,  # number of trees\n    max_depth=5,\n    random_state=42\n)\nrf.fit(X_train, y_train)\n\ny_pred_rf = rf.predict(X_test)\nprint(f"Random Forest Accuracy: {accuracy_score(y_test, y_pred_rf):.3f}")\n\n# Random Forests usually outperform a single Decision Tree significantly\n# Typical Titanic: Decision Tree ≈ 0.78, Random Forest ≈ 0.83' },
+
+      { type: 'heading', content: 'K-Nearest Neighbours — classify by similarity' },
+      { type: 'paragraph', content: 'KNN is one of the most intuitive ML algorithms: to classify a new passenger, find the K most similar passengers in the training data and take a majority vote of their labels. "If the 5 most similar passengers all survived, predict Survived."' },
+      { type: 'code', language: 'python', content: 'from sklearn.neighbors import KNeighborsClassifier\n\nknn = KNeighborsClassifier(n_neighbors=5)\nknn.fit(X_train_s, y_train)  # KNN requires scaled data\ny_pred_knn = knn.predict(X_test_s)\nprint(f"KNN Accuracy (k=5): {accuracy_score(y_test, y_pred_knn):.3f}")\n\n# Try different values of k to find the best\nfor k in [3, 5, 7, 11, 15]:\n    knn_k = KNeighborsClassifier(n_neighbors=k)\n    knn_k.fit(X_train_s, y_train)\n    acc = accuracy_score(y_test, knn_k.predict(X_test_s))\n    print(f"  k={k:2d} → Accuracy: {acc:.3f}")' },
+
+      { type: 'heading', content: 'Comparing algorithms' },
+      { type: 'code', language: 'python', content: 'results = {}\nmodels = {\n    "Logistic Regression": lr,\n    "Decision Tree":       dt,\n    "Random Forest":       rf,\n}\n\nfor name, model in models.items():\n    X_eval = X_test_s if name == "Logistic Regression" else X_test\n    y_p = model.predict(X_eval)\n    results[name] = accuracy_score(y_test, y_p)\n\nfor name, acc in sorted(results.items(), key=lambda x: -x[1]):\n    print(f"{name:<25} Accuracy: {acc:.3f}")' },
+    ],
+  },
+
+  /* ── Module 5: Model Evaluation ──────────────────────────────── */
+  {
+    id: 'ml-b-5',
+    title: 'Model evaluation — measuring what actually matters',
+    duration: '40 min',
+    sections: [
+      { type: 'heading', content: 'Why accuracy is often the wrong metric' },
+      { type: 'paragraph', content: 'Imagine a dataset where 95% of customers did NOT churn. A model that always predicts "no churn" achieves 95% accuracy — without learning anything useful. For the business, it is worthless: it flags zero customers for retention campaigns. This is the class imbalance problem, and it is why we need more sophisticated metrics.' },
+
+      { type: 'heading', content: 'The Confusion Matrix' },
+      { type: 'paragraph', content: 'A Confusion Matrix shows the four types of outcomes for a binary classifier:' },
+      { type: 'list', items: [
+        'True Positive (TP): correctly predicted Positive. You predicted Survived, they survived.',
+        'True Negative (TN): correctly predicted Negative. You predicted Died, they died.',
+        'False Positive (FP): predicted Positive, actually Negative. Predicted Survived, they died. Also called Type I error.',
+        'False Negative (FN): predicted Negative, actually Positive. Predicted Died, they survived. Also called Type II error.',
+      ]},
+      { type: 'code', language: 'python', content: 'from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay\n\ncm = confusion_matrix(y_test, y_pred)\nprint("Confusion Matrix:")\nprint(cm)\n# [[TN  FP]\n#  [FN  TP]]\n\n# Visualise\ndisp = ConfusionMatrixDisplay(confusion_matrix=cm,\n                              display_labels=["Died", "Survived"])\ndisp.plot(cmap="Blues")\nplt.title("Confusion Matrix — Logistic Regression on Titanic")\nplt.show()' },
+
+      { type: 'heading', content: 'Precision, Recall, and F1-Score' },
+      { type: 'code', language: 'python', content: 'from sklearn.metrics import precision_score, recall_score, f1_score\n\n# Precision: of all predicted Positives, how many were actually Positive?\n# = TP / (TP + FP)\n# High precision → few false alarms. Important when FP is costly\n# (e.g., flagging an innocent person as fraud)\nprecision = precision_score(y_test, y_pred)\nprint(f"Precision: {precision:.3f}")\n\n# Recall (Sensitivity): of all actual Positives, how many did we catch?\n# = TP / (TP + FN)\n# High recall → few misses. Important when FN is costly\n# (e.g., missing a cancer diagnosis)\nrecall = recall_score(y_test, y_pred)\nprint(f"Recall: {recall:.3f}")\n\n# F1-Score: harmonic mean of Precision and Recall\n# = 2 * (Precision * Recall) / (Precision + Recall)\n# Good single metric when you need to balance both\nf1 = f1_score(y_test, y_pred)\nprint(f"F1 Score: {f1:.3f}")\n\n# Complete report for all classes at once\nfrom sklearn.metrics import classification_report\nprint(classification_report(y_test, y_pred, target_names=["Died", "Survived"]))' },
+      { type: 'callout', kind: 'tip', content: 'Precision vs Recall tradeoff: increasing the classification threshold (from 0.5 to 0.7) makes the model more conservative — it only predicts Positive when very confident. This increases Precision but decreases Recall. Lowering the threshold does the opposite. Choose based on which error is more expensive for your use case.' },
+
+      { type: 'heading', content: 'ROC Curve and AUC' },
+      { type: 'paragraph', content: 'The ROC (Receiver Operating Characteristic) curve plots True Positive Rate vs False Positive Rate at every possible threshold. AUC (Area Under the Curve) summarises this into a single number: 1.0 is perfect, 0.5 is random guessing. AUC is threshold-independent — it tells you how well the model ranks examples, regardless of where you set the cutoff.' },
+      { type: 'code', language: 'python', content: 'from sklearn.metrics import roc_curve, roc_auc_score, RocCurveDisplay\n\n# Need probability predictions, not binary class predictions\ny_prob = lr.predict_proba(X_test_s)[:, 1]\n\nauc = roc_auc_score(y_test, y_prob)\nprint(f"AUC-ROC: {auc:.3f}")  # 0.5 = random, 1.0 = perfect\n\nRocCurveDisplay.from_predictions(y_test, y_prob)\nplt.plot([0, 1], [0, 1], "k--", label="Random (AUC=0.5)")\nplt.title(f"ROC Curve (AUC = {auc:.3f})")\nplt.show()' },
+
+      { type: 'heading', content: 'Cross-Validation — a more reliable accuracy estimate' },
+      { type: 'paragraph', content: 'A single train/test split can give a lucky or unlucky score depending on which rows land in each set. Cross-validation (k-fold CV) splits the data into k equal folds, trains and evaluates k times (each fold is the test set once), and reports the average score. This gives a much more reliable estimate of real-world performance.' },
+      { type: 'code', language: 'python', content: 'from sklearn.model_selection import cross_val_score, StratifiedKFold\n\n# 5-fold stratified cross-validation\n# Stratified = preserves class ratio in each fold\ncv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)\n\nscores = cross_val_score(\n    LogisticRegression(max_iter=1000),\n    X_train_s, y_train,\n    cv=cv,\n    scoring="roc_auc"\n)\n\nprint(f"AUC per fold: {scores.round(3)}")\nprint(f"Mean AUC: {scores.mean():.3f} (+/- {scores.std()*2:.3f}")' },
+
+      { type: 'heading', content: 'Overfitting and Underfitting — the bias-variance tradeoff' },
+      { type: 'paragraph', content: 'Every ML model sits somewhere on the spectrum between underfitting and overfitting. Finding the right spot is the central challenge of model development.' },
+      { type: 'code', language: 'python', content: '# Visualise overfitting in Decision Trees\ntrain_scores, test_scores = [], []\nfor depth in range(1, 20):\n    dt = DecisionTreeClassifier(max_depth=depth, random_state=42)\n    dt.fit(X_train, y_train)\n    train_scores.append(accuracy_score(y_train, dt.predict(X_train)))\n    test_scores.append(accuracy_score(y_test, dt.predict(X_test)))\n\nplt.plot(range(1, 20), train_scores, label="Train Accuracy")\nplt.plot(range(1, 20), test_scores,  label="Test Accuracy")\nplt.xlabel("Max Depth")\nplt.ylabel("Accuracy")\nplt.title("Overfitting: as depth increases, train goes up, test plateaus then drops")\nplt.legend()\nplt.show()\n# At high depth: train accuracy ≈ 1.0, test accuracy drops → overfitting' },
+      { type: 'list', items: [
+        'Underfitting (high bias): model too simple. Both train and test scores are low. Fix: more complex model, more features.',
+        'Good fit: train and test scores are close and both acceptable.',
+        'Overfitting (high variance): train score much higher than test score. Fix: simpler model, more data, regularisation, cross-validation.',
+      ]},
+
+      { type: 'heading', content: 'Regression evaluation recap' },
+      { type: 'list', items: [
+        'MAE (Mean Absolute Error): average prediction error in same units as y. Easy to interpret. Not sensitive to large errors.',
+        'RMSE (Root Mean Squared Error): penalises large errors more. Most commonly reported. In same units as y.',
+        'R² (R-squared): fraction of variance explained. 1.0 = perfect, 0.0 = predicting mean, negative = worse than mean.',
+        'When RMSE >> MAE: the model makes occasional very large errors (outlier predictions). Investigate those cases.',
+      ]},
+    ],
+  },
+
+  /* ── Module 6: scikit-learn Pipelines ────────────────────────── */
+  {
+    id: 'ml-b-6',
+    title: 'scikit-learn Pipelines — clean, reproducible, production-ready ML',
+    duration: '40 min',
+    sections: [
+      { type: 'heading', content: 'The problem Pipelines solve' },
+      { type: 'paragraph', content: 'Without Pipelines, you have to remember to apply the same preprocessing steps (impute → encode → scale) to both training and test data, in exactly the same order, using the same fitted transformers. Missing a step or applying them in the wrong order causes subtle bugs that are hard to detect. Pipelines package the entire sequence into a single object.' },
+      { type: 'callout', kind: 'info', content: 'A Pipeline is also the structure you deploy to production. When a new data point arrives, you call pipeline.predict(new_data) — it automatically runs through all the same preprocessing steps and then the model, in one call.' },
+
+      { type: 'heading', content: 'Building your first Pipeline' },
+      { type: 'code', language: 'python', content: 'from sklearn.pipeline import Pipeline\nfrom sklearn.impute import SimpleImputer\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.linear_model import LogisticRegression\n\n# Define the sequence of steps as (name, transformer) tuples\npipeline = Pipeline([\n    ("imputer",  SimpleImputer(strategy="median")),   # step 1: fill missing\n    ("scaler",   StandardScaler()),                    # step 2: scale features\n    ("model",    LogisticRegression(max_iter=1000)),   # step 3: train/predict\n])\n\n# Train the entire pipeline in one call\npipeline.fit(X_train, y_train)\n\n# Predict — preprocessing applied automatically in the right order\ny_pred = pipeline.predict(X_test)\ny_prob = pipeline.predict_proba(X_test)[:, 1]\n\nprint(f"Pipeline Accuracy: {accuracy_score(y_test, y_pred):.3f}")\n\n# Cross-validate the pipeline (no data leakage possible)\nscores = cross_val_score(pipeline, X_train, y_train, cv=5, scoring="roc_auc")\nprint(f"CV AUC: {scores.mean():.3f} +/- {scores.std()*2:.3f}")' },
+
+      { type: 'heading', content: 'ColumnTransformer — different preprocessing for different columns' },
+      { type: 'paragraph', content: 'Real datasets have mixed column types: some numeric, some categorical. You cannot apply StandardScaler to a text column. ColumnTransformer lets you define a separate preprocessing pipeline for each group of columns, then combines them back into one array.' },
+      { type: 'code', language: 'python', content: 'from sklearn.compose import ColumnTransformer\nfrom sklearn.preprocessing import OneHotEncoder\nimport seaborn as sns\n\ntitanic = sns.load_dataset("titanic")\ndf = titanic[["survived","pclass","sex","age","sibsp","parch","fare"]].copy()\ndf.dropna(subset=["age", "fare"], inplace=True)\n\nX = df.drop("survived", axis=1)\ny = df["survived"]\n\n# Separate column types\nnum_cols = ["age", "sibsp", "parch", "fare"]\ncat_cols = ["sex", "pclass"]\n\n# Preprocessing for numeric: impute then scale\nnum_pipeline = Pipeline([\n    ("imputer", SimpleImputer(strategy="median")),\n    ("scaler",  StandardScaler()),\n])\n\n# Preprocessing for categorical: impute then one-hot encode\ncat_pipeline = Pipeline([\n    ("imputer", SimpleImputer(strategy="most_frequent")),\n    ("encoder", OneHotEncoder(handle_unknown="ignore")),\n])\n\n# Combine with ColumnTransformer\npreprocessor = ColumnTransformer([\n    ("num", num_pipeline, num_cols),\n    ("cat", cat_pipeline, cat_cols),\n])\n\n# Full pipeline with classifier at the end\nfull_pipeline = Pipeline([\n    ("preprocessor", preprocessor),\n    ("model", RandomForestClassifier(n_estimators=100, random_state=42)),\n])\n\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, random_state=42, stratify=y\n)\n\nfull_pipeline.fit(X_train, y_train)\nprint(f"Full Pipeline Accuracy: {accuracy_score(y_test, full_pipeline.predict(X_test)):.3f}")' },
+
+      { type: 'heading', content: 'Hyperparameter tuning with GridSearchCV' },
+      { type: 'paragraph', content: 'Every algorithm has hyperparameters — settings you choose before training that control model complexity. max_depth in a Decision Tree. C in Logistic Regression. n_estimators in a Random Forest. GridSearchCV tries every combination you specify and finds the best one via cross-validation.' },
+      { type: 'code', language: 'python', content: 'from sklearn.model_selection import GridSearchCV\n\n# Define the parameter grid\n# Key: "model__" prefix to reference the pipeline\'s "model" step\nparam_grid = {\n    "model__n_estimators": [50, 100, 200],\n    "model__max_depth": [3, 5, 7, None],\n    "model__min_samples_leaf": [1, 2, 4],\n}\n\n# GridSearchCV tests all combinations via 5-fold CV\ngrid_search = GridSearchCV(\n    full_pipeline,\n    param_grid,\n    cv=5,\n    scoring="roc_auc",\n    n_jobs=-1,  # use all CPU cores\n    verbose=1\n)\ngrid_search.fit(X_train, y_train)\n\nprint(f"Best parameters: {grid_search.best_params_}")\nprint(f"Best CV AUC:     {grid_search.best_score_:.3f}")\n\nbest_model = grid_search.best_estimator_\nprint(f"Test AUC: {roc_auc_score(y_test, best_model.predict_proba(X_test)[:,1]):.3f}")' },
+      { type: 'callout', kind: 'tip', content: 'GridSearchCV is exhaustive — it tries every combination. For many hyperparameters, use RandomizedSearchCV instead: it randomly samples combinations and typically finds a near-optimal result in a fraction of the time.' },
+
+      { type: 'heading', content: 'Saving and loading a trained pipeline' },
+      { type: 'code', language: 'python', content: 'import joblib\n\n# Save the entire pipeline (preprocessing + model) to a file\njoblib.dump(best_model, "titanic_pipeline.pkl")\nprint("Model saved!")\n\n# Load it back — in production or another script\nloaded_pipeline = joblib.load("titanic_pipeline.pkl")\n\n# Make a prediction on a new passenger\nnew_passenger = pd.DataFrame([{\n    "pclass": 1, "sex": "female", "age": 29,\n    "sibsp": 0, "parch": 0, "fare": 211.3\n}])\n\nsurvival_prob = loaded_pipeline.predict_proba(new_passenger)[0, 1]\nprint(f"Survival probability: {survival_prob:.1%}")  # Rose had a good chance' },
+    ],
+  },
+
+  /* ── Mini Project ────────────────────────────────────────────── */
+  {
+    id: 'ml-mp-b-1',
+    title: 'Mini Project: House Price Predictor — end-to-end regression',
+    duration: '60 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'Project brief' },
+      { type: 'paragraph', content: 'You are a data scientist at a real estate analytics company. A product manager wants a working model that predicts median house prices for California districts. The model will be used to flag underpriced listings for investment analysis. Your job: build, evaluate, and save a complete regression pipeline.' },
+
+      { type: 'heading', content: 'Dataset' },
+      { type: 'paragraph', content: 'California Housing Dataset from sklearn.datasets.fetch_california_housing. 20,640 districts. Target: MedHouseVal (median house value in $100k units). Features: MedInc, HouseAge, AveRooms, AveBedrms, Population, AveOccup, Latitude, Longitude.' },
+
+      { type: 'heading', content: 'Step 1 — EDA (do not skip this)' },
+      { type: 'list', items: [
+        'Load with fetch_california_housing(as_frame=True)',
+        'Print df.describe() — note ranges, especially AveRooms (some districts have hundreds of rooms — outliers)',
+        'Plot the distribution of MedHouseVal — it is capped at 5.0 ($500k). Note this limitation.',
+        'Print the correlation matrix. MedInc should be the strongest predictor of MedHouseVal.',
+        'Create a scatter plot of Longitude vs Latitude, coloured by MedHouseVal — you should see California\'s shape emerge, with San Francisco and LA as clear high-value clusters.',
+      ]},
+
+      { type: 'heading', content: 'Step 2 — Feature engineering' },
+      { type: 'list', items: [
+        'Create RoomsPerHouse = AveRooms / AveBedrms (ratio of rooms to bedrooms)',
+        'Create PopulationPerHousehold = Population / AveOccup (district density per dwelling)',
+        'These engineered features often outperform the raw columns for regression.',
+      ]},
+      { type: 'code', language: 'python', content: 'df["RoomsPerHouse"]          = df["AveRooms"] / df["AveBedrms"]\ndf["PopulationPerHousehold"] = df["Population"] / df["AveOccup"]\n\n# Check for inf/NaN introduced by division\nprint(df.isnull().sum())\nprint(df.replace([np.inf, -np.inf], np.nan).isnull().sum())\ndf.replace([np.inf, -np.inf], np.nan, inplace=True)\ndf.dropna(inplace=True)' },
+
+      { type: 'heading', content: 'Step 3 — Build and evaluate three models' },
+      { type: 'list', items: [
+        'Model A: Linear Regression (baseline)',
+        'Model B: Random Forest Regressor (n_estimators=100, max_depth=10)',
+        'Model C: Gradient Boosting Regressor (n_estimators=100, learning_rate=0.1)',
+        'For each: wrap in a Pipeline with StandardScaler, fit on training data, evaluate RMSE and R² on test data.',
+        'Print a comparison table: Model | RMSE | R²',
+      ]},
+
+      { type: 'heading', content: 'Step 4 — Tune the best model' },
+      { type: 'list', items: [
+        'Use RandomizedSearchCV on the best-performing model (likely Gradient Boosting)',
+        'Tune: n_estimators (50–300), max_depth (3–10), learning_rate (0.01–0.3)',
+        'Report the best parameters and the improvement in RMSE',
+      ]},
+
+      { type: 'heading', content: 'Step 5 — Residual analysis' },
+      { type: 'list', items: [
+        'Plot predicted vs actual on a scatter chart — do you see any systematic bias?',
+        'Plot residuals vs predicted values — any pattern indicates the model misses something',
+        'Find the 10 districts with the highest residuals (abs) — these are the hardest-to-predict cases. What do they have in common?',
+      ]},
+
+      { type: 'heading', content: 'Step 6 — Save the pipeline' },
+      { type: 'code', language: 'python', content: 'import joblib\n\n# Save the best tuned pipeline\njoblib.dump(best_pipeline, "california_housing_model.pkl")\n\n# Quick smoke test — predict on one district\nnew_district = pd.DataFrame([{\n    "MedInc": 8.3, "HouseAge": 41, "AveRooms": 6.9,\n    "AveBedrms": 1.0, "Population": 322, "AveOccup": 2.6,\n    "Latitude": 37.88, "Longitude": -122.23,\n    "RoomsPerHouse": 6.9, "PopulationPerHousehold": 123.8\n}])\nprint(f"Predicted value: ${best_pipeline.predict(new_district)[0]*100:.0f}k")' },
+
+      { type: 'heading', content: 'Expected results' },
+      { type: 'list', items: [
+        'Linear Regression: RMSE ≈ 0.72, R² ≈ 0.60',
+        'Random Forest: RMSE ≈ 0.50, R² ≈ 0.80',
+        'Gradient Boosting (tuned): RMSE ≈ 0.45, R² ≈ 0.84',
+        'Interpretation: the best model is off by ~$45k on average. For a $300k house, that is a 15% error — reasonable for a district-level prediction without granular property data.',
+      ]},
+      { type: 'callout', kind: 'tip', content: 'The price cap at $500k is a real limitation in this dataset. Districts near San Francisco that actually sold above $500k are all capped at $500k — the model will consistently underestimate these. In a production system, you would want current data without this artificial cap.' },
+    ],
+  },
+
+  /* ── Module 7: Capstone — Customer Churn Prediction ─────────── */
+  {
+    id: 'ml-b-7',
+    title: 'Capstone: End-to-end Customer Churn Prediction',
+    duration: '75 min',
+    isProject: true,
+    sections: [
+      { type: 'heading', content: 'The business problem' },
+      { type: 'paragraph', content: 'Customer churn — when a customer stops using your service — is one of the most expensive problems a subscription business faces. Acquiring a new customer costs 5–25x more than retaining an existing one. If you can predict which customers are likely to churn before they leave, you can intervene: offer a discount, assign a success manager, or run a targeted re-engagement campaign.' },
+      { type: 'paragraph', content: 'This capstone combines everything you learned across this course: EDA, data preparation, Pipelines with ColumnTransformer, multiple classifiers, cross-validation, and proper metric selection. You will build a production-ready churn prediction system from scratch.' },
+
+      { type: 'heading', content: 'Dataset: Telecom Customer Churn' },
+      { type: 'paragraph', content: 'We use the IBM Telco Customer Churn dataset (available on Kaggle as "WA_Fn-UseC_-Telco-Customer-Churn.csv" and also from sklearn\'s extras). 7,043 customers, 20 features. Target: Churn (Yes/No). Features include tenure, monthly charges, contract type, payment method, and service subscriptions.' },
+      { type: 'code', language: 'python', content: '# Option A: download from Kaggle directly\n# Option B: load from a URL (public dataset)\nimport pandas as pd\nurl = "https://raw.githubusercontent.com/dsrscientist/dataset1/master/Telecom-Customer-Churn.csv"\ndf = pd.read_csv(url)\nprint(df.shape)  # (7043, 21)\nprint(df["Churn"].value_counts())\n# No: 5174 (73.5%) | Yes: 1869 (26.5%) — moderate class imbalance' },
+
+      { type: 'heading', content: 'Step 1 — EDA' },
+      { type: 'list', items: [
+        'Check df.info() — TotalCharges is an object column (contains " " space for new customers). Convert to numeric.',
+        'Plot churn rate by Contract type (month-to-month churns ~43% vs two-year churns ~3%).',
+        'Plot churn rate by tenure — new customers (0–12 months) churn most.',
+        'Plot MonthlyCharges distribution split by Churn — churned customers pay more on average.',
+        'Visualise missing values — only TotalCharges has issues after the type fix.',
+      ]},
+      { type: 'code', language: 'python', content: '# Fix TotalCharges — replace spaces with NaN, then convert\ndf["TotalCharges"] = pd.to_numeric(df["TotalCharges"], errors="coerce")\nprint(f"Missing TotalCharges: {df["TotalCharges"].isnull().sum()}")  # 11 rows\n\n# Churn by Contract (compelling visualisation)\nimport matplotlib.pyplot as plt\nchurn_by_contract = df.groupby("Contract")["Churn"].apply(\n    lambda x: (x == "Yes").mean()\n)\nchurn_by_contract.plot(kind="bar", color=["#2563EB","#16A34A","#EA580C"])\nplt.title("Churn Rate by Contract Type")\nplt.ylabel("Churn Rate")\nplt.xticks(rotation=0)\nplt.show()' },
+
+      { type: 'heading', content: 'Step 2 — Data preparation' },
+      { type: 'code', language: 'python', content: 'from sklearn.model_selection import train_test_split\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.compose import ColumnTransformer\nfrom sklearn.impute import SimpleImputer\nfrom sklearn.preprocessing import StandardScaler, OneHotEncoder\n\n# Drop customerID (not a feature) and convert target to binary\ndf.drop("customerID", axis=1, inplace=True)\ndf["Churn"] = (df["Churn"] == "Yes").astype(int)\n\n# Separate features from target\nX = df.drop("Churn", axis=1)\ny = df["Churn"]\n\n# Identify column types\nnum_cols = X.select_dtypes(include=["number"]).columns.tolist()\ncat_cols = X.select_dtypes(include=["object"]).columns.tolist()\nprint(f"Numeric columns: {num_cols}")\nprint(f"Categorical columns: {cat_cols}")\n\n# Train/test split — stratify to preserve 26.5% churn ratio\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, random_state=42, stratify=y\n)\n\n# Preprocessing pipelines\nnum_pipeline = Pipeline([\n    ("imputer", SimpleImputer(strategy="median")),\n    ("scaler",  StandardScaler()),\n])\ncat_pipeline = Pipeline([\n    ("imputer", SimpleImputer(strategy="most_frequent")),\n    ("encoder", OneHotEncoder(handle_unknown="ignore", sparse_output=False)),\n])\npreprocessor = ColumnTransformer([\n    ("num", num_pipeline, num_cols),\n    ("cat", cat_pipeline, cat_cols),\n])' },
+
+      { type: 'heading', content: 'Step 3 — Train and compare classifiers' },
+      { type: 'code', language: 'python', content: 'from sklearn.linear_model import LogisticRegression\nfrom sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier\nfrom sklearn.metrics import roc_auc_score, f1_score, classification_report\n\nclassifiers = {\n    "Logistic Regression": LogisticRegression(max_iter=1000, C=0.1),\n    "Random Forest":       RandomForestClassifier(n_estimators=100, random_state=42),\n    "Gradient Boosting":   GradientBoostingClassifier(n_estimators=100, random_state=42),\n}\n\nresults = {}\nfor name, clf in classifiers.items():\n    pipeline = Pipeline([\n        ("preprocessor", preprocessor),\n        ("model", clf),\n    ])\n    pipeline.fit(X_train, y_train)\n    y_pred  = pipeline.predict(X_test)\n    y_prob  = pipeline.predict_proba(X_test)[:, 1]\n    results[name] = {\n        "AUC":       roc_auc_score(y_test, y_prob),\n        "F1":        f1_score(y_test, y_pred),\n        "pipeline":  pipeline,\n    }\n    print(f"\\n{name}")\n    print(classification_report(y_test, y_pred, target_names=["Stayed","Churned"]))' },
+
+      { type: 'heading', content: 'Step 4 — Choose the right threshold for the business' },
+      { type: 'paragraph', content: 'The default threshold of 0.5 may not be optimal. For churn prevention, false negatives (missed churners) are more expensive than false positives (unnecessary retention offers). Lower the threshold to catch more churners, accepting more false alarms.' },
+      { type: 'code', language: 'python', content: 'from sklearn.metrics import precision_recall_curve\n\nbest_pipeline = results["Gradient Boosting"]["pipeline"]\ny_prob = best_pipeline.predict_proba(X_test)[:, 1]\n\n# Precision-Recall curve — shows tradeoff at every threshold\nprecision, recall, thresholds = precision_recall_curve(y_test, y_prob)\n\nplt.plot(thresholds, precision[:-1], label="Precision")\nplt.plot(thresholds, recall[:-1],    label="Recall")\nplt.xlabel("Threshold")\nplt.title("Precision vs Recall at Different Thresholds")\nplt.legend()\nplt.show()\n\n# Business decision: choose threshold where Recall ≥ 0.70\n# (catch at least 70% of churners)\nfor t in [0.3, 0.4, 0.5, 0.6]:\n    pred = (y_prob >= t).astype(int)\n    print(f"Threshold {t}: Precision={precision_score(y_test,pred):.2f} "\n          f"Recall={recall_score(y_test,pred):.2f} "\n          f"F1={f1_score(y_test,pred):.2f}")' },
+
+      { type: 'heading', content: 'Step 5 — Feature importance' },
+      { type: 'code', language: 'python', content: '# Extract feature names after preprocessing\nfitted_preprocessor = best_pipeline.named_steps["preprocessor"]\nnum_feat_names = num_cols\ncat_feat_names = list(\n    fitted_preprocessor.named_transformers_["cat"]\n    .named_steps["encoder"]\n    .get_feature_names_out(cat_cols)\n)\nall_feat_names = num_feat_names + cat_feat_names\n\n# Feature importances from Gradient Boosting\nimportances = best_pipeline.named_steps["model"].feature_importances_\nfeat_df = pd.DataFrame({"Feature": all_feat_names, "Importance": importances})\ntop10 = feat_df.sort_values("Importance", ascending=False).head(10)\n\ntop10.plot(kind="barh", x="Feature", y="Importance", figsize=(10, 6))\nplt.title("Top 10 Churn Predictors")\nplt.gca().invert_yaxis()\nplt.show()\n# Expected top features: tenure, MonthlyCharges, Contract_Month-to-month' },
+
+      { type: 'heading', content: 'Step 6 — Save and test in production' },
+      { type: 'code', language: 'python', content: 'import joblib\njoblib.dump(best_pipeline, "churn_predictor.pkl")\n\n# Production simulation: score a new customer\nnew_customer = pd.DataFrame([{\n    "gender": "Female", "SeniorCitizen": 0, "Partner": "Yes",\n    "Dependents": "No", "tenure": 2, "PhoneService": "Yes",\n    "MultipleLines": "No", "InternetService": "Fiber optic",\n    "OnlineSecurity": "No", "OnlineBackup": "No",\n    "DeviceProtection": "No", "TechSupport": "No",\n    "StreamingTV": "No", "StreamingMovies": "No",\n    "Contract": "Month-to-month", "PaperlessBilling": "Yes",\n    "PaymentMethod": "Electronic check",\n    "MonthlyCharges": 70.70, "TotalCharges": 151.65,\n}])\n\nloaded = joblib.load("churn_predictor.pkl")\nchurn_prob = loaded.predict_proba(new_customer)[0, 1]\nprint(f"Churn probability: {churn_prob:.1%}")\nif churn_prob > 0.40:\n    print("→ HIGH RISK: Flag for retention campaign")\nelse:\n    print("→ LOW RISK: Monitor next quarter")' },
+
+      { type: 'heading', content: 'What you have achieved in this beginner course' },
+      { type: 'list', items: [
+        'You understand the ML workflow end-to-end: EDA → prep → split → train → evaluate → improve → deploy.',
+        'You can build regression pipelines (Linear, Ridge, Lasso, Random Forest, Gradient Boosting) and evaluate with RMSE/R².',
+        'You can build classification pipelines (Logistic Regression, Decision Trees, Random Forest, KNN) and evaluate with accuracy, precision, recall, F1, AUC-ROC.',
+        'You understand overfitting, underfitting, data leakage, and cross-validation.',
+        'You can build production-grade sklearn Pipelines with ColumnTransformer that handle mixed data types.',
+        'You can tune hyperparameters with GridSearchCV/RandomizedSearchCV.',
+        'You can save and load a complete pipeline with joblib.',
+        'You have two end-to-end projects in your portfolio: California Housing (regression) and Customer Churn (classification).',
+      ]},
+      { type: 'callout', kind: 'tip', content: 'Next: the Intermediate ML course covers Support Vector Machines, Neural Network basics, clustering (K-Means, DBSCAN), dimensionality reduction (PCA, t-SNE), and more sophisticated feature engineering. Everything you learned here is the foundation — you will use it in every future ML project.' },
+    ],
+  },
+]
+
 export const COURSE_CONTENT = {
   sql: {
     beginner: SQL_BEGINNER,
@@ -8732,29 +10069,28 @@ export const COURSE_CONTENT = {
     advanced: POWERBI_ADVANCED,
   },
   tableau: {
-    beginner: [
-      ...TABLEAU_BEGINNER,
-      ...productionList([
-        'Installing Tableau Public and loading data',
-        'Your first chart in 5 minutes',
-        'Filters and groups',
-        'Your first dashboard',
-      ]),
-    ],
+    beginner: TABLEAU_BEGINNER,
+    intermediate: TABLEAU_INTERMEDIATE,
+    advanced: TABLEAU_ADVANCED,
+  },
+  ml: {
+    beginner: ML_BEGINNER,
     intermediate: productionList([
-      'Calculated fields',
-      'LOD (Level of Detail) expressions',
-      'Parameters and dynamic dashboards',
-      'Maps and geographic data',
-      'Storytelling features',
+      'Support Vector Machines and kernels',
+      'K-Means and DBSCAN clustering',
+      'PCA and dimensionality reduction',
+      'Neural network fundamentals',
+      'Natural language processing basics',
+      'Model deployment with Flask and FastAPI',
     ], 3),
     advanced: productionList([
-      'Advanced LOD patterns',
-      'Performance optimisation',
-      'Tableau Server administration',
-      'Embedding and APIs',
-      'Custom SQL and data blending',
-    ], 5),
+      'Deep learning with PyTorch',
+      'Convolutional Neural Networks',
+      'Recurrent Networks and transformers',
+      'Reinforcement learning fundamentals',
+      'MLOps and model monitoring',
+      'Large Language Model fine-tuning',
+    ], 6),
   },
   statistics: {
     beginner: [
