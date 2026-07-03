@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
-import { Menu, X, ChevronDown, LogOut, User as UserIcon, LayoutDashboard, Search, BookOpen, Users } from 'lucide-react'
+import { Menu, X, ChevronDown, LogOut, User as UserIcon, LayoutDashboard, Search, BookOpen, Users, Moon, Sun } from 'lucide-react'
 import { Logo } from './Logo'
 import { useAuth } from '../context/AuthContext'
 import { LIVE_COURSES } from '../data/courses'
@@ -13,6 +13,11 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchQ, setSearchQ] = useState('')
   const [searchFocused, setSearchFocused] = useState(false)
+  const [dark, setDark] = useState(() => {
+    const saved = localStorage.getItem('theme')
+    if (saved) return saved === 'dark'
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+  })
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
   const searchRef = useRef(null)
@@ -22,6 +27,11 @@ export default function Navbar() {
     window.addEventListener('scroll', onScroll)
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', dark)
+    localStorage.setItem('theme', dark ? 'dark' : 'light')
+  }, [dark])
 
   const handleSignOut = () => {
     signOut()
@@ -108,6 +118,14 @@ export default function Navbar() {
             <NavLink to="/mentors" onClick={() => setOpen(false)}>Mentors</NavLink>
             <NavLink to="/about" onClick={() => setOpen(false)}>About</NavLink>
           </nav>
+
+          <button
+            className="dark-toggle"
+            onClick={() => setDark(d => !d)}
+            aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {dark ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
 
           <div className="nav-actions">
             {user ? (
