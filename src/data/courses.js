@@ -176,10 +176,10 @@ export const COURSE_CATALOG = [
     datasets: ['California Housing (US)', 'Titanic (Global)', 'Telecom Churn (IBM)', 'Kaggle Housing'],
     tracks: {
       beginner: { modules: 8, hours: 8, label: 'Regression, classification, Pipelines, 2 end-to-end projects' },
-      intermediate: { modules: 6, hours: 8, label: 'SVMs, clustering, PCA, neural networks, NLP, deployment' },
+      intermediate: { modules: 8, hours: 8, label: 'SVMs, clustering, PCA, neural networks, NLP, deployment, capstone news classifier' },
       advanced: { modules: 6, hours: 10, label: 'Deep learning, CNNs, transformers, RL, MLOps, LLM fine-tuning' },
     },
-    totalModules: 20,
+    totalModules: 22,
   },
   {
     id: 'data-eng',
