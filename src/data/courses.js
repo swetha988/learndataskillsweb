@@ -177,9 +177,9 @@ export const COURSE_CATALOG = [
     tracks: {
       beginner: { modules: 8, hours: 8, label: 'Regression, classification, Pipelines, 2 end-to-end projects' },
       intermediate: { modules: 8, hours: 8, label: 'SVMs, clustering, PCA, neural networks, NLP, deployment, capstone news classifier' },
-      advanced: { modules: 6, hours: 10, label: 'Deep learning, CNNs, transformers, RL, MLOps, LLM fine-tuning' },
+      advanced: { modules: 8, hours: 10, label: 'PyTorch, CNNs, transformers, MLOps, XGBoost/LightGBM, RL, fraud detection, LLM recommender capstone' },
     },
-    totalModules: 22,
+    totalModules: 24,
   },
   {
     id: 'data-eng',
