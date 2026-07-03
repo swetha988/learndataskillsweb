@@ -68,10 +68,6 @@
 
   /* FOCUS RING */
   --ring: 0 0 0 3px rgba(37, 99, 235, 0.25);
-
-  /* SURFACE — switches in dark mode */
-  --surface: #ffffff;
-  --surface-2: #f8fafc;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -214,7 +210,7 @@ input, textarea, select {
   color: white;
 }
 .btn-secondary {
-  background: var(--surface);
+  background: white;
   color: var(--navy);
   border-color: var(--s2);
 }
@@ -266,7 +262,7 @@ input, textarea, select {
 .input {
   width: 100%;
   padding: 11px 14px;
-  background: var(--surface);
+  background: white;
   border: 1.5px solid var(--s2);
   border-radius: var(--r-md);
   font-size: 14px;
@@ -301,7 +297,7 @@ input, textarea, select {
 
 /* ── CARD ───────────────────────────────────────────────────────── */
 .card {
-  background: var(--surface);
+  background: white;
   border: 1.5px solid var(--s2);
   border-radius: var(--r-xl);
   padding: 24px;
@@ -316,7 +312,7 @@ input, textarea, select {
 /* ── SECTION ────────────────────────────────────────────────────── */
 .section { padding: 96px 0; }
 .section-tight { padding: 64px 0; }
-.section-white { background: var(--surface); }
+.section-white { background: white; }
 .section-bg { background: var(--bg); }
 .section-dark {
   background: linear-gradient(180deg, var(--navy) 0%, #1E3A8A 100%);
@@ -459,172 +455,3 @@ html.a11y-dyslexia-font body {
   .nav-search { display: none; }
   .nav-inner { grid-template-columns: auto auto !important; justify-content: space-between !important; }
 }
-
-/* ══════════════════════════════════════════════════════════════
-   DARK MODE
-   Toggled by adding/removing html.dark class via Navbar button.
-   Preference saved to localStorage as "theme" = "dark" | "light".
-   ══════════════════════════════════════════════════════════════ */
-html.dark {
-  color-scheme: dark;
-
-  /* Backgrounds */
-  --bg:      #0F172A;
-  --surface: #1E293B;
-  --surface-2: #263347;
-
-  /* Greys — inverted scale */
-  --s1: #1E293B;
-  --s2: #334155;
-  --s3: #475569;
-  --s4: #94A3B8;
-  --s5: #CBD5E1;
-
-  /* Navy text → near-white */
-  --navy:      #F1F5F9;
-  --navy-soft: #1E293B;
-
-  /* Tinted light backgrounds → dark tints */
-  --blue-light:  #172554;
-  --blue-mid:    #1e3a5f;
-  --green-bg:    #052e16;
-  --red-bg:      #450a0a;
-  --orange-bg:   #431407;
-  --purple-bg:   #2e1065;
-  --cyan-light:  #083344;
-
-  /* Shadows — more opaque on dark */
-  --shadow-xs: 0 1px 2px rgba(0,0,0,0.3);
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
-  --shadow-lg: 0 12px 28px rgba(0,0,0,0.5);
-  --shadow-xl: 0 24px 48px rgba(0,0,0,0.6);
-}
-
-html.dark body {
-  background: var(--bg);
-  color: var(--navy);
-}
-
-/* ── Scrollbar ── */
-html.dark ::-webkit-scrollbar-track { background: #1E293B; }
-html.dark ::-webkit-scrollbar-thumb { background: #475569; }
-
-/* ── Navbar ── */
-html.dark .navbar { background: rgba(15,23,42,0.75); }
-html.dark .navbar.is-scrolled { background: rgba(15,23,42,0.96); border-bottom-color: var(--s2); }
-html.dark .nav-search input { background: #1E293B; color: var(--navy); }
-html.dark .nav-search.is-focused input { background: #263347; }
-html.dark .search-dropdown { background: #1E293B; border-color: var(--s2); }
-html.dark .search-item { color: var(--navy); }
-html.dark .search-item:hover { background: var(--s2); }
-html.dark .user-dropdown { background: #1E293B; border-color: var(--s2); }
-html.dark .user-trigger { background: #1E293B; border-color: var(--s2); }
-html.dark .user-trigger:hover { background: var(--s2); border-color: var(--blue); }
-html.dark .dropdown-item { color: var(--navy); }
-html.dark .dropdown-item:hover { background: var(--s2); color: var(--navy); }
-html.dark .nav-links { background: #0F172A; border-bottom-color: var(--s2); }
-html.dark .nav-links a { color: var(--s5); }
-html.dark .nav-links a:hover, html.dark .nav-links a.active { color: var(--blue); background: var(--blue-light); }
-
-/* ── CoursesGrid ── */
-html.dark .cg-card { background: var(--surface); border-color: var(--s2); }
-html.dark .cg-card-top { background: var(--surface); }
-html.dark .cg-body { background: var(--surface); }
-html.dark .cg-coming { background: var(--surface); }
-html.dark .notify-card { background: var(--surface-2); border-color: var(--s2); }
-
-/* ── CourseDetail ── */
-html.dark .track-card { background: var(--surface); border-color: var(--s2); }
-html.dark .outcomes-card { background: var(--surface); border-color: var(--s2); }
-html.dark .cd-sticky { background: var(--surface); border-color: var(--s2); }
-html.dark .cd-tab { color: var(--s4); }
-html.dark .cd-tab.active { color: var(--blue); }
-html.dark .cd-tabs { border-bottom-color: var(--s2); }
-
-/* ── ModulePage ── */
-html.dark .mp-layout { background: var(--bg); }
-html.dark .mp-sidebar { background: var(--surface); border-right-color: var(--s2); }
-html.dark .mp-content { background: var(--bg); }
-html.dark .mp-nav { background: var(--surface); border-top-color: var(--s2); }
-html.dark .module-item { color: var(--s5); }
-html.dark .module-item:hover { background: var(--s2); }
-html.dark .module-item.active { background: var(--blue-light); color: var(--blue); }
-html.dark .lesson-card { background: var(--surface); border-color: var(--s2); }
-html.dark .lesson-header { background: var(--surface); border-bottom-color: var(--s2); }
-html.dark .callout { background: var(--surface-2); border-color: var(--s2); }
-
-/* ── Dashboard ── */
-html.dark .dash-body { background: var(--bg); }
-html.dark .dash-card { background: var(--surface); border-color: var(--s2); }
-html.dark .course-progress-card { background: var(--surface); border-color: var(--s2); }
-html.dark .progress-track { background: var(--s2); }
-
-/* ── Quizzes ── */
-html.dark .quiz-card { background: var(--surface); border-color: var(--s2); }
-html.dark .quiz-option { background: var(--surface-2); border-color: var(--s2); color: var(--navy); }
-html.dark .quiz-option:hover { border-color: var(--blue); }
-html.dark .course-quiz-wrap { background: var(--surface); border-color: var(--s2); }
-html.dark .cq-panel { background: var(--surface); }
-html.dark .cq-header { background: var(--surface); border-bottom-color: var(--s2); }
-
-/* ── Login ── */
-html.dark .login-card { background: var(--surface); border-color: var(--s2); }
-html.dark .login-page { background: var(--bg); }
-
-/* ── Mentors ── */
-html.dark .mentor-card { background: var(--surface); border-color: var(--s2); }
-html.dark .mentor-row { background: var(--surface); border-color: var(--s2); }
-html.dark .mentors-sidebar { background: var(--surface); border-color: var(--s2); }
-
-/* ── MentorProfile ── */
-html.dark .profile-card { background: var(--surface); border-color: var(--s2); }
-
-/* ── HowItWorks ── */
-html.dark .hiw-step { background: var(--surface); border-color: var(--s2); }
-
-/* ── MentorShowcase ── */
-html.dark .ms-card { background: var(--surface); border-color: var(--s2); }
-
-/* ── Chatbot ── */
-html.dark .chatbot-window { background: var(--surface); border-color: var(--s2); }
-html.dark .chatbot-header { background: var(--surface); border-bottom-color: var(--s2); }
-html.dark .chatbot-input-row { background: var(--surface); border-top-color: var(--s2); }
-html.dark .msg-bot { background: var(--surface-2); }
-
-/* ── CodePlayground ── */
-html.dark .playground-wrap { background: var(--surface); border-color: var(--s2); }
-html.dark .playground-output { background: var(--surface-2); border-color: var(--s2); }
-
-/* ── ModuleFeedback ── */
-html.dark .feedback-bar { background: var(--surface); border-color: var(--s2); }
-html.dark .feedback-modal { background: var(--surface); border-color: var(--s2); }
-
-/* ── Hero light card ── */
-html.dark .hero-card { background: var(--surface) !important; color: var(--navy) !important; }
-
-/* ── Onboarding ── */
-html.dark .intake-modal { background: var(--surface); border-color: var(--s2); }
-
-/* ── Admin ── */
-html.dark .admin-panel { background: var(--surface); border-color: var(--s2); }
-html.dark .admin-table-row { background: var(--surface); }
-html.dark .admin-table-row:hover { background: var(--surface-2); }
-
-/* ── CourseQuizPage warm tints ── */
-html.dark .cq-result-box { background: var(--surface-2) !important; }
-
-/* ── Badge text stays legible in dark ── */
-html.dark .badge-intermediate { background: #1e3a5f; color: #93c5fd; }
-html.dark .badge-advanced { background: #2d1b00; color: #fcd34d; }
-
-/* ── Dark mode toggle button (in Navbar) ── */
-.dark-toggle {
-  width: 36px; height: 36px;
-  display: inline-flex; align-items: center; justify-content: center;
-  border-radius: var(--r-sm);
-  color: var(--s5);
-  transition: all var(--t-fast);
-  flex-shrink: 0;
-}
-.dark-toggle:hover { background: var(--s1); color: var(--navy); }
